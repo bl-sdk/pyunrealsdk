@@ -1,0 +1,11 @@
+If:
+    PathMatch: src/pch.h
+CompileFlags:
+    # Treat the pch as c++
+    Add: [-xc++]
+---
+# Suppress errors from outside the project
+If:
+    PathExclude: src/.*
+Diagnostics:
+    Suppress: '*'
