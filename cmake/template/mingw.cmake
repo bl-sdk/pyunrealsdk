@@ -6,3 +6,6 @@ set(CMAKE_RC_COMPILER ${MINGW_TOOLCHAIN_PREFIX}-windres)
 
 add_compile_options("$<$<CONFIG:DEBUG>:-ggdb3>")
 add_link_options("$<$<CONFIG:DEBUG>:-ggdb3>")
+
+# Workaround until llvm-project 692518d0 makes it into a release
+add_compile_definitions(_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS)

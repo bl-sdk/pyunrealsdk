@@ -10,6 +10,11 @@ namespace {
  */
 DWORD WINAPI startup_thread(LPVOID /*unused*/) {
     LOG(MISC, "pyunrealsdk loaded");
+
+    py::scoped_interpreter guard{};
+
+    py::print("Hello, World!");
+
     return 1;
 }
 
