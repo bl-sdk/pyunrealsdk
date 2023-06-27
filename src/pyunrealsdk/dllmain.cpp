@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "pyunrealsdk/version.h"
+#include "unrealsdk/unrealsdk.h"
 
 namespace {
 
@@ -9,11 +11,8 @@ namespace {
  * @return unused.
  */
 DWORD WINAPI startup_thread(LPVOID /*unused*/) {
-    LOG(MISC, "pyunrealsdk loaded");
-
-    py::scoped_interpreter guard{};
-
-    py::print("Hello, World!");
+    while (!unrealsdk::is_initialized()) {}
+    LOG(INFO, "{} loaded", pyunrealsdk::get_version_string());
 
     return 1;
 }

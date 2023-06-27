@@ -9,3 +9,9 @@ If:
     PathExclude: src/.*
 Diagnostics:
     Suppress: '*'
+---
+# Suppress "expected expression" errors caused by variable substitutions
+If:
+    PathMatch: src/.*\.in
+Diagnostics:
+    Suppress: expected_expression

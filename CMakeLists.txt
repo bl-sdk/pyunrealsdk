@@ -17,6 +17,10 @@ else()
     target_compile_options(pyunrealsdk PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+set(GIT_PRE_CONFIGURE_FILE "src/pyunrealsdk/version.cpp.in")
+set(GIT_POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+include(cmake/git_watcher.cmake)
+
 add_subdirectory(python_dev)
 
 set(PYBIND11_NOPYTHON True)
@@ -26,6 +30,7 @@ set(UNREALSDK_SHARED True)
 add_subdirectory(libs/unrealsdk)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/pyunrealsdk/*.cpp" "src/pyunrealsdk/*.h")
+list(APPEND sources ${GIT_POST_CONFIGURE_FILE})
 target_sources(pyunrealsdk PRIVATE ${sources})
 
 target_include_directories(pyunrealsdk PUBLIC "src")
