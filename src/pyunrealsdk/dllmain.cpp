@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "pyunrealsdk/version.h"
-#include "unrealsdk/unrealsdk.h"
+#include "pyunrealsdk/pyunrealsdk.h"
 
 namespace {
 
@@ -11,8 +10,11 @@ namespace {
  * @return unused.
  */
 DWORD WINAPI startup_thread(LPVOID /*unused*/) {
-    while (!unrealsdk::is_initialized()) {}
-    LOG(INFO, "{} loaded", pyunrealsdk::get_version_string());
+    try {
+        pyunrealsdk::init();
+    } catch (std::exception& ex) {
+        LOG(ERROR, "Exception occurred while initializing the python sdk: {}", ex.what());
+    }
 
     return 1;
 }
