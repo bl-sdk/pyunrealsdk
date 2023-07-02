@@ -64,8 +64,7 @@ class Logger {
 
         std::string str;
         for (size_t i = 0; i < lines_to_flush && std::getline(this->stream, str); i++) {
-            unrealsdk::logging::log(std::chrono::system_clock::now(), clamped_level, str, nullptr,
-                                    filename.c_str(), line);
+            unrealsdk::logging::log(clamped_level, str, filename.c_str(), line);
         }
 
         // We need to clear the stream occasionally
