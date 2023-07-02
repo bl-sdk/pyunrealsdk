@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/env.h"
 #include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/version.h"
 #include "unrealsdk/unrealsdk.h"
@@ -20,17 +21,9 @@ void init(void) {
     logging::py_init();
 
     try {
-        py::exec(R"(
-        import unrealsdk.logging as log
-        import sys
-
-        print(sys.stdout.level)
-        sys.stdout.level = log.Level.MISC
-        log.dev_warning("test")
-        print(sys.stdout.level)
-        sys.stderr.write("stderr test\n")
-    )");
+        py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT));
     } catch (const std::exception& ex) {
+        LOG(ERROR, "Error running python initalization script:");
         LOG(ERROR, "{}", ex.what());
     }
 }
