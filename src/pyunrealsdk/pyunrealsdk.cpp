@@ -21,12 +21,14 @@ void init(void) {
 
     try {
         py::exec(R"(
-        import unrealsdk
+        import unrealsdk.logging as log
+        import sys
 
-        # unrealsdk.set_console_log_level(unrealsdk.LogLevel.DEV_WARNING)
-
-        print(unrealsdk.LogLevel.__doc__)
-        unrealsdk.log("test", level=unrealsdk.LogLevel.WARNING)
+        print(sys.stdout.level)
+        sys.stdout.level = log.Level.MISC
+        log.dev_warning("test")
+        print(sys.stdout.level)
+        sys.stderr.write("stderr test\n")
     )");
     } catch (const std::exception& ex) {
         LOG(ERROR, "{}", ex.what());
