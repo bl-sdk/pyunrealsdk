@@ -24,7 +24,12 @@ void init(void) {
         py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT));
     } catch (const std::exception& ex) {
         LOG(ERROR, "Error running python initalization script:");
-        LOG(ERROR, "{}", ex.what());
+
+        std::istringstream stream{ex.what()};
+        std::string line;
+        while (std::getline(stream, line)) {
+            LOG(ERROR, "{}", line);
+        }
     }
 }
 
