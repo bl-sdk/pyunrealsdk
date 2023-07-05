@@ -58,13 +58,13 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     if (heredoc_eof == py_str) {
         heredoc_eof.clear();
     } else {
-        stream.write(py_start, py_len);
+        stream << py_str;
     }
 
     // If we're waiting on more lines, add a newline, register a next line command, and exit
     if (!heredoc_eof.empty()) {
         stream << L'\n';
-        unrealsdk::commands::add_command(unrealsdk::commands::NEXT_LINE, &py_cmd_handler);
+        unrealsdk::commands::add_command(unrealsdk::commands::NEXT_LINE, py_cmd_handler);
         return;
     }
 
@@ -85,6 +85,51 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
 }
 
 }  // namespace
+
+void register_module(py::module_& mod) {
+    auto commands = mod.def_submodule("commands");
+
+    commands.def(
+        "add_command",
+        [](const std::wstring& cmd, const py::object& callback) {
+            unrealsdk::commands::add_command(
+                cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
+                    py::gil_scoped_acquire gil{};
+
+                    py::str py_line{PyUnicode_FromWideChar(line, static_cast<Py_ssize_t>(size))};
+
+                    callback(py_line, cmd_len);
+                });
+        },
+        "Adds a custom console command.\n"
+        "\n"
+        "Args:\n"
+        "    cmd: The command to match.\n"
+        "    callback: The callback for when the command is run.\n"
+        "Returns:\n"
+        "    True if the command is registered.",
+        "cmd"_a, "callback"_a);
+
+    commands.def("has_command", &unrealsdk::commands::has_command,
+                 "Check if a custom console command is registered.\n"
+                 "\n"
+                 "Args:\n"
+                 "    cmd: The command to match.\n"
+                 "Returns:\n"
+                 "    True if the command is registered.",
+                 "cmd"_a);
+
+    commands.def("remove_command", &unrealsdk::commands::remove_command,
+                 "Removes a custom console command.\n"
+                 "\n"
+                 "Args:\n"
+                 "    cmd: The command to remove.\n"
+                 "Returns:\n"
+                 "    True if successfully removed, false if no such command exists.",
+                 "cmd"_a);
+
+    commands.attr("NEXT_LINE") = unrealsdk::commands::NEXT_LINE;
+}
 
 void register_commands(void) {
     unrealsdk::commands::add_command(L"pyexec", &pyexec_cmd_handler);

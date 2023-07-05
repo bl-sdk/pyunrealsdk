@@ -8,6 +8,7 @@
 // NOLINTNEXTLINE(readability-identifier-length)
 PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
     pyunrealsdk::logging::register_module(m);
+    pyunrealsdk::commands::register_module(m);
 };
 
 namespace pyunrealsdk {
