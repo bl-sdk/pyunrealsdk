@@ -169,6 +169,8 @@ void register_module(py::module_& mod) {
 }
 
 void py_init(void) {
+    py::gil_scoped_acquire gil{};
+
     auto sys = py::module_::import("sys");
     sys.attr("stdout") = Logger{Level::INFO};
     sys.attr("stderr") = Logger{Level::ERROR};

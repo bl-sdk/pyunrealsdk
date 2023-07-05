@@ -6,7 +6,7 @@ CompileFlags:
 ---
 # Suppress errors from outside the project
 If:
-    PathExclude: src/.*
+    PathExclude: (src|libs/unrealsdk/src)/.*
 Diagnostics:
     Suppress: '*'
 ---

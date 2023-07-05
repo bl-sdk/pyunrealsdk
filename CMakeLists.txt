@@ -39,25 +39,25 @@ target_link_libraries(pyunrealsdk PUBLIC
     unrealsdk
     pybind11::embed
     pybind11::lto
+    pybind11::windows_extras
 )
-if(MSVC)
-	target_link_libraries(unrealsdk PUBLIC pybind11::windows_extras)
-endif()
 
-target_precompile_headers(pyunrealsdk INTERFACE "src/pyunrealsdk/pch.h")
+target_compile_definitions(pyunrealsdk PUBLIC PYBIND11_SIMPLE_GIL_MANAGEMENT)
+
+target_precompile_headers(pyunrealsdk PUBLIC "src/pyunrealsdk/pch.h")
 
 if(MSVC)
     # Enable Edit and Continue - replace /Zi with /ZI
     string(REPLACE "/Zi" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
     string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    target_compile_options(pyunrealsdk INTERFACE "$<$<CONFIG:DEBUG>:/ZI>")
+    target_compile_options(pyunrealsdk PUBLIC "$<$<CONFIG:DEBUG>:/ZI>")
 
-    target_link_options(pyunrealsdk INTERFACE "/INCREMENTAL")
+    target_link_options(pyunrealsdk PUBLIC "/INCREMENTAL")
 
     # Only enable /GL (which conflicts with /ZI) in release mode
     string(REPLACE "/GL" "" CMAKE_C_COMPILE_OPTIONS_IPO "${CMAKE_C_COMPILE_OPTIONS_IPO}")
     string(REPLACE "/GL" "" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
-    target_compile_options(pyunrealsdk INTERFACE "$<$<CONFIG:RELEASE>:/GL>")
+    target_compile_options(pyunrealsdk PUBLIC "$<$<CONFIG:RELEASE>:/GL>")
 
     # UTF-8 encoded source files
     target_compile_options(pyunrealsdk PUBLIC "/utf-8")

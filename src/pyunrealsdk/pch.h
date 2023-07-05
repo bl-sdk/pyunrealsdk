@@ -25,8 +25,6 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-#include <algorithm>
-
 #endif
 
 #endif /* PYUNREALSDK_PCH_H */
