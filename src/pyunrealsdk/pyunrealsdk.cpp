@@ -2,6 +2,7 @@
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/env.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/version.h"
 #include "unrealsdk/unrealsdk.h"
 
