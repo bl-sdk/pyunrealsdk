@@ -8,7 +8,7 @@ namespace pybind11::detail {
 template <>
 struct type_caster<unrealsdk::unreal::FName> {
    public:
-    PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, _("FName"));
+    PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, py::detail::const_name("FName"));
 
     bool load(handle src, bool /*convert*/) {
         Py_ssize_t size = 0;

@@ -28,7 +28,7 @@ UField* get_field_from_py_key(const py::object& key, UStruct* type) {
         }
     }
 
-    if (py::isinstance<UField*>(key)) {
+    if (py::isinstance<UField>(key)) {
         auto field = py::cast<UField*>(key);
         if (field == nullptr) {
             throw py::attribute_error("cannot access null attribute");
@@ -36,7 +36,7 @@ UField* get_field_from_py_key(const py::object& key, UStruct* type) {
         return field;
     }
 
-    std::string key_type_name = py::str(py::type(key));
+    std::string key_type_name = py::str(py::type::of(key).attr("__name__"));
     throw py::attribute_error(
         unrealsdk::fmt::format("attribute key has unknown type '{}'", key_type_name));
 }

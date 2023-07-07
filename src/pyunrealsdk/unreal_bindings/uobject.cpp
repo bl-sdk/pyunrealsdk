@@ -106,7 +106,7 @@ void uobject_setattr(UObject* self, const py::object& key, const py::object& val
     py::sequence value_seq;
     if (prop->ArrayDim > 1) {
         if (!py::isinstance<py::sequence>(value)) {
-            std::string value_type_name = py::str(py::type(value));
+            std::string value_type_name = py::str(py::type::of(value).attr("__name__"));
             throw py::type_error(unrealsdk::fmt::format(
                 "attribute value has unexpected type '{}', expected a sequence", value_type_name));
         }
@@ -201,8 +201,8 @@ void register_uobject(py::module_& module) {
              "attribute access), which automatically looks up the field.\n"
              "\n"
              "In performance critical situations, you can also look up the field beforehand\n"
-             "via obj.Class.find(\"name\"), then pass the it directly to this function. This does\n"
-             "not get validated, passing a field which doesn't exist on the object is\n"
+             "via obj.Class._find(\"name\"), then pass the it directly to this function. This\n"
+             "does not get validated, passing a field which doesn't exist on the object is\n"
              "undefined behaviour.\n"
              "\n"
              "Note that setattr() only supports string keys, when passing a field you must\n"

@@ -63,7 +63,28 @@ void register_uobject_children(py::module_& module) {
              "\n"
              "Returns:\n"
              "    The size which must be allocated.")
-        // TODO: finds
+        .def("_find", &UStruct::find,
+             "Finds a child field by name.\n"
+             "\n"
+             "Throws an exception if the child is not found.\n"
+             "\n"
+             "Args:\n"
+             "    name: The name of the child field.\n"
+             "Returns:\n"
+             "    The found child field.",
+             "name"_a)
+        .def("_find_prop", &UStruct::find_prop,
+             "Finds a child property by name.\n"
+             "\n"
+             "When known to be a property, this is more efficient than _find.\n"
+             "\n"
+             "Throws an exception if the child is not found.\n"
+             "\n"
+             "Args:\n"
+             "    name: The name of the child property.\n"
+             "Returns:\n"
+             "    The found child property.",
+             "name"_a)
         .def_readwrite("SuperField", &UStruct::SuperField)
         .def_readwrite("Children", &UStruct::Children)
         .def_readwrite("PropertyLink", &UStruct::PropertyLink);

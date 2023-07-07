@@ -39,7 +39,7 @@ UClass* find_class_potentially_qualified(const std::wstring& name,
  * @return The class.
  */
 UClass* find_class_potentially_given(const py::object& cls) {
-    if (py::isinstance<UClass*>(cls)) {
+    if (py::isinstance<UClass>(cls)) {
         return py::cast<UClass*>(cls);
     }
 
