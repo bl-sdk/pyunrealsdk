@@ -33,9 +33,10 @@ void init(void) {
     LOG(INFO, "{} loaded", pyunrealsdk::get_version_string());
 
     py::initialize_interpreter(true, 0, nullptr, false);
-    // We need to import the sdk module once so that we can use it's types, but we don't need to
-    // keep the reference alive.
-    { py::module_::import("unrealsdk"); }
+    // We need to import the sdk module once so that we can use it's types
+    // We also want it to be in sys.modules, so you can immediately access it via console
+    // Doing this via an exec accomplishes both at once
+    py::exec("import unrealsdk");
 
     logging::py_init();
 
