@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/commands.h"
+#include "pyunrealsdk/logging.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/utils.h"
 
@@ -16,7 +17,7 @@ void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
         py::str file{PyUnicode_FromWideChar(file_start, static_cast<Py_ssize_t>(file_len))};
         py::eval_file(file);
     } catch (const std::exception& ex) {
-        LOG_MULTILINE(ERROR, ex.what());
+        logging::log_python_exception(ex);
     }
 }
 
@@ -80,7 +81,7 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
             PyUnicode_FromWideChar(str.c_str(), static_cast<Py_ssize_t>(str.size()))};
         py::exec(code_block);
     } catch (const std::exception& ex) {
-        LOG_MULTILINE(ERROR, ex.what());
+        logging::log_python_exception(ex);
     }
 }
 

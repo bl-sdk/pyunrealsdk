@@ -9,6 +9,34 @@ namespace pyunrealsdk::logging {
 namespace {
 
 /**
+ * @brief Get the current Python frame's location to use when logging.
+ *
+ * @param frame A pointer to the current frame. If nullptr, will grab it automatically.
+ * @return A pair of the location and line number.
+ */
+std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) {
+    py::gil_scoped_acquire gil{};
+
+    if (frame == nullptr) {
+        frame = PyEval_GetFrame();
+    }
+
+    std::string filename{};
+    int line_num = -1;
+
+    if (frame != nullptr) {
+        auto code = PyFrame_GetCode(frame);
+        if (code != nullptr) {
+            filename = py::str(code->co_filename);
+        }
+
+        line_num = PyFrame_GetLineNumber(frame);
+    }
+
+    return {filename, line_num};
+}
+
+/**
  * @brief A write only file object which redirects to the unrealsdk log system.
  */
 class Logger {
@@ -48,23 +76,11 @@ class Logger {
      */
     void flush(size_t lines_to_flush = std::numeric_limits<size_t>::max()) {
         auto clamped_level = std::clamp(this->level, Level::MIN, Level::MAX);
-
-        std::string filename{};
-        int line = -1;
-
-        auto frame = PyEval_GetFrame();
-        if (frame != nullptr) {
-            auto code = PyFrame_GetCode(frame);
-            if (code != nullptr) {
-                filename = py::str(code->co_filename);
-            }
-
-            line = PyFrame_GetLineNumber(frame);
-        }
+        auto [location, line_num] = get_python_location();
 
         std::string str;
         for (size_t i = 0; i < lines_to_flush && std::getline(this->stream, str); i++) {
-            unrealsdk::logging::log(clamped_level, str, filename.c_str(), line);
+            unrealsdk::logging::log(clamped_level, str, location.c_str(), line_num);
         }
 
         // We need to clear the stream occasionally
@@ -174,6 +190,28 @@ void py_init(void) {
     auto sys = py::module_::import("sys");
     sys.attr("stdout") = Logger{Level::INFO};
     sys.attr("stderr") = Logger{Level::ERROR};
+}
+
+void log_python_exception(const std::exception& exc) {
+    PyFrameObject* frame = nullptr;
+
+    try {
+        // See if this is a python error
+        auto error_already_set = dynamic_cast<const py::error_already_set&>(exc);
+
+        // If so, read the location from the traceback's frame instead
+        py::gil_scoped_acquire gil{};
+        frame = reinterpret_cast<PyTracebackObject*>(error_already_set.trace().ptr())->tb_frame;
+    } catch (const std::bad_cast&) {}
+
+    auto [location, line_num] = get_python_location(frame);
+
+    std::istringstream stream{exc.what()};
+    std::string msg_line;
+    while (std::getline(stream, msg_line)) {
+        unrealsdk::logging::log(unrealsdk::logging::Level::ERROR, msg_line, location.c_str(),
+                                line_num);
+    }
 }
 
 }  // namespace pyunrealsdk::logging
