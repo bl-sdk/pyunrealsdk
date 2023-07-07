@@ -15,17 +15,6 @@ namespace pyunrealsdk::unreal {
 void register_module(py::module_& mod);
 
 /**
- * @brief Gets a field off of an object based on the key given to getattr/setattr.
- * @note Allows both strings and direct field references.
- *
- * @param key The python key.
- * @param type The type of the unreal object this access is reading off of.
- * @return The field. Invalid keys throw, so will never be null.
- */
-unrealsdk::unreal::UField* get_field_from_py_key(const py::object& key,
-                                                 unrealsdk::unreal::UStruct* type);
-
-/**
  * @brief Helper class for mapping unreal objects to python.
  *
  * @tparam T The wrapped unreall object type
