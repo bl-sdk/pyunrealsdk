@@ -8,9 +8,9 @@ namespace pyunrealsdk::logging {
 /**
  * @brief Registers everything needed for the logging module.
  *
- * @param module The module to register within.
+ * @param mod The module to register within.
  */
-void register_module(py::module_& module);
+void register_module(py::module_& mod);
 
 /**
  * @brief Performs python initialization of the logging module.

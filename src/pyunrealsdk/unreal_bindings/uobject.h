@@ -6,9 +6,9 @@ namespace pyunrealsdk::unreal {
 /**
  * @brief Registers UObject.
  *
- * @param module The module to register within.
+ * @param mod The module to register within.
  */
-void register_uobject(py::module_& module);
+void register_uobject(py::module_& mod);
 
 }  // namespace pyunrealsdk::unreal
 

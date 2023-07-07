@@ -10,9 +10,9 @@ namespace pyunrealsdk::unreal {
 /**
  * @brief Registers everything needed for the unreal module.
  *
- * @param module The module to register within.
+ * @param mod The module to register within.
  */
-void register_module(py::module_& module);
+void register_module(py::module_& mod);
 
 /**
  * @brief Gets a field off of an object based on the key given to getattr/setattr.

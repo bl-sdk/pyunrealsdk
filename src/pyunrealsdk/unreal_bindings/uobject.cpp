@@ -151,9 +151,9 @@ void uobject_setattr(UObject* self, const py::object& key, const py::object& val
 
 }  // namespace
 
-void register_uobject(py::module_& module) {
+void register_uobject(py::module_& mod) {
     PyUEClass<UObject>(
-        module, "UObject", "The base class of all unreal objects.",
+        mod, "UObject", "The base class of all unreal objects.",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
         .def_no_constructor()

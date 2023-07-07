@@ -8,7 +8,7 @@ namespace pyunrealsdk::unreal {
  *
  * @param module The module to register within.
  */
-void register_uobject_children(py::module_& module);
+void register_uobject_children(py::module_& mod);
 
 }  // namespace pyunrealsdk::unreal
 
