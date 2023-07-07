@@ -213,7 +213,12 @@ void register_uobject(py::module_& module) {
              "    value: The value to write.\n"
              "Returns:\n"
              "    The field's value.",
-             "key"_a, "value"_a);
+             "key"_a, "value"_a)
+        .def_readwrite("ObjectFlags", &UObject::ObjectFlags)
+        .def_readwrite("InternalIndex", &UObject::InternalIndex)
+        .def_readwrite("Class", &UObject::Class)
+        .def_readwrite("Name", &UObject::Name)
+        .def_readwrite("Outer", &UObject::Outer);
 }
 
 }  // namespace pyunrealsdk::unreal
