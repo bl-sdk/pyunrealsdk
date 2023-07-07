@@ -25,6 +25,9 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+// Type casters need to be defined the same way in every file, so best to put here
+#include "pyunrealsdk/type_casters.h"
+
 #endif
 
 #endif /* PYUNREALSDK_PCH_H */

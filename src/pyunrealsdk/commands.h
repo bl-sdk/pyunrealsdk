@@ -6,9 +6,9 @@ namespace pyunrealsdk::commands {
 /**
  * @brief Registers everything needed for the commands module.
  *
- * @param module The module to register within.
+ * @param mod The module to register within.
  */
-void register_module(py::module_& module);
+void register_module(py::module_& mod);
 
 /**
  * @brief Registers all our custom console commands.
