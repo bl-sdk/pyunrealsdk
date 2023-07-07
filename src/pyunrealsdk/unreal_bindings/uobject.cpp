@@ -48,7 +48,7 @@ std::vector<std::string> uobject_dir(UObject* self) {
  */
 py::object uobject_getattr(UObject* self, const py::object& key) {
     // We can't push these at a higher scope because we need them to only run after the
-    // sdk's been initalized
+    // sdk's been initialized
     static const UClass* uproperty_class = find_class(L"Property"_fn);
     static const UClass* ufunction_class = find_class(L"Function"_fn);
 
@@ -92,7 +92,7 @@ py::object uobject_getattr(UObject* self, const py::object& key) {
  */
 void uobject_setattr(UObject* self, const py::object& key, const py::object& value) {
     // We can't put this at a higher scope because we need it to only run after the
-    // sdk's been initalized
+    // sdk's been initialized
     static const UClass* uproperty_class = find_class(L"Property"_fn);
 
     UField* field = get_field_from_py_key(key, self->Class);
@@ -114,7 +114,7 @@ void uobject_setattr(UObject* self, const py::object& key, const py::object& val
 
         if (value_seq.size() > static_cast<size_t>(prop->ArrayDim)) {
             throw py::type_error(unrealsdk::fmt::format(
-                "attribute value is too long, {} supports a maxium of {} values", prop->Name,
+                "attribute value is too long, {} supports a maximum of {} values", prop->Name,
                 prop->ArrayDim));
         }
     } else {

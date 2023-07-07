@@ -44,7 +44,7 @@ void init(void) {
     try {
         py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT));
     } catch (const std::exception& ex) {
-        LOG(ERROR, "Error running python initalization script:");
+        LOG(ERROR, "Error running python initialization script:");
         logging::log_python_exception(ex);
     }
 

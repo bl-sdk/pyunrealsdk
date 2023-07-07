@@ -1,6 +1,7 @@
 [files]
 extend-exclude = [
-    "libs/*",
+    "libs/pybind11",
+    "libs/unrealsdk/libs",
     "LICENSE",
     ".typos.toml"
 ]
