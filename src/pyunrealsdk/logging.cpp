@@ -86,7 +86,7 @@ class Logger {
         // We need to clear the stream occasionally
         // Since most of the time, we're writing one line at a time, rather than doing something
         // complex to deal with possible left over data, only clear when we're at the end already.
-        if (this->stream.eof()) {
+        if (this->stream.peek() == decltype(this->stream)::traits_type::eof()) {
             this->stream.clear();
             this->stream.str({});
             this->stream.seekg(0);
