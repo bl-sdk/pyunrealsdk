@@ -22,8 +22,8 @@ namespace {
  * @param idx The python index.
  * @return The equivalent absolute index.
  */
-size_t convert_py_idx(const WrappedArray& arr, Py_ssize_t idx) {
-    auto size = static_cast<Py_ssize_t>(arr.size());
+size_t convert_py_idx(const WrappedArray& arr, py::ssize_t idx) {
+    auto size = static_cast<py::ssize_t>(arr.size());
     if (idx < 0) {
         idx += size;
     }
@@ -75,14 +75,34 @@ void array_validate_value(const WrappedArray& arr, const py::object& value) {
 }
 
 /**
- * @brief Destroys an entry of arbitrary type in an array.
- * @note Does not move surrounding entries.
+ * @brief Deletes a range of entries of arbitrary type in an array.
  *
  * @param arr The array to modify.
- * @param idx The index to destory.
+ * @param start The start of the range to delete, inclusive.
+ * @param stop The end of the range to delete, exclusive.
  */
-void array_destroy(WrappedArray& arr, size_t idx) {
-    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) { arr.destroy_at<T>(idx); });
+void array_delete_range(WrappedArray& arr, size_t start, size_t stop) {
+    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) {
+        for (auto idx = start; idx < stop; idx++) {
+            arr.destroy_at<T>(idx);
+        }
+    });
+
+    // Don't move if deleting the end of the array
+    auto size = arr.size();
+    auto num_deleted = stop - start;
+
+    if (stop != size) {
+        auto data = reinterpret_cast<uintptr_t>(arr.base->data);
+        auto element_size = arr.type->ElementSize;
+
+        auto dest = data + (start * element_size);
+        auto src = dest + (num_deleted * element_size);
+        auto remaining_size = (size - stop) * element_size;
+        memmove(reinterpret_cast<void*>(dest), reinterpret_cast<void*>(src), remaining_size);
+    }
+
+    arr.resize(size - num_deleted);
 }
 
 /**
@@ -189,31 +209,142 @@ std::string array_py_repr(const WrappedArray& self) {
     return output.str();
 }
 
-py::object array_py_getitem(const WrappedArray& self, Py_ssize_t idx) {
-    return array_get(self, convert_py_idx(self, idx));
-}
+py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx) {
+    if (py::isinstance<py::ssize_t>(py_idx)) {
+        return array_get(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
+    }
+    if (!py::isinstance<py::slice>(py_idx)) {
+        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
+        throw py::type_error(unrealsdk::fmt::format(
+            "array indices must be integers or slices, not {}", idx_type_name));
+    }
+    auto slice = py::cast<py::slice>(py_idx);
 
-void array_py_setitem(WrappedArray& self, Py_ssize_t idx, const py::object& value) {
-    return array_set(self, convert_py_idx(self, idx), value);
-}
-
-void array_py_delitem(WrappedArray& self, Py_ssize_t py_idx) {
-    auto idx = convert_py_idx(self, py_idx);
-    array_destroy(self, idx);
-
-    // Don't move if deleting the end of the array
-    auto size = self.size();
-    if (idx != (size - 1)) {
-        auto data = reinterpret_cast<uintptr_t>(self.base->data);
-        auto element_size = self.type->ElementSize;
-
-        auto dest = data + (idx * element_size);
-        auto remaining_size = (size - idx) * element_size;
-        memmove(reinterpret_cast<void*>(dest), reinterpret_cast<void*>(dest + element_size),
-                remaining_size);
+    py::ssize_t start = 0;
+    py::ssize_t stop = 0;
+    py::ssize_t step = 0;
+    py::ssize_t slicelength = 0;
+    if (!slice.compute(static_cast<py::ssize_t>(self.size()), &start, &stop, &step, &slicelength)) {
+        throw py::error_already_set();
     }
 
-    self.resize(size - 1);
+    py::list ret{slicelength};
+    for (auto i = 0; i < slicelength; i++) {
+        ret[i] = array_get(self, i);
+        start += step;
+    }
+    return ret;
+}
+
+void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::object& value) {
+    if (py::isinstance<py::ssize_t>(py_idx)) {
+        array_set(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)), value);
+        return;
+    }
+    if (!py::isinstance<py::slice>(py_idx)) {
+        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
+        throw py::type_error(unrealsdk::fmt::format(
+            "array indices must be integers or slices, not {}", idx_type_name));
+    }
+    if (!py::isinstance<py::sequence>(value)) {
+        throw py::type_error("can only assign a sequence");
+    }
+
+    auto slice = py::cast<py::slice>(py_idx);
+    auto value_seq = py::cast<py::sequence>(value);
+    auto values_size = static_cast<py::ssize_t>(value_seq.size());
+
+    py::ssize_t start = 0;
+    py::ssize_t stop = 0;
+    py::ssize_t step = 0;
+    py::ssize_t slicelength = 0;
+    if (!slice.compute(static_cast<py::ssize_t>(self.size()), &start, &stop, &step, &slicelength)) {
+        throw py::error_already_set();
+    }
+
+    // If we have 1-1 replacements
+    if (slicelength == values_size) {
+        // Allow arbitrary steps
+        for (auto i = 0; i < slicelength; i++) {
+            array_set(self, start, value_seq[i]);
+            start += step;
+        }
+        return;
+    }
+
+    // Otherwise, if sizes don't match, we must not be doing an extended slice, it needs to be
+    // continuous
+    // This logic sounds backwards, but it lets our simpler code early exit, and it works the same
+    // way as list
+    if (step != 1 && step != -1) {
+        throw py::value_error(unrealsdk::fmt::format(
+            "attempt to assign sequence of size {} to extended slice of size {}", value_seq.size(),
+            slicelength));
+    }
+
+    if (step < 0) {
+        auto tmp = start;
+        start = stop;
+        stop = tmp;
+        step *= -1;
+    }
+
+    auto new_size = self.size() + values_size - slicelength;
+    if (new_size > self.capacity()) {
+        self.reserve(new_size);
+    }
+
+    // As much as I'd love to memmove the data buffer here, we can't because we don't know that the
+    // values in our sequence are valid types.
+    // Instead we need to stick to the basic operations, such that an exception at any point leaves
+    // the array in a valid state (even if it's not what was intended).
+    // Chosing to do this by deleting all overwritten objects, then inserting all the new ones.
+    array_py_delitem(self, py::slice(start, stop, 1));
+
+    for (auto value_idx = 0; value_idx < values_size; value_idx++) {
+        array_py_insert(self, start + value_idx, value_seq[value_idx]);
+    }
+}
+
+void array_py_delitem(WrappedArray& self, const py::object& py_idx) {
+    py::ssize_t start = 0;
+    py::ssize_t stop = 0;
+    py::ssize_t step = 0;
+    py::ssize_t slicelength = 0;
+
+    if (py::isinstance<py::ssize_t>(py_idx)) {
+        start = static_cast<py::ssize_t>(convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
+        stop = start + 1;
+        step = 1;
+        slicelength = 1;
+    } else if (py::isinstance<py::slice>(py_idx)) {
+        auto slice = py::cast<py::slice>(py_idx);
+        if (!slice.compute(static_cast<py::ssize_t>(self.size()), &start, &stop, &step,
+                           &slicelength)) {
+            throw py::error_already_set();
+        }
+    } else {
+        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
+        throw py::type_error(unrealsdk::fmt::format(
+            "array indices must be integers or slices, not {}", idx_type_name));
+    }
+
+    // If we don't have continuous ranges
+    if (step != 1 && step != -1) {
+        // Delete each index individually
+        for (auto i = 0; i < slicelength; i++) {
+            array_delete_range(self, start, start + 1);
+            start += step;
+        }
+    } else {
+        // Otherwise, we can delete everything in one go
+        if (step < 0) {
+            auto tmp = start;
+            start = stop;
+            stop = tmp;
+        }
+        array_delete_range(self, start, stop);
+    }
 }
 
 py::iterator array_py_iter(const WrappedArray& self) {
@@ -240,7 +371,7 @@ WrappedArray& array_py_iadd(WrappedArray& self, const py::sequence& other) {
     return self;
 };
 
-py::list array_py_mul(WrappedArray& self, Py_ssize_t other) {
+py::list array_py_mul(WrappedArray& self, py::ssize_t other) {
     if (other == 1) {
         return array_py_copy(self);
     }
@@ -257,13 +388,13 @@ py::list array_py_mul(WrappedArray& self, Py_ssize_t other) {
     return ret_list;
 }
 
-void array_py_imul(WrappedArray& self, Py_ssize_t other) {
+WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other) {
     if (other == 1) {
-        return;
+        return self;
     }
     if (other < 1) {
         array_py_clear(self);
-        return;
+        return self;
     }
 
     cast_prop(self.type, [&self, other]<typename T>(const T* /*prop*/) {
@@ -282,6 +413,8 @@ void array_py_imul(WrappedArray& self, Py_ssize_t other) {
             }
         }
     });
+
+    return self;
 }
 
 void array_py_append(WrappedArray& self, const py::object& value) {
@@ -293,9 +426,7 @@ void array_py_append(WrappedArray& self, const py::object& value) {
 }
 
 void array_py_clear(WrappedArray& self) {
-    for (size_t i = 0; i < self.size(); i++) {
-        array_destroy(self, i);
-    }
+    array_delete_range(self, 0, self.size());
     self.resize(0);
 }
 
@@ -305,9 +436,10 @@ size_t array_py_count(const WrappedArray& self, const py::object& value) {
 }
 
 py::list array_py_copy(WrappedArray& self) {
-    py::list list{};
-    for (size_t i = 0; i < self.size(); i++) {
-        list.append(array_get(self, i));
+    auto size = self.size();
+    py::list list{size};
+    for (size_t i = 0; i < size; i++) {
+        list[i] = array_get(self, i);
     }
     return list;
 }
@@ -329,8 +461,8 @@ void array_py_extend(WrappedArray& self, const py::sequence& values) {
 
 size_t array_py_index(const WrappedArray& self,
                       const py::object& value,
-                      Py_ssize_t start,
-                      Py_ssize_t stop) {
+                      py::ssize_t start,
+                      py::ssize_t stop) {
     array_validate_value(self, value);
 
     auto end = ArrayIterator{self, convert_py_idx(self, stop)};
@@ -344,7 +476,7 @@ size_t array_py_index(const WrappedArray& self,
     return location.idx;
 }
 
-void array_py_insert(WrappedArray& self, Py_ssize_t py_idx, const py::object& value) {
+void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
     array_validate_value(self, value);
     auto idx = convert_py_idx(self, py_idx);
     auto size = self.size();
@@ -364,7 +496,7 @@ void array_py_insert(WrappedArray& self, Py_ssize_t py_idx, const py::object& va
     array_set(self, idx, value);
 }
 
-py::object array_py_pop(WrappedArray& self, Py_ssize_t py_idx) {
+py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
     auto idx = convert_py_idx(self, py_idx);
 
     py::object ret{};
@@ -379,13 +511,14 @@ py::object array_py_pop(WrappedArray& self, Py_ssize_t py_idx) {
         ret = py::cast(val_copy);
     });
 
-    array_py_delitem(self, py_idx);
+    array_delete_range(self, idx, idx + 1);
 
     return ret;
 }
 
 void array_py_remove(WrappedArray& self, const py::object& value) {
-    array_py_delitem(self, static_cast<Py_ssize_t>(array_py_index(self, value)));
+    auto idx = array_py_index(self, value);
+    array_delete_range(self, idx, idx + 1);
 }
 
 void array_py_reverse(WrappedArray& self, const py::object& value) {

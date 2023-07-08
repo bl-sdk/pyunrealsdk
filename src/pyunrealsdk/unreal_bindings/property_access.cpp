@@ -99,11 +99,11 @@ py::object py_getattr(uintptr_t base_addr,
 
         // If we have a static array, return it as a tuple.
         // Store in a list for now so we can still append.
-        py::list ret{};
+        py::list ret{prop->ArrayDim};
 
         cast_prop(prop, [base_addr, &ret]<typename T>(const T* prop) {
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
-                ret.append(get_property<T>(prop, i, base_addr));
+                ret[i] = get_property<T>(prop, i, base_addr);
             }
         });
         if (prop->ArrayDim == 1) {

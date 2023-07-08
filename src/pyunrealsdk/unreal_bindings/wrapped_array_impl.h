@@ -41,11 +41,11 @@ void array_py_new_init(const py::args& args, const py::kwargs& kwargs);
 // __repr__
 std::string array_py_repr(const WrappedArray& self);
 // __getitem__
-py::object array_py_getitem(const WrappedArray& self, Py_ssize_t idx);
+py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx);
 // __setitem__
-void array_py_setitem(WrappedArray& self, Py_ssize_t idx, const py::object& value);
+void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::object& value);
 // __delitem__
-void array_py_delitem(WrappedArray& self, Py_ssize_t py_idx);
+void array_py_delitem(WrappedArray& self, const py::object& py_idx);
 // __len__
 // &WrappedArray::size already works for this
 // __iter__
@@ -59,9 +59,9 @@ py::list array_py_add(WrappedArray& self, const py::sequence& other);
 // __iadd__
 WrappedArray& array_py_iadd(WrappedArray& self, const py::sequence& other);
 // __mul__ + __rmul__
-py::list array_py_mul(WrappedArray& self, const py::sequence& other);
+py::list array_py_mul(WrappedArray& self, py::ssize_t other);
 // __imul__
-WrappedArray& array_py_imul(WrappedArray& self, const py::sequence& other);
+WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other);
 // append
 void array_py_append(WrappedArray& self, const py::object& value);
 // clear
@@ -75,12 +75,12 @@ void array_py_extend(WrappedArray& self, const py::sequence& values);
 // index
 size_t array_py_index(const WrappedArray& self,
                       const py::object& value,
-                      Py_ssize_t start = 0,
-                      Py_ssize_t stop = -1);
+                      py::ssize_t start = 0,
+                      py::ssize_t stop = -1);
 // insert
-void array_py_insert(WrappedArray& self, Py_ssize_t py_idx, const py::object& value);
+void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value);
 // pop
-py::object array_py_pop(WrappedArray& self, Py_ssize_t py_idx);
+py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx);
 // remove
 void array_py_remove(WrappedArray& self, const py::object& value);
 // reverse

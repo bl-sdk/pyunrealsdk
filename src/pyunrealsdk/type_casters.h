@@ -11,7 +11,7 @@ struct type_caster<unrealsdk::unreal::FName> {
     PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, py::detail::const_name("FName"));
 
     bool load(handle src, bool /*convert*/) {
-        Py_ssize_t size = 0;
+        py::ssize_t size = 0;
         const char* str = PyUnicode_AsUTF8AndSize(src.ptr(), &size);
 
         if (str == nullptr) {
@@ -26,7 +26,7 @@ struct type_caster<unrealsdk::unreal::FName> {
                        return_value_policy /* policy */,
                        handle /* parent */) {
         std::string name = src;
-        return PyUnicode_FromStringAndSize(name.c_str(), static_cast<Py_ssize_t>(name.size()));
+        return PyUnicode_FromStringAndSize(name.c_str(), static_cast<py::ssize_t>(name.size()));
     }
 };
 }  // namespace pybind11::detail
