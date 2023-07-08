@@ -25,7 +25,7 @@ void register_uobject(py::module_& mod) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
              })
         .def(
-            "__str__",
+            "__repr__",
             [](UObject* self) {
                 return unrealsdk::fmt::format("{}'{}'", self->Class->Name,
                                               unrealsdk::uobject_path_name(self));

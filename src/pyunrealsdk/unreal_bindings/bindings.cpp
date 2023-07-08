@@ -3,6 +3,7 @@
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/unreal_bindings/uobject.h"
 #include "pyunrealsdk/unreal_bindings/uobject_children.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
@@ -19,6 +20,7 @@ void register_module(py::module_& mod) {
 
     register_uobject(unreal);
     register_uobject_children(unreal);
+    register_wrapped_array(unreal);
     register_wrapped_struct(unreal);
 }
 

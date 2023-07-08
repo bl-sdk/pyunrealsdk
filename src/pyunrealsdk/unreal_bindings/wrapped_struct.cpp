@@ -22,7 +22,7 @@ void register_wrapped_struct(py::module_& mod) {
                  throw py::type_error("Cannot create new instances of wrapped structs.");
              })
         .def(
-            "__str__",
+            "__repr__",
             [](const WrappedStruct& self) {
                 std::ostringstream output;
                 output << "{";
@@ -37,7 +37,7 @@ void register_wrapped_struct(py::module_& mod) {
                     auto value = py_getattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type,
                                             py::cast(prop));
 
-                    output << prop->Name << ": " << py::str(value);
+                    output << prop->Name << ": " << py::repr(value);
                 }
 
                 output << "}";
