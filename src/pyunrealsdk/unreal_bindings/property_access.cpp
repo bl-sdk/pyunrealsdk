@@ -27,7 +27,7 @@ bool dir_includes_unreal = true;
  * @param type The type of the unreal object this access is reading off of.
  * @return The field. Invalid keys throw, so will never be null.
  */
-UField* get_field_from_py_key(const py::object& key, UStruct* type) {
+UField* get_field_from_py_key(const py::object& key, const UStruct* type) {
     if (py::isinstance<py::str>(key)) {
         std::string key_str = py::str(key);
         try {
@@ -64,7 +64,7 @@ void register_property_helpers(py::module_& mod) {
         "should_include"_a);
 }
 
-std::vector<std::string> py_dir(const py::object& self, unrealsdk::unreal::UStruct* type) {
+std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     // Start by calling the base dir function
     auto names = py::cast<std::vector<std::string>>(
         py::module_::import("builtins").attr("object").attr("__dir__")(self));
@@ -80,7 +80,7 @@ std::vector<std::string> py_dir(const py::object& self, unrealsdk::unreal::UStru
 }
 
 py::object py_getattr(uintptr_t base_addr,
-                      UStruct* type,
+                      const UStruct* type,
                       const py::object& key,
                       UObject* func_obj) {
     // We can't push these at a higher scope because we need them to only run after the
@@ -106,8 +106,10 @@ py::object py_getattr(uintptr_t base_addr,
                 ret.append(get_property<T>(prop, i, base_addr));
             }
         });
-
-        return prop->ArrayDim == 1 ? ret[0] : py::tuple(ret);
+        if (prop->ArrayDim == 1) {
+            return ret[0];
+        }
+        return py::tuple(ret);
     }
     if (field->is_instance(ufunction_class)) {
         if (func_obj == nullptr) {
@@ -123,7 +125,7 @@ py::object py_getattr(uintptr_t base_addr,
 }
 
 void py_setattr(uintptr_t base_addr,
-                UStruct* type,
+                const UStruct* type,
                 const py::object& key,
                 const py::object& value) {
     // We can't put this at a higher scope because we need it to only run after the

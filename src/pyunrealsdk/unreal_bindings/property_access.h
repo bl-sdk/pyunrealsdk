@@ -28,7 +28,7 @@ void register_property_helpers(py::module_& mod);
  * @param type The type of the object.
  * @return A list of all attributes on the object.
  */
-std::vector<std::string> py_dir(const py::object& self, unrealsdk::unreal::UStruct* type);
+std::vector<std::string> py_dir(const py::object& self, const unrealsdk::unreal::UStruct* type);
 
 /**
  * @brief Implements `__getattr__`.
@@ -40,7 +40,7 @@ std::vector<std::string> py_dir(const py::object& self, unrealsdk::unreal::UStru
  * @return The retrieved value.
  */
 py::object py_getattr(uintptr_t base_addr,
-                      unrealsdk::unreal::UStruct* type,
+                      const unrealsdk::unreal::UStruct* type,
                       const py::object& key,
                       unrealsdk::unreal::UObject* func_obj = nullptr);
 
@@ -53,7 +53,7 @@ py::object py_getattr(uintptr_t base_addr,
  * @param value The value to set.
  */
 void py_setattr(uintptr_t base_addr,
-                unrealsdk::unreal::UStruct* type,
+                const unrealsdk::unreal::UStruct* type,
                 const py::object& key,
                 const py::object& value);
 

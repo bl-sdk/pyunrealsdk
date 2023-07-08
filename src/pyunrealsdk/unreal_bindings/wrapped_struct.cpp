@@ -1,43 +1,58 @@
-#include "pyunrealsdk/unreal_bindings/uobject.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
-#include "unrealsdk/format.h"
-#include "unrealsdk/unreal/classes/uclass.h"
-#include "unrealsdk/unreal/classes/uobject.h"
-#include "unrealsdk/unreal/structs/fname.h"
-#include "unrealsdk/unrealsdk.h"
+#include "unrealsdk/unreal/wrappers/unreal_pointer.h"
+#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
-void register_uobject(py::module_& mod) {
-    PyUEClass<UObject>(
-        mod, "UObject", "The base class of all unreal objects.",
+void register_wrapped_struct(py::module_& mod) {
+    py::class_<WrappedStruct>(
+        mod, "WrappedStruct", "An unreal struct wrapper.",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
         .def("__new__",
              [](const py::args&, const py::kwargs&) {
-                 throw py::type_error("Cannot create new instances of unreal objects.");
+                 throw py::type_error("Cannot create new instances of wrapped structs.");
              })
         .def("__init__",
              [](const py::args&, const py::kwargs&) {
-                 throw py::type_error("Cannot create new instances of unreal objects.");
+                 throw py::type_error("Cannot create new instances of wrapped structs.");
              })
         .def(
             "__str__",
-            [](UObject* self) {
-                return unrealsdk::fmt::format("{}'{}'", self->Class->Name,
-                                              unrealsdk::uobject_path_name(self));
+            [](const WrappedStruct& self) {
+                std::ostringstream output;
+                output << "{";
+
+                bool first = true;
+                for (const auto& prop : self.type->properties()) {
+                    if (!first) {
+                        output << ", ";
+                    }
+                    first = false;
+
+                    auto value = py_getattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type,
+                                            py::cast(prop));
+
+                    output << prop->Name << ": " << py::str(value);
+                }
+
+                output << "}";
+                return output.str();
             },
-            "Gets this object's name.\n"
+            "Gets a string representation of this struct.\n"
             "\n"
             "Returns:\n"
-            "    This object's name.")
+            "    The string representation.")
         .def(
             "__dir__",
-            [](const py::object& self) { return py_dir(self, py::cast<UObject*>(self)->Class); },
-            "Gets the attributes which exist on this object.\n"
+            [](const py::object& self) {
+                return py_dir(self, py::cast<WrappedStruct*>(self)->type);
+            },
+            "Gets the attributes which exist on this struct.\n"
             "\n"
             "Includes both python attributes and unreal fields. This can be changed to only\n"
             "python attributes by calling dir_includes_unreal.\n"
@@ -46,16 +61,16 @@ void register_uobject(py::module_& mod) {
             "    A list of attributes which exist on this object.")
         .def(
             "__getattr__",
-            [](UObject* self, const py::object& key) {
-                return py_getattr(reinterpret_cast<uintptr_t>(self), self->Class, key, self);
+            [](const WrappedStruct& self, const py::object& key) {
+                return py_getattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type, key);
             },
-            "Reads an unreal field off of the object.\n"
+            "Reads an unreal field off of the struct.\n"
             "\n"
             "Usually called with a string holding the field name (as is done in regular\n"
             "attribute access), which automatically looks up the field.\n"
             "\n"
             "In performance critical situations, you can also look up the field beforehand\n"
-            "via obj.Class._find(\"name\"), then pass the it directly to this function. This\n"
+            "via struct._type._find(\"name\"), then pass the it directly to this function. This\n"
             "does not get validated, passing a field which doesn't exist on the object is\n"
             "undefined behaviour.\n"
             "\n"
@@ -69,8 +84,8 @@ void register_uobject(py::module_& mod) {
             "key"_a)
         .def(
             "__setattr__",
-            [](UObject* self, const py::object& key, const py::object& value) {
-                py_setattr(reinterpret_cast<uintptr_t>(self), self->Class, key, value);
+            [](WrappedStruct& self, const py::object& key, const py::object& value) {
+                py_setattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type, key, value);
             },
             "Writes a value to an unreal property.\n"
             "\n"
@@ -78,7 +93,7 @@ void register_uobject(py::module_& mod) {
             "attribute access), which automatically looks up the field.\n"
             "\n"
             "In performance critical situations, you can also look up the field beforehand\n"
-            "via obj.Class._find(\"name\"), then pass the it directly to this function. This\n"
+            "via struct._type._find(\"name\"), then pass the it directly to this function. This\n"
             "does not get validated, passing a field which doesn't exist on the object is\n"
             "undefined behaviour.\n"
             "\n"
@@ -91,17 +106,6 @@ void register_uobject(py::module_& mod) {
             "Returns:\n"
             "    The field's value.",
             "key"_a, "value"_a)
-        .def(
-            "_get_address", [](UObject* self) { return reinterpret_cast<uintptr_t>(self); },
-            "Gets the address of this object, for debugging.\n"
-            "\n",
-            "Returns:\n"
-            "    This object's address.")
-        .def_readwrite("ObjectFlags", &UObject::ObjectFlags)
-        .def_readwrite("InternalIndex", &UObject::InternalIndex)
-        .def_readwrite("Class", &UObject::Class)
-        .def_readwrite("Name", &UObject::Name)
-        .def_readwrite("Outer", &UObject::Outer);
+        .def_readwrite("_type", &WrappedStruct::type);
 }
-
 }  // namespace pyunrealsdk::unreal
