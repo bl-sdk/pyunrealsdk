@@ -199,9 +199,12 @@ void log_python_exception(const std::exception& exc) {
         // See if this is a python error
         auto error_already_set = dynamic_cast<const py::error_already_set&>(exc);
 
-        // If so, read the location from the traceback's frame instead
+        // If so, try read the location from the traceback's frame instead
         py::gil_scoped_acquire gil{};
-        frame = reinterpret_cast<PyTracebackObject*>(error_already_set.trace().ptr())->tb_frame;
+        auto traceback = reinterpret_cast<PyTracebackObject*>(error_already_set.trace().ptr());
+        if (traceback != nullptr) {
+            frame = traceback->tb_frame;
+        }
     } catch (const std::bad_cast&) {}
 
     auto [location, line_num] = get_python_location(frame);

@@ -1,4 +1,6 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
+#include <pybind11/cast.h>
+#include <pybind11/pytypes.h>
 #include "pyunrealsdk/unreal_bindings/wrapped_array_impl.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
@@ -69,7 +71,7 @@ void register_wrapped_array(py::module_& mod) {
              "\n"
              "Args:\n"
              "    values: The sequence of values to append.")
-        .def("__radd__", &impl::array_py_add, py::is_operator(),
+        .def("__radd__", &impl::array_py_radd, py::is_operator(),
              "Creates a list holding a copy of the array, and extends it with all the values\n"
              "in the given sequence.\n"
              "\n"
@@ -152,6 +154,13 @@ void register_wrapped_array(py::module_& mod) {
              "Args:\n"
              "    value: The value to search for.\n",
              "value"_a)
-        .def("reverse", &impl::array_py_reverse, "Reverses the array in place.");
+        .def("reverse", &impl::array_py_reverse, "Reverses the array in place.")
+        .def("sort", &impl::array_py_sort,
+             "Sorts the array in place.\n"
+             "\n"
+             "Args:\n"
+             "    key: A one-arg function used to extract a comparison key.\n"
+             "    reverse: If true, the list is sorted as if each comparison were reversed.",
+             py::kw_only{}, "key"_a = py::none{}, "reverse"_a = false);
 }
 }  // namespace pyunrealsdk::unreal

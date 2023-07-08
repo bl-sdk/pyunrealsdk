@@ -2,6 +2,7 @@
 #define PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_IMPL_H
 
 #include "pyunrealsdk/pch.h"
+#include <pybind11/pytypes.h>
 
 namespace unrealsdk::unreal {
 
@@ -27,12 +28,6 @@ using unrealsdk::unreal::WrappedArray;
 // In addition to the suggested methods, we also implement `copy()` and `clear()`, for more parity
 // with `list`
 
-// The one suggested method we skip is `sort()` - since most of the property types aren't even
-// sortable to begin with, it's just kind of awkward to implement on our end. At best, we could call
-// `sorted(self, ...)`, and then re-assign everything in the new order - but that's not really much
-// better than doing it in pure python, our C++ functions are supposed to be fast, prefer that cost
-// to be explict to the user.
-
 // Due to the sheer number of methods we need to implement, this header/source file hold all the
 // implementations, while the main source file is what registers them, and has all the documentation
 
@@ -54,8 +49,10 @@ py::iterator array_py_iter(const WrappedArray& self);
 py::iterator array_py_reversed(const WrappedArray& self);
 // __contains__
 bool array_py_contains(const WrappedArray& self, const py::object& value);
-// __add__ + __radd__
+// __add__
 py::list array_py_add(WrappedArray& self, const py::sequence& other);
+// __radd__
+py::list array_py_radd(WrappedArray& self, const py::sequence& other);
 // __iadd__
 WrappedArray& array_py_iadd(WrappedArray& self, const py::sequence& other);
 // __mul__ + __rmul__
@@ -84,7 +81,9 @@ py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx);
 // remove
 void array_py_remove(WrappedArray& self, const py::object& value);
 // reverse
-void array_py_reverse(WrappedArray& self, const py::object& value);
+void array_py_reverse(WrappedArray& self);
+// sort
+void array_py_sort(WrappedArray& self, const py::object& key, bool reverse);
 
 }  // namespace pyunrealsdk::unreal::impl
 

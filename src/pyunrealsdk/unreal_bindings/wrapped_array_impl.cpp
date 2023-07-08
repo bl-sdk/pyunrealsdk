@@ -1,4 +1,5 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array_impl.h"
+#include <pybind11/pytypes.h>
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/format.h"
@@ -18,16 +19,16 @@ namespace {
  * @brief Converts a python style index (which may be negative) to an absolute one.
  * @note Throws index error if out of range.
  *
- * @param arr The array to index.
+ * @param size The size of the array to index.
  * @param idx The python index.
  * @return The equivalent absolute index.
  */
-size_t convert_py_idx(const WrappedArray& arr, py::ssize_t idx) {
-    auto size = static_cast<py::ssize_t>(arr.size());
+size_t convert_py_idx(size_t size, py::ssize_t idx) {
+    auto ssize = static_cast<py::ssize_t>(size);
     if (idx < 0) {
-        idx += size;
+        idx += ssize;
     }
-    if (0 > idx || idx >= size) {
+    if (0 > idx || idx >= ssize) {
         throw py::index_error("array index out of range");
     }
     return idx;
@@ -210,8 +211,8 @@ std::string array_py_repr(const WrappedArray& self) {
 }
 
 py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx) {
-    if (py::isinstance<py::ssize_t>(py_idx)) {
-        return array_get(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
+    if (py::isinstance<py::int_>(py_idx)) {
+        return array_get(self, convert_py_idx(self.size(), py::cast<py::ssize_t>(py_idx)));
     }
     if (!py::isinstance<py::slice>(py_idx)) {
         std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
@@ -230,15 +231,15 @@ py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx) 
 
     py::list ret{slicelength};
     for (auto i = 0; i < slicelength; i++) {
-        ret[i] = array_get(self, i);
+        ret[i] = array_get(self, start);
         start += step;
     }
     return ret;
 }
 
 void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::object& value) {
-    if (py::isinstance<py::ssize_t>(py_idx)) {
-        array_set(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)), value);
+    if (py::isinstance<py::int_>(py_idx)) {
+        array_set(self, convert_py_idx(self.size(), py::cast<py::ssize_t>(py_idx)), value);
         return;
     }
     if (!py::isinstance<py::slice>(py_idx)) {
@@ -312,8 +313,9 @@ void array_py_delitem(WrappedArray& self, const py::object& py_idx) {
     py::ssize_t step = 0;
     py::ssize_t slicelength = 0;
 
-    if (py::isinstance<py::ssize_t>(py_idx)) {
-        start = static_cast<py::ssize_t>(convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
+    if (py::isinstance<py::int_>(py_idx)) {
+        start =
+            static_cast<py::ssize_t>(convert_py_idx(self.size(), py::cast<py::ssize_t>(py_idx)));
         stop = start + 1;
         step = 1;
         slicelength = 1;
@@ -329,12 +331,18 @@ void array_py_delitem(WrappedArray& self, const py::object& py_idx) {
             "array indices must be integers or slices, not {}", idx_type_name));
     }
 
+    // If nothing to delete, can early exit
+    if (slicelength == 0) {
+        return;
+    }
+
     // If we don't have continuous ranges
     if (step != 1 && step != -1) {
         // Delete each index individually
         for (auto i = 0; i < slicelength; i++) {
             array_delete_range(self, start, start + 1);
-            start += step;
+            // Subtract one for the entry we just deleted
+            start += step - 1;
         }
     } else {
         // Otherwise, we can delete everything in one go
@@ -364,6 +372,10 @@ bool array_py_contains(const WrappedArray& self, const py::object& value) {
 
 py::list array_py_add(WrappedArray& self, const py::sequence& other) {
     return array_py_copy(self) + other;
+}
+
+py::list array_py_radd(WrappedArray& self, const py::sequence& other) {
+    return other + array_py_copy(self);
 }
 
 WrappedArray& array_py_iadd(WrappedArray& self, const py::sequence& other) {
@@ -465,21 +477,24 @@ size_t array_py_index(const WrappedArray& self,
                       py::ssize_t stop) {
     array_validate_value(self, value);
 
-    auto end = ArrayIterator{self, convert_py_idx(self, stop)};
+    auto size = self.size();
+    auto end = ArrayIterator{self, convert_py_idx(size, stop)};
 
-    auto location = std::find_if(ArrayIterator{self, convert_py_idx(self, start)}, end,
+    auto location = std::find_if(ArrayIterator{self, convert_py_idx(size, start)}, end,
                                  [&value](auto other) { return value.equal(other); });
     if (location == end) {
         throw py::value_error(
-            unrealsdk::fmt::format("{} is not in array", std::string(py::str(value))));
+            unrealsdk::fmt::format("{} is not in array", std::string(py::repr(value))));
     }
     return location.idx;
 }
 
 void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
     array_validate_value(self, value);
-    auto idx = convert_py_idx(self, py_idx);
+
     auto size = self.size();
+    // Add one to the size to allow you to point past the end
+    auto idx = convert_py_idx(size + 1, py_idx);
 
     // Don't move if appending
     if (idx != size) {
@@ -497,7 +512,7 @@ void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& v
 }
 
 py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
-    auto idx = convert_py_idx(self, py_idx);
+    auto idx = convert_py_idx(self.size(), py_idx);
 
     py::object ret{};
     cast_prop(self.type, [&self, &ret, idx]<typename T>(const T* /*prop*/) {
@@ -521,7 +536,7 @@ void array_py_remove(WrappedArray& self, const py::object& value) {
     array_delete_range(self, idx, idx + 1);
 }
 
-void array_py_reverse(WrappedArray& self, const py::object& value) {
+void array_py_reverse(WrappedArray& self) {
     cast_prop(self.type, [&]<typename T>(const T* /*prop*/) {
         auto size = self.size();
         for (size_t i = 0; i < (size / 2); i++) {
@@ -531,7 +546,22 @@ void array_py_reverse(WrappedArray& self, const py::object& value) {
             self.set_at<T>(i, self.get_at<T>(upper_idx));
             self.set_at<T>(upper_idx, lower);
         }
-        py::cast<typename PropTraits<T>::Value>(value);
+    });
+}
+
+void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
+    // Implement using the sorted builtin
+    // It's just kind of awkward to do from C++, given half our types aren't even sortable to begin
+    // with, and we need to be able to compare arbitrary keys anyway
+    py::sequence sorted =
+        py::module_::import("builtins").attr("sorted")(self, "key"_a = key, "reverse"_a = reverse);
+
+    cast_prop(self.type, [&self, &sorted]<typename T>(const T* /*prop*/) {
+        auto size = self.size();
+        for (size_t i = 0; i < size; i++) {
+            auto val = py::cast<typename PropTraits<T>::Value>(sorted[i]);
+            self.set_at<T>(i, val);
+        }
     });
 }
 
