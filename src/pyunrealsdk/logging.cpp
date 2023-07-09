@@ -28,6 +28,7 @@ std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) 
         auto code = PyFrame_GetCode(frame);
         if (code != nullptr) {
             filename = py::str(code->co_filename);
+            Py_DECREF(code);
         }
 
         line_num = PyFrame_GetLineNumber(frame);
@@ -141,8 +142,7 @@ void register_module(py::module_& mod) {
                "Default logging level, used for anything that should be shown in console.")
         .value("DEV_WARNING", Level::DEV_WARNING,
                "Used for warnings which don't concern users, so shouldn't be shown in console.")
-        .value("MISC", Level::MISC, "Used for miscellaneous debug messages.")
-        .export_values();
+        .value("MISC", Level::MISC, "Used for miscellaneous debug messages.");
 
     py::class_<Logger>(logging, "Logger",
                        "A write only file object which redirects to the unrealsdk log system.")
