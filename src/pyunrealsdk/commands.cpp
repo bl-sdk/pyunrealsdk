@@ -92,23 +92,45 @@ void register_module(py::module_& mod) {
 
     commands.def(
         "add_command",
-        [](const std::wstring& cmd, const py::object& callback) {
-            unrealsdk::commands::add_command(
-                cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
+        [](const std::wstring& cmd, const py::function& callback) {
+            unrealsdk::commands::add_command(cmd, [callback](const wchar_t* line, size_t size,
+                                                             size_t cmd_len) {
+                try {
                     py::gil_scoped_acquire gil{};
 
                     py::str py_line{PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
 
                     callback(py_line, cmd_len);
-                });
+                } catch (const std::exception& ex) {
+                    logging::log_python_exception(ex);
+                }
+            });
         },
         "Adds a custom console command.\n"
+        "\n"
+        "Console commands are matched by comparing the first block of non-whitespace\n"
+        "characters in a line submitted to console against all registered commands.\n"
+        "\n"
+        "As a special case, if you register the special NEXT_LINE command, it will always\n"
+        "match the very next line, in place of anything else which might have been\n"
+        "matched otherwise. It will then immediately be removed (though before the\n"
+        "callback is run, so you can re-register it if needed), to allow normal command\n"
+        "processing to continue afterwards.\n"
+        "\n"
+        "Console command callbacks take two args:\n"
+        "    line: The full line which triggered the callback - including any\n"
+        "          whitespace.\n"
+        "    cmd_len: The length of the matched command, including leading whitespace -\n"
+        "             i.e. line[cmd_len] points to the first whitespace char after the\n"
+        "             command (or off the end of the string if there was none). 0 in the\n"
+        "             case of a `NEXT_LINE` match.\n"
+        "The return value is ignored.\n"
         "\n"
         "Args:\n"
         "    cmd: The command to match.\n"
         "    callback: The callback for when the command is run.\n"
         "Returns:\n"
-        "    True if the command is registered.",
+        "    True if successfully added, false if an identical command already exists.",
         "cmd"_a, "callback"_a);
 
     commands.def("has_command", &unrealsdk::commands::has_command,
