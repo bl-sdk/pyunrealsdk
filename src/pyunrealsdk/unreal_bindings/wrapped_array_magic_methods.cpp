@@ -115,7 +115,7 @@ void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::ob
     // values in our sequence are valid types.
     // Instead we need to stick to the basic operations, such that an exception at any point leaves
     // the array in a valid state (even if it's not what was intended).
-    // Chosing to do this by deleting all overwritten objects, then inserting all the new ones.
+    // Choosing to do this by deleting all overwritten objects, then inserting all the new ones.
     array_py_delitem(self, py::slice(start, stop, 1));
 
     for (auto value_idx = 0; value_idx < values_size; value_idx++) {

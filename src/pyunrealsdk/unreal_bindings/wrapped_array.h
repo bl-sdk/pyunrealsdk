@@ -127,11 +127,11 @@ struct ArrayIterator {
 // There are a lot of methods you need to fully implement a mutable sequence.
 // `collections.abc.MutableSequence` simplifies it down to just 5 - but there are three issues:
 // 1. It's mixins are python, which is slow
-// 2. It's mixins are inefficent in places - e.g. extend just repeatedly calls append, which is
+// 2. It's mixins are inefficient in places - e.g. extend just repeatedly calls append, which is
 //    multiple new allocations
 // 3. Pybind doesn't really support inheriting from a python type
 
-// Instead, we implement everything outselves
+// Instead, we implement everything ourselves
 // https://docs.python.org/3/reference/datamodel.html#emulating-container-types
 
 // In addition to the suggested methods, we also implement `copy()` and `clear()`, for more parity

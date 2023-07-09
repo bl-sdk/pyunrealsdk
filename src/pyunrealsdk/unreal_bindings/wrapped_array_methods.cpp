@@ -96,7 +96,7 @@ py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
     cast_prop(self.type, [&self, &ret, idx]<typename T>(const T* /*prop*/) {
         auto val = self.get_at<T>(idx);
 
-        // Explictly make a copy
+        // Explicitly make a copy
         // Some types (structs) are a reference by default, which will break once we
         // remove them otherwise
         typename PropTraits<T>::Value val_copy = val;
