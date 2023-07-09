@@ -2,6 +2,7 @@
 #include "pyunrealsdk/base_bindings.h"
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/env.h"
+#include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/version.h"
@@ -12,6 +13,7 @@ PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
     pyunrealsdk::logging::register_module(m);
     pyunrealsdk::commands::register_module(m);
     pyunrealsdk::unreal::register_module(m);
+    pyunrealsdk::hooks::register_module(m);
     pyunrealsdk::register_base_bindings(m);
 };
 
