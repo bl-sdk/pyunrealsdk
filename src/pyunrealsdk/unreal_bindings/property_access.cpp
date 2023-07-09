@@ -1,6 +1,9 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include <optional>
+#include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -10,6 +13,7 @@
 #include "unrealsdk/unreal/prop_traits.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/bound_function.h"
+#include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
 
@@ -133,7 +137,7 @@ void py_setattr(uintptr_t base_addr,
     static const UClass* uproperty_class = find_class(L"Property"_fn);
 
     UField* field = get_field_from_py_key(key, type);
-    if (field->is_instance(uproperty_class)) {
+    if (!field->is_instance(uproperty_class)) {
         throw py::attribute_error(unrealsdk::fmt::format(
             "attribute '{}' is not a property, and thus cannot be set", field->Name));
     }
@@ -164,12 +168,27 @@ void py_setattr(uintptr_t base_addr,
         size_t seq_size = value_seq.size();
         size_t prop_size = prop->ArrayDim;
 
+        // As a special case, if we have an array property, allow assigning non-wrapped array
+        // sequences
+        if constexpr (std::is_same_v<T, UArrayProperty>) {
+            // Also make sure it's not somehow a fixed array, since the sdk can't handle that, let
+            // it fall through to the standard error handler
+            if (prop_size == 1 && seq_size == 1 && !py::isinstance<WrappedArray>(value_seq[0])
+                && py::isinstance<py::sequence>(value_seq[0])) {
+                // Implement using slice assignment
+                auto arr = get_property<UArrayProperty>(prop, 0, base_addr);
+                impl::array_py_setitem(arr, py::slice(std::nullopt, std::nullopt, std::nullopt),
+                                       value_seq[0]);
+                return;
+            }
+        }
+
         // If we're default constructable, set all the missing fields to the default value
         // If we're not, require specifying all values
         // Do this before writing the given values so that we can error out without making changes
         if constexpr (std::is_default_constructible_v<value_type>) {
             for (size_t i = seq_size; i < prop_size; i++) {
-                set_property(prop, i, base_addr, {});
+                set_property<T>(prop, i, base_addr, {});
             }
         } else {
             if (seq_size != prop_size) {
@@ -181,7 +200,7 @@ void py_setattr(uintptr_t base_addr,
         }
 
         for (size_t i = 0; i < seq_size; i++) {
-            set_property(prop, i, base_addr, py::cast<value_type>(value_seq[i]));
+            set_property<T>(prop, i, base_addr, py::cast<value_type>(value_seq[i]));
         }
     });
 }
