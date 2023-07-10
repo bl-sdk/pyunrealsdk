@@ -34,8 +34,7 @@ void register_wrapped_struct(py::module_& mod) {
                     }
                     first = false;
 
-                    auto value = py_getattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type,
-                                            py::cast(prop));
+                    auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()));
 
                     output << prop->Name << ": " << py::repr(value);
                 }
@@ -62,7 +61,8 @@ void register_wrapped_struct(py::module_& mod) {
         .def(
             "__getattr__",
             [](const WrappedStruct& self, const py::object& key) {
-                return py_getattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type, key);
+                return py_getattr(get_field_from_py_key(key, self.type),
+                                  reinterpret_cast<uintptr_t>(self.base.get()));
             },
             "Reads an unreal field off of the struct.\n"
             "\n"
@@ -85,7 +85,8 @@ void register_wrapped_struct(py::module_& mod) {
         .def(
             "__setattr__",
             [](WrappedStruct& self, const py::object& key, const py::object& value) {
-                py_setattr(reinterpret_cast<uintptr_t>(self.base.get()), self.type, key, value);
+                py_setattr(get_field_from_py_key(key, self.type),
+                           reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
             "Writes a value to an unreal property.\n"
             "\n"

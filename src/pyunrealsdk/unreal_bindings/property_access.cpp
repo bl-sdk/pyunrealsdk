@@ -23,14 +23,8 @@ namespace {
 
 bool dir_includes_unreal = true;
 
-/**
- * @brief Gets a field off of an object based on the key given to getattr/setattr.
- * @note Allows both strings and direct field references.
- *
- * @param key The python key.
- * @param type The type of the unreal object this access is reading off of.
- * @return The field. Invalid keys throw, so will never be null.
- */
+}  // namespace
+
 UField* get_field_from_py_key(const py::object& key, const UStruct* type) {
     if (py::isinstance<py::str>(key)) {
         std::string key_str = py::str(key);
@@ -54,8 +48,6 @@ UField* get_field_from_py_key(const py::object& key, const UStruct* type) {
     throw py::attribute_error(
         unrealsdk::fmt::format("attribute key has unknown type '{}'", key_type_name));
 }
-
-}  // namespace
 
 void register_property_helpers(py::module_& mod) {
     mod.def(
@@ -83,16 +75,11 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     return names;
 }
 
-py::object py_getattr(uintptr_t base_addr,
-                      const UStruct* type,
-                      const py::object& key,
-                      UObject* func_obj) {
+py::object py_getattr(UField* field, uintptr_t base_addr, UObject* func_obj) {
     // We can't push these at a higher scope because we need them to only run after the
     // sdk's been initialized
     static const UClass* uproperty_class = find_class(L"Property"_fn);
     static const UClass* ufunction_class = find_class(L"Function"_fn);
-
-    auto field = get_field_from_py_key(key, type);
 
     if (field->is_instance(uproperty_class)) {
         auto prop = reinterpret_cast<UProperty*>(field);
@@ -128,15 +115,11 @@ py::object py_getattr(uintptr_t base_addr,
                                                      field->Name, field->Class->Name));
 }
 
-void py_setattr(uintptr_t base_addr,
-                const UStruct* type,
-                const py::object& key,
-                const py::object& value) {
+void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
     // We can't put this at a higher scope because we need it to only run after the
     // sdk's been initialized
     static const UClass* uproperty_class = find_class(L"Property"_fn);
 
-    UField* field = get_field_from_py_key(key, type);
     if (!field->is_instance(uproperty_class)) {
         throw py::attribute_error(unrealsdk::fmt::format(
             "attribute '{}' is not a property, and thus cannot be set", field->Name));
