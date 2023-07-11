@@ -1,6 +1,5 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
-#include <optional>
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast_prop.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
@@ -75,7 +74,10 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     return names;
 }
 
-py::object py_getattr(UField* field, uintptr_t base_addr, UObject* func_obj) {
+py::object py_getattr(UField* field,
+                      uintptr_t base_addr,
+                      const unrealsdk::unreal::UnrealPointer<void>& parent,
+                      UObject* func_obj) {
     // We can't push these at a higher scope because we need them to only run after the
     // sdk's been initialized
     static const UClass* uproperty_class = find_class(L"Property"_fn);
@@ -92,9 +94,9 @@ py::object py_getattr(UField* field, uintptr_t base_addr, UObject* func_obj) {
         // Store in a list for now so we can still append.
         py::list ret{prop->ArrayDim};
 
-        cast_prop(prop, [base_addr, &ret]<typename T>(const T* prop) {
+        cast_prop(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
-                ret[i] = get_property<T>(prop, i, base_addr);
+                ret[i] = get_property<T>(prop, i, base_addr, parent);
             }
         });
         if (prop->ArrayDim == 1) {

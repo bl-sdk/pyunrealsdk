@@ -62,7 +62,7 @@ void register_wrapped_struct(py::module_& mod) {
             "__getattr__",
             [](const WrappedStruct& self, const py::object& key) {
                 return py_getattr(get_field_from_py_key(key, self.type),
-                                  reinterpret_cast<uintptr_t>(self.base.get()));
+                                  reinterpret_cast<uintptr_t>(self.base.get()), self.base);
             },
             "Reads an unreal field off of the struct.\n"
             "\n"

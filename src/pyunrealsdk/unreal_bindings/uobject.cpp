@@ -48,7 +48,7 @@ void register_uobject(py::module_& mod) {
             "__getattr__",
             [](UObject* self, const py::object& key) {
                 return py_getattr(get_field_from_py_key(key, self->Class),
-                                  reinterpret_cast<uintptr_t>(self), self);
+                                  reinterpret_cast<uintptr_t>(self), nullptr, self);
             },
             "Reads an unreal field off of the object.\n"
             "\n"

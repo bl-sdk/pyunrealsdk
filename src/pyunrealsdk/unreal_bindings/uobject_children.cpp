@@ -14,6 +14,7 @@
 #include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
+#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 using namespace unrealsdk::unreal;
 
@@ -24,6 +25,12 @@ void register_uobject_children(py::module_& mod) {
         .def_readwrite("Next", &UField::Next);
 
     PyUEClass<UStruct, UField>(mod, "UStruct", "An unreal struct object.")
+        .def(
+            "__call__", [](UStruct* self) { return WrappedStruct{self}; },
+            "Creates a WrappedStruct of this type.\n"
+            "\n"
+            "Returns:\n"
+            "    A new WrappedStruct.")
         .def(
             "_fields",
             [](UStruct* self) {

@@ -2,6 +2,7 @@
 #define PYUNREALSDK_UNREAL_BINDINGS_PROPERTY_ACCESS_H
 
 #include "pyunrealsdk/pch.h"
+#include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 
 namespace unrealsdk::unreal {
 
@@ -46,11 +47,13 @@ std::vector<std::string> py_dir(const py::object& self, const unrealsdk::unreal:
  *
  * @param field The field to get.
  * @param base_addr The base address of the object.
+ * @param parent Pointer to a parent allocation to copy ownership from.
  * @param func_obj The object to bind functions to. If nullptr, does not allow getting functions.
  * @return The retrieved value.
  */
 py::object py_getattr(unrealsdk::unreal::UField* field,
                       uintptr_t base_addr,
+                      const unrealsdk::unreal::UnrealPointer<void>& parent = {nullptr},
                       unrealsdk::unreal::UObject* func_obj = nullptr);
 
 /**
