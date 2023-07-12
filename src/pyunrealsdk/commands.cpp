@@ -13,8 +13,8 @@ void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     auto file_len = (line + size) - file_start;
 
     try {
-        py::gil_scoped_acquire gil{};
-        py::str file{PyUnicode_FromWideChar(file_start, static_cast<py::ssize_t>(file_len))};
+        const py::gil_scoped_acquire gil{};
+        const py::str file{PyUnicode_FromWideChar(file_start, static_cast<py::ssize_t>(file_len))};
         py::eval_file(file);
     } catch (const std::exception& ex) {
         logging::log_python_exception(ex);
@@ -53,7 +53,7 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
         }
     }
 
-    std::wstring py_str{py_start, py_len};
+    const std::wstring py_str{py_start, py_len};
 
     // If we reach eof, clear it, and don't add to the stream
     if (heredoc_eof == py_str) {
@@ -75,9 +75,9 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     stream.str({});
 
     try {
-        py::gil_scoped_acquire gil{};
+        const py::gil_scoped_acquire gil{};
 
-        py::str code_block{
+        const py::str code_block{
             PyUnicode_FromWideChar(str.c_str(), static_cast<py::ssize_t>(str.size()))};
         py::exec(code_block);
     } catch (const std::exception& ex) {
@@ -93,18 +93,19 @@ void register_module(py::module_& mod) {
     commands.def(
         "add_command",
         [](const std::wstring& cmd, const py::function& callback) {
-            unrealsdk::commands::add_command(cmd, [callback](const wchar_t* line, size_t size,
-                                                             size_t cmd_len) {
-                try {
-                    py::gil_scoped_acquire gil{};
+            unrealsdk::commands::add_command(
+                cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
+                    try {
+                        const py::gil_scoped_acquire gil{};
 
-                    py::str py_line{PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
+                        const py::str py_line{
+                            PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
 
-                    callback(py_line, cmd_len);
-                } catch (const std::exception& ex) {
-                    logging::log_python_exception(ex);
-                }
-            });
+                        callback(py_line, cmd_len);
+                    } catch (const std::exception& ex) {
+                        logging::log_python_exception(ex);
+                    }
+                });
         },
         "Adds a custom console command.\n"
         "\n"

@@ -38,9 +38,13 @@ target_link_libraries(pyunrealsdk PUBLIC
     _pyunrealsdk_python
     unrealsdk
     pybind11::embed
-    pybind11::lto
-    pybind11::windows_extras
+    pybind11::windows_extras # Does nothing if not using MSVC
 )
+
+# Clang LTO has some issues if we also link this, so only enable on others
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_link_libraries(pyunrealsdk PUBLIC pybind11::lto)
+endif()
 
 target_compile_definitions(pyunrealsdk PUBLIC PYBIND11_SIMPLE_GIL_MANAGEMENT)
 

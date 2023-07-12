@@ -1,6 +1,8 @@
 #ifndef PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_H
 #define PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_H
 
+#include "pyunrealsdk/pch.h"
+
 namespace unrealsdk::unreal {
 
 class WrappedArray;

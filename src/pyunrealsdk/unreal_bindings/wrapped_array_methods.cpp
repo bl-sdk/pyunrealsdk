@@ -1,3 +1,4 @@
+#include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast_prop.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
@@ -99,6 +100,7 @@ py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
         // Explicitly make a copy
         // Some types (structs) are a reference by default, which will break once we
         // remove them otherwise
+        // NOLINTNEXTLINE(misc-const-correctness)
         typename PropTraits<T>::Value val_copy = val;
 
         ret = py::cast(val_copy);

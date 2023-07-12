@@ -1,3 +1,4 @@
+#include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast_prop.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"

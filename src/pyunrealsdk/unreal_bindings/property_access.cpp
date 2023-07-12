@@ -150,8 +150,8 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
     cast_prop(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
         using value_type = typename PropTraits<T>::Value;
 
-        size_t seq_size = value_seq.size();
-        size_t prop_size = prop->ArrayDim;
+        const size_t seq_size = value_seq.size();
+        const size_t prop_size = prop->ArrayDim;
 
         // As a special case, if we have an array property, allow assigning non-wrapped array
         // sequences

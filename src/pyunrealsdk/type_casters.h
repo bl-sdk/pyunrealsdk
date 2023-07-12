@@ -1,6 +1,9 @@
 #ifndef PYUNREALSDK_TYPE_CASTERS_H
 #define PYUNREALSDK_TYPE_CASTERS_H
 
+// This file is included in the pch, so we can't include it here, just need to assume we have access
+// to everything we need already
+
 #include "unrealsdk/unreal/structs/fname.h"
 
 namespace pybind11::detail {
@@ -8,6 +11,7 @@ namespace pybind11::detail {
 template <>
 struct type_caster<unrealsdk::unreal::FName> {
    public:
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, readability-identifier-length)
     PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, py::detail::const_name("FName"));
 
     bool load(handle src, bool /*convert*/) {

@@ -1,3 +1,4 @@
+#include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"

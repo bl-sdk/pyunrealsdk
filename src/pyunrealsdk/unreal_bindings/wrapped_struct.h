@@ -1,6 +1,8 @@
 #ifndef PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_STRUCT_H
 #define PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_STRUCT_H
 
+#include "pyunrealsdk/pch.h"
+
 namespace pyunrealsdk::unreal {
 
 /**

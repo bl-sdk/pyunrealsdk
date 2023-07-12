@@ -15,7 +15,7 @@ namespace {
  * @return A pair of the location and line number.
  */
 std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) {
-    py::gil_scoped_acquire gil{};
+    const py::gil_scoped_acquire gil{};
 
     if (frame == nullptr) {
         frame = PyEval_GetFrame();
@@ -28,6 +28,8 @@ std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) 
         auto code = PyFrame_GetCode(frame);
         if (code != nullptr) {
             filename = py::str(code->co_filename);
+
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             Py_DECREF(code);
         }
 
@@ -185,7 +187,7 @@ void register_module(py::module_& mod) {
 }
 
 void py_init(void) {
-    py::gil_scoped_acquire gil{};
+    const py::gil_scoped_acquire gil{};
 
     auto sys = py::module_::import("sys");
     sys.attr("stdout") = Logger{Level::INFO};
@@ -200,7 +202,7 @@ void log_python_exception(const std::exception& exc) {
         auto error_already_set = dynamic_cast<const py::error_already_set&>(exc);
 
         // If so, try read the location from the traceback's frame instead
-        py::gil_scoped_acquire gil{};
+        const py::gil_scoped_acquire gil{};
         auto traceback = reinterpret_cast<PyTracebackObject*>(error_already_set.trace().ptr());
         if (traceback != nullptr) {
             frame = traceback->tb_frame;

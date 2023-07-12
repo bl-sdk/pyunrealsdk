@@ -5,6 +5,7 @@
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/gobjects.h"
 #include "unrealsdk/unrealsdk.h"
+#include "unrealsdk/utils.h"
 
 namespace pyunrealsdk {
 
@@ -46,7 +47,8 @@ UClass* find_class_potentially_given(const py::object& cls) {
     auto class_name = py::cast<std::wstring>(cls);
     auto class_ptr = find_class_potentially_qualified(class_name, std::nullopt);
     if (class_ptr == nullptr) {
-        throw py::value_error(unrealsdk::fmt::format("Couldn't find class {}", class_name));
+        throw py::value_error(
+            unrealsdk::fmt::format("Couldn't find class {}", unrealsdk::utils::narrow(class_name)));
     }
     return class_ptr;
 }

@@ -1,3 +1,4 @@
+#include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/uobject.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
@@ -6,6 +7,7 @@
 #include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unrealsdk.h"
+#include "unrealsdk/utils.h"
 
 using namespace unrealsdk::unreal;
 
@@ -27,8 +29,9 @@ void register_uobject(py::module_& mod) {
         .def(
             "__repr__",
             [](UObject* self) {
-                return unrealsdk::fmt::format("{}'{}'", self->Class->Name,
-                                              unrealsdk::uobject_path_name(self));
+                return unrealsdk::fmt::format(
+                    "{}'{}'", self->Class->Name,
+                    unrealsdk::utils::narrow(unrealsdk::uobject_path_name(self)));
             },
             "Gets this object's name.\n"
             "\n"

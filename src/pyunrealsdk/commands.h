@@ -1,6 +1,8 @@
 #ifndef PYUNREALSDK_COMMANDS_H
 #define PYUNREALSDK_COMMANDS_H
 
+#include "pyunrealsdk/pch.h"
+
 namespace pyunrealsdk::commands {
 
 /**

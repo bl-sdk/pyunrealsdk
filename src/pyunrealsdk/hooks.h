@@ -1,6 +1,8 @@
 #ifndef PYUNREALSDK_HOOKS_H
 #define PYUNREALSDK_HOOKS_H
 
+#include "pyunrealsdk/pch.h"
+
 namespace pyunrealsdk::hooks {
 
 /**

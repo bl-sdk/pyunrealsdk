@@ -1,4 +1,3 @@
-
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
@@ -69,6 +68,7 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
             continue;
         }
 
+        // NOLINTNEXTLINE(misc-const-correctness)
         bool optional = false;
 #ifdef UE3
         optional = (prop->PropertyFlags & UProperty::PROP_FLAG_OPTIONAL) != 0;
@@ -114,7 +114,9 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
 py::object get_py_return(const WrappedStruct& params,
                          UProperty* return_param,
                          const std::vector<UProperty*>& out_params) {
+    // NOLINTNEXTLINE(misc-const-correctness)
     py::list ret{1 + out_params.size()};
+
     if (return_param == nullptr) {
         ret[0] = py::ellipsis{};
     } else {
@@ -162,8 +164,9 @@ void register_bound_function(py::module_& mod) {
             "Calls the function.\n"
             "\n"
             "Args:\n"
-            "    The unreal function's args. Out params will be used to initalized the unreal\n"
-            "    value, but the python value is not modified in place. Kwargs are supported.\n"
+            "    The unreal function's args. Out params will be used to initialized the\n"
+            "    unreal value, but the python value is not modified in place. Kwargs are\n"
+            "    supported."
 #ifdef UE3
             "    Optional params should also be optional.\n"
 #endif

@@ -49,7 +49,7 @@ bool handle_prehook(Details& hook, const py::function& callback) {
             });
         }
 
-        py::object execution_state = ret_tuple[0];
+        const py::object execution_state = ret_tuple[0];
         return py::isinstance<Block>(execution_state)
                || execution_state.equal(py::type::of<Block>());
     }
@@ -113,7 +113,7 @@ void register_module(py::module_& mod) {
            const py::function& callback) {
             add_hook(func, type, identifier, [type, callback](Details& hook) {
                 try {
-                    py::gil_scoped_acquire gil{};
+                    const py::gil_scoped_acquire gil{};
 
                     if (type == Type::PRE) {
                         return handle_prehook(hook, callback);
