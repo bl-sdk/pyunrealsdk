@@ -24,7 +24,7 @@ struct Block {};
  * @return True if to block the function call.
  */
 bool handle_prehook(Details& hook, const py::function& callback) {
-    auto ret = callback(hook.obj, hook.args /*, hook.func*/);
+    auto ret = callback(hook.obj, hook.args, hook.func);
 
     if (py::isinstance<py::tuple>(ret)) {
         auto ret_tuple = py::cast<py::tuple>(ret);
@@ -73,7 +73,7 @@ void handle_posthook(Details& hook, const py::function& callback) {
         ret = py::ellipsis{};
     }
 
-    callback(hook.obj, hook.args /*, hook.func*/, ret);
+    callback(hook.obj, hook.args, hook.func, ret);
 }
 
 }  // namespace
