@@ -7,14 +7,33 @@
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/version.h"
 #include "unrealsdk/unrealsdk.h"
+#include "unrealsdk/version.h"
 
 // NOLINTNEXTLINE(readability-identifier-length)
 PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
+    m.attr("__version__") = unrealsdk::get_version_string();
+
+    // NOLINTBEGIN(readability-magic-numbers)
+    auto unrealsdk_version = unrealsdk::get_version();
+    m.attr("__version_info__") =
+        py::make_tuple((unrealsdk_version >> 16) & 0xFF, (unrealsdk_version >> 8) & 0xFF,
+                       (unrealsdk_version >> 0) & 0xFF);
+    // NOLINTEND(readability-magic-numbers)
+
     pyunrealsdk::logging::register_module(m);
     pyunrealsdk::commands::register_module(m);
     pyunrealsdk::unreal::register_module(m);
     pyunrealsdk::hooks::register_module(m);
     pyunrealsdk::register_base_bindings(m);
+};
+
+// NOLINTNEXTLINE(readability-identifier-length)
+PYBIND11_EMBEDDED_MODULE(pyunrealsdk, m) {
+    m.attr("__doc__") =
+        "This module exists purely for version information, and has no other contents.";
+    m.attr("__version__") = pyunrealsdk::get_version_string();
+    m.attr("__version_info__") = py::make_tuple(
+        pyunrealsdk::VERSION_MAJOR, pyunrealsdk::VERSION_MINOR, pyunrealsdk::VERSION_PATCH);
 };
 
 namespace pyunrealsdk {
