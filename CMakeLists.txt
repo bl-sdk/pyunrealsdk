@@ -24,10 +24,10 @@ include(cmake/git_watcher.cmake)
 add_subdirectory(python_dev)
 
 set(PYBIND11_NOPYTHON True)
-add_subdirectory(libs/pybind11)
+add_subdirectory(libs/pybind11 EXCLUDE_FROM_ALL)
 
 set(UNREALSDK_SHARED True)
-add_subdirectory(libs/unrealsdk)
+add_subdirectory(libs/unrealsdk EXCLUDE_FROM_ALL)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/pyunrealsdk/*.cpp" "src/pyunrealsdk/*.h")
 list(APPEND sources ${GIT_POST_CONFIGURE_FILE})
@@ -94,3 +94,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         )
     endif()
 endif()
+
+install(
+    TARGETS pyunrealsdk unrealsdk
+    RUNTIME DESTINATION .
+)
