@@ -18,8 +18,7 @@ env:
   XWIN_VERSION: xwin-0.2.12-x86_64-unknown-linux-musl
   XWIN_DOWNLOAD: https://github.com/Jake-Shadle/xwin/releases/download/0.2.12/xwin-0.2.12-x86_64-unknown-linux-musl.tar.gz
   # Python settings
-  PYTHON_VERSION: "3.11"
-  PYTHON_VERSION_EXACT_FOR_DOWNLOAD: "3.11.4"
+  PYTHON_VERSION: "3.11.4"
 
 jobs:
   cache-clang:
@@ -71,26 +70,39 @@ jobs:
       with:
         arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'x64')] }}
 
+    # We only actually need this python version to run the download script, we're not going to link
+    # against it, so don't need to specify arch
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        architecture: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'x64')] }}
+        python-version: ">=3.10"
 
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: Configure CMake
+    - name: Configure build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
-      run:  |
-        python python_dev/symlink_this.py
+      run: |
+        pip install requests
+
+        python python_dev/download.py                                             `
+          ${{ env.PYTHON_VERSION }}                                               `
+          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
+          --no-debug
+
         cmake . --preset ${{ matrix.preset }}
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
-      run: cmake --build out/build/${{ matrix.preset }}
+      run: cmake --build out/build/${{ matrix.preset }} --target install
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.preset }}
+        path: out/install/${{ matrix.preset }}/
 
   build-ubuntu:
     runs-on: ubuntu-latest
@@ -180,7 +192,7 @@ jobs:
         pip install requests
 
         python python_dev/download.py                                             \
-          ${{ env.PYTHON_VERSION_EXACT_FOR_DOWNLOAD }}                            \
+          ${{ env.PYTHON_VERSION }}                                               \
           ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   \
           --no-debug
 
@@ -192,7 +204,38 @@ jobs:
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
-      run: cmake --build out/build/${{ matrix.preset }}
+      run: cmake --build out/build/${{ matrix.preset }} --target install
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.preset }}
+        path: out/install/${{ matrix.preset }}/
+
+# ==============================================================================
+
+  upload-releases:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' &&  github.repository == 'bl-sdk/pyunrealsdk'
+    needs: [build-windows, build-ubuntu]
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Zip releases
+      run: find . -mindepth 1 -maxdepth 1 -type d | xargs -i bash -c "cd {}; zip -r ../{}.zip ."
+
+    - name: Upload releases
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "*.zip"
+        allowUpdates: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: true
+        tag: dev_ci
+        updateOnlyUnreleased: true
 
 # ==============================================================================
 
@@ -219,33 +262,28 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        architecture: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'x64')] }}
-
-    # Needed for clang tidy to enable `-export-fixes`
-    - name: Install pyyaml
-      run: pip install pyyaml
+        python-version: ">=3.10"
 
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: Configure CMake
+    - name: Configure build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: |
-        python python_dev/symlink_this.py
+        pip install requests
+
+        python python_dev/download.py                                             `
+          ${{ env.PYTHON_VERSION }}                                               `
+          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
+          --no-debug
+
         cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
 
     - name: Run clang-tidy
       shell: bash # To follow the shebang
-      run: run-clang-tidy -j ${{ env.CLANG_TIDY_JOBS }} -p out/build/${{ matrix.preset }} -export-fixes clang-tidy-fixes.yml
-      continue-on-error: true
-
-    - name: Process clang-tidy warnings
-      uses: asarium/clang-tidy-action@v1
-      with:
-        fixesFile: clang-tidy-fixes.yml
+      run: run-clang-tidy -j ${{ env.CLANG_TIDY_JOBS }} -p out/build/${{ matrix.preset }}
 
   clang-format:
     runs-on: windows-latest
