@@ -165,22 +165,22 @@ void register_module(py::module_& mod) {
               "Checks if a hook exists.\n"
               "\n"
               "Args:\n"
-              "    func: The function to hook.\n"
-              "    type: Which type of hook to check.\n"
+              "    func: The function to check.\n"
+              "    type: The type of hook to check.\n"
               "    identifier: The hook identifier.\n"
               "Returns:\n"
               "    True if a hook with the given details exists.",
               "func"_a, "type"_a, "identifier"_a);
 
     hooks.def("remove_hook", &unrealsdk::hook_manager::remove_hook,
-              "Checks if a hook exists.\n"
+              "Removes an existing hook.\n"
               "\n"
               "Args:\n"
-              "    func: The function to hook.\n"
-              "    type: Which type of hook to check.\n"
+              "    func: The function to remove hooks from.\n"
+              "    type: The type of hook to remove.\n"
               "    identifier: The hook identifier.\n"
               "Returns:\n"
-              "    True if a hook with the given details exists.",
+              "    True if successfully removed, false if no hook with the given details exists.",
               "func"_a, "type"_a, "identifier"_a);
 }
 
