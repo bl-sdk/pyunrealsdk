@@ -18,6 +18,8 @@ namespace {
 
 /**
  * @brief Fills the params struct for a function with args from python.
+ * @note While this is similar to `make_struct`, we need to do some extra processing on the params,
+ *       and we need to fail if an arg was missed.
  *
  * @param params The params struct to fill.
  * @param args The python args.
@@ -53,7 +55,7 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
 
             if (kwargs.contains(prop->Name)) {
                 throw py::type_error(unrealsdk::fmt::format(
-                    "{}()  got multiple values for argument '{}'", params.type->Name, prop->Name));
+                    "{}() got multiple values for argument '{}'", params.type->Name, prop->Name));
             }
 
             continue;

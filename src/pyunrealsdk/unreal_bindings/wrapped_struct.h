@@ -3,6 +3,13 @@
 
 #include "pyunrealsdk/pch.h"
 
+namespace unrealsdk::unreal {
+
+class UScriptStruct;
+class WrappedStruct;
+
+}  // namespace unrealsdk::unreal
+
 namespace pyunrealsdk::unreal {
 
 /**
@@ -11,6 +18,18 @@ namespace pyunrealsdk::unreal {
  * @param mod The module to register within.
  */
 void register_wrapped_struct(py::module_& mod);
+
+/**
+ * @brief Creates a new wrapped struct using python args.
+ *
+ * @param type The type of struct to make.
+ * @param args The python args.
+ * @param kwargs The python kwargs.
+ * @return The new wrapped struct.
+ */
+unrealsdk::unreal::WrappedStruct make_struct(const unrealsdk::unreal::UScriptStruct* type,
+                                             const py::args& args,
+                                             const py::kwargs& kwargs);
 
 }  // namespace pyunrealsdk::unreal
 
