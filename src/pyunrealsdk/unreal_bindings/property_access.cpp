@@ -6,6 +6,7 @@
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
+#include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
 #include "unrealsdk/unreal/classes/ustruct_funcs.h"
 #include "unrealsdk/unreal/find_class.h"
@@ -78,12 +79,7 @@ py::object py_getattr(UField* field,
                       uintptr_t base_addr,
                       const unrealsdk::unreal::UnrealPointer<void>& parent,
                       UObject* func_obj) {
-    // We can't push these at a higher scope because we need them to only run after the
-    // sdk's been initialized
-    static const UClass* uproperty_class = find_class(L"Property"_fn);
-    static const UClass* ufunction_class = find_class(L"Function"_fn);
-
-    if (field->is_instance(uproperty_class)) {
+    if (field->is_instance(find_class<UProperty>())) {
         auto prop = reinterpret_cast<UProperty*>(field);
         if (prop->ArrayDim < 1) {
             throw py::attribute_error(unrealsdk::fmt::format("attribute '{}' has size of {}",
@@ -104,7 +100,7 @@ py::object py_getattr(UField* field,
         }
         return py::tuple(ret);
     }
-    if (field->is_instance(ufunction_class)) {
+    if (field->is_instance(find_class<UFunction>())) {
         if (func_obj == nullptr) {
             throw py::attribute_error(
                 unrealsdk::fmt::format("cannot bind function '{}' with null object", field->Name));
@@ -112,17 +108,16 @@ py::object py_getattr(UField* field,
 
         return py::cast(BoundFunction{reinterpret_cast<UFunction*>(field), func_obj});
     }
+    if (field->is_instance(find_class<UScriptStruct>())) {
+        return py::cast(field);
+    }
 
     throw py::attribute_error(unrealsdk::fmt::format("attribute '{}' has unknown type '{}'",
                                                      field->Name, field->Class->Name));
 }
 
 void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
-    // We can't put this at a higher scope because we need it to only run after the
-    // sdk's been initialized
-    static const UClass* uproperty_class = find_class(L"Property"_fn);
-
-    if (!field->is_instance(uproperty_class)) {
+    if (!field->is_instance(find_class<UProperty>())) {
         throw py::attribute_error(unrealsdk::fmt::format(
             "attribute '{}' is not a property, and thus cannot be set", field->Name));
     }

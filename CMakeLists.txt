@@ -46,7 +46,10 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_link_libraries(pyunrealsdk PUBLIC pybind11::lto)
 endif()
 
-target_compile_definitions(pyunrealsdk PUBLIC PYBIND11_SIMPLE_GIL_MANAGEMENT)
+target_compile_definitions(pyunrealsdk PUBLIC
+    PYBIND11_SIMPLE_GIL_MANAGEMENT
+    PYBIND11_DETAILED_ERROR_MESSAGES
+)
 
 target_precompile_headers(pyunrealsdk PUBLIC "src/pyunrealsdk/pch.h")
 

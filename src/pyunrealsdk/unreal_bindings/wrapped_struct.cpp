@@ -9,19 +9,55 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
+WrappedStruct make_struct(const UScriptStruct* type,
+                          const py::args& args,
+                          const py::kwargs& kwargs) {
+    WrappedStruct new_struct{type};
+
+    size_t arg_idx = 0;
+    for (auto prop : type->properties()) {
+        if (arg_idx != args.size()) {
+            py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()), args[arg_idx++]);
+
+            if (kwargs.contains(prop->Name)) {
+                throw py::type_error(unrealsdk::fmt::format(
+                    "{}.__init__() got multiple values for argument '{}'", type->Name, prop->Name));
+            }
+
+            continue;
+        }
+        // If we're on to just kwargs
+
+        if (kwargs.contains(prop->Name)) {
+            // Extract the value with pop, so we can check that kwargs are empty at the end
+            py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
+                       kwargs.attr("pop")(prop->Name));
+            continue;
+        }
+    }
+
+    if (!kwargs.empty()) {
+        // Copying python, we only need to warn about one extra kwarg
+        std::string bad_kwarg = py::str(kwargs.begin()->first);
+        throw py::type_error(unrealsdk::fmt::format(
+            "{}.__init__() got an unexpected keyword argument '{}'", type->Name, bad_kwarg));
+    }
+
+    return new_struct;
+}
+
 void register_wrapped_struct(py::module_& mod) {
     py::class_<WrappedStruct>(
         mod, "WrappedStruct", "An unreal struct wrapper.",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
-        .def("__new__",
-             [](const py::args&, const py::kwargs&) {
-                 throw py::type_error("Cannot create new instances of wrapped structs.");
-             })
-        .def("__init__",
-             [](const py::args&, const py::kwargs&) {
-                 throw py::type_error("Cannot create new instances of wrapped structs.");
-             })
+        .def(py::init(&make_struct),
+             "Creates a new wrapped struct.\n"
+             "\n"
+             "Args:\n"
+             "    type: The type of struct to create.\n"
+             "    *args, **kwargs: Fields on the struct to initialize.",
+             "type"_a, py::pos_only{})
         .def(
             "__repr__",
             [](const WrappedStruct& self) {
@@ -110,4 +146,5 @@ void register_wrapped_struct(py::module_& mod) {
             "key"_a, "value"_a)
         .def_readwrite("_type", &WrappedStruct::type);
 }
+
 }  // namespace pyunrealsdk::unreal

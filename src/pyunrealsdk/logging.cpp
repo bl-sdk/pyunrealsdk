@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "unrealsdk/logging.h"
 #include "unrealsdk/format.h"
+#include "unrealsdk/unrealsdk.h"
 
 using unrealsdk::logging::Level;
 
@@ -178,6 +179,14 @@ void register_module(py::module_& mod) {
                 "Returns:\n"
                 "    True if console level changed, false if an invalid value was passed in.",
                 "level"_a);
+
+    logging.def("is_console_ready", &unrealsdk::is_console_ready,
+                "Checks if the sdk's console hook is ready to output text.\n"
+                "\n"
+                "Anything written before this point will only be visible in the log file.\n"
+                "\n"
+                "Returns:\n"
+                "    True if the console hook is ready, false otherwise.");
 
     register_per_log_level_printer(logging, Level::MISC, "misc", "misc");
     register_per_log_level_printer(logging, Level::DEV_WARNING, "dev_warning", "dev warning");

@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/properties/copyable_property.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/properties/uboolproperty.h"
@@ -26,12 +27,6 @@ void register_uobject_children(py::module_& mod) {
         .def_readwrite("Next", &UField::Next);
 
     PyUEClass<UStruct, UField>(mod, "UStruct", "An unreal struct object.")
-        .def(
-            "__call__", [](UStruct* self) { return WrappedStruct{self}; },
-            "Creates a WrappedStruct of this type.\n"
-            "\n"
-            "Returns:\n"
-            "    A new WrappedStruct.")
         .def(
             "_fields",
             [](UStruct* self) {
@@ -121,6 +116,13 @@ void register_uobject_children(py::module_& mod) {
         .def_readwrite("ReturnValueOffset", &UFunction::ReturnValueOffset);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct", "An unreal script struct object.")
+        .def("__call__", &make_struct,
+             "Helper to create a new wrapped struct using this type.\n"
+             "\n"
+             "Args:\n"
+             "    *args, **kwargs: Fields on the struct to initialize.\n"
+             "Returns:\n"
+             "    A new WrappedStruct.")
         .def_readwrite("StructFlags", &UScriptStruct::StructFlags);
 
     PyUEClass<UProperty, UField>(mod, "UProperty", "The base class of all unreal properties.")

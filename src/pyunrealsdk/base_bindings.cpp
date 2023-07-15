@@ -1,6 +1,8 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/base_bindings.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/uclass.h"
+#include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/gobjects.h"
@@ -53,6 +55,58 @@ UClass* find_class_potentially_given(const py::object& cls) {
     return class_ptr;
 }
 
+/**
+ * @brief Finds a script struct by name, which may be fully qualified.
+ * @note If two structs (presumably from different packages) share a name, non fully qualified
+ *       lookup returns an undefined instance.
+ *
+ * @param name The script struct name.
+ * @param fully_qualified If the script struct name is fully qualified, or nullopt to autodetect.
+ * @return The script struct, or nullptr if not found.
+ */
+UScriptStruct* find_scriptstruct_potentially_qualified(const std::wstring& name,
+                                                       std::optional<bool> fully_qualified) {
+    static std::unordered_map<FName, UScriptStruct*> scriptstruct_cache{};
+    static const auto scriptstruct_cls = find_class<UScriptStruct>();
+
+    // If the cache is empty, do an initial parse through all objects
+    if (scriptstruct_cache.empty()) {
+        for (const auto& obj : unrealsdk::gobjects()) {
+            if (!obj->is_instance(scriptstruct_cls)) {
+                continue;
+            }
+
+            // We'll let this overwrite on first pass
+            // Duplicate names are undefined
+            scriptstruct_cache[obj->Name] = reinterpret_cast<UScriptStruct*>(obj);
+        }
+    }
+
+    if (!fully_qualified.has_value()) {
+        fully_qualified = name.find_first_of(L".:") != std::string::npos;
+    }
+
+    // If not fully qualified, do a quick fname lookup
+    if (!fully_qualified.value()) {
+        FName fname{name};
+        return scriptstruct_cache.contains(fname) ? scriptstruct_cache[fname] : nullptr;
+    }
+
+    // Otherwise call find object
+    auto obj = unrealsdk::find_object(scriptstruct_cls, name);
+    if (obj == nullptr) {
+        return nullptr;
+    }
+    auto found_struct = validate_type<UScriptStruct>(obj);
+
+    // Don't overwrite an existing entry
+    if (!scriptstruct_cache.contains(found_struct->Name)) {
+        scriptstruct_cache[found_struct->Name] = found_struct;
+    }
+
+    return found_struct;
+}
+
 }  // namespace
 
 void register_base_bindings(py::module_& mod) {
@@ -66,6 +120,30 @@ void register_base_bindings(py::module_& mod) {
             "Returns:\n"
             "    The class, or None if not found.",
             "name"_a, "fully_qualified"_a = std::nullopt);
+
+    mod.def(
+        "make_struct",
+        [](const std::wstring& name, std::optional<bool> fully_qualified,
+           const py::kwargs& kwargs) {
+            auto type = find_scriptstruct_potentially_qualified(name, fully_qualified);
+            if (type == nullptr) {
+                throw py::value_error(unrealsdk::fmt::format("Couldn't find script struct {}",
+                                                             unrealsdk::utils::narrow(name)));
+            }
+
+            py::args empty_args{};
+            return unreal::make_struct(type, empty_args, kwargs);
+        },
+        "Finds and constructs a WrappedStruct by name.\n"
+        "\n"
+        "Args:\n"
+        "    name: The struct name.\n"
+        "    fully_qualified: If the struct name is fully qualified, or None (the\n"
+        "                     default) to autodetect.\n"
+        "    **kwargs: Fields on the struct to initialize.\n"
+        "Returns:\n"
+        "    The newly constructed struct.",
+        "name"_a, "fully_qualified"_a = std::nullopt, py::pos_only{});
 
     mod.def(
         "find_object",
