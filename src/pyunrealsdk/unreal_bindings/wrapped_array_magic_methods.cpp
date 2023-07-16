@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include <pybind11/pytypes.h>
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast_prop.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
@@ -27,17 +28,11 @@ std::string array_py_repr(const WrappedArray& self) {
     return output.str();
 }
 
-py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx) {
-    if (py::isinstance<py::int_>(py_idx)) {
-        return array_get(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
-    }
-    if (!py::isinstance<py::slice>(py_idx)) {
-        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
-        throw py::type_error(unrealsdk::fmt::format(
-            "array indices must be integers or slices, not {}", idx_type_name));
-    }
-    auto slice = py::cast<py::slice>(py_idx);
+py::object array_py_getitem(const WrappedArray& self, py::ssize_t py_idx) {
+    return array_get(self, convert_py_idx(self, py_idx));
+}
 
+py::list array_py_getitem_slice(const WrappedArray& self, const py::slice& slice) {
     py::ssize_t start = 0;
     py::ssize_t stop = 0;
     py::ssize_t step = 0;
@@ -54,23 +49,12 @@ py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx) 
     return ret;
 }
 
-void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::object& value) {
-    if (py::isinstance<py::int_>(py_idx)) {
-        array_set(self, convert_py_idx(self, py::cast<py::ssize_t>(py_idx)), value);
-        return;
-    }
-    if (!py::isinstance<py::slice>(py_idx)) {
-        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
-        throw py::type_error(unrealsdk::fmt::format(
-            "array indices must be integers or slices, not {}", idx_type_name));
-    }
-    if (!py::isinstance<py::sequence>(value)) {
-        throw py::type_error("can only assign a sequence");
-    }
+void array_py_setitem(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
+    array_set(self, convert_py_idx(self, py_idx), value);
+}
 
-    auto slice = py::cast<py::slice>(py_idx);
-    auto value_seq = py::cast<py::sequence>(value);
-    auto values_size = static_cast<py::ssize_t>(value_seq.size());
+void array_py_setitem_slice(WrappedArray& self, const py::slice& slice, const py::sequence& value) {
+    auto values_size = static_cast<py::ssize_t>(value.size());
 
     py::ssize_t start = 0;
     py::ssize_t stop = 0;
@@ -84,7 +68,7 @@ void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::ob
     if (slicelength == values_size) {
         // Allow arbitrary steps
         for (auto i = 0; i < slicelength; i++) {
-            array_set(self, start, value_seq[i]);
+            array_set(self, start, value[i]);
             start += step;
         }
         return;
@@ -96,7 +80,7 @@ void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::ob
     // way as list
     if (step != 1 && step != -1) {
         throw py::value_error(unrealsdk::fmt::format(
-            "attempt to assign sequence of size {} to extended slice of size {}", value_seq.size(),
+            "attempt to assign sequence of size {} to extended slice of size {}", value.size(),
             slicelength));
     }
 
@@ -117,34 +101,25 @@ void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::ob
     // Instead we need to stick to the basic operations, such that an exception at any point leaves
     // the array in a valid state (even if it's not what was intended).
     // Choosing to do this by deleting all overwritten objects, then inserting all the new ones.
-    array_py_delitem(self, py::slice(start, stop, 1));
+    array_py_delitem_slice(self, py::slice(start, stop, 1));
 
     for (auto value_idx = 0; value_idx < values_size; value_idx++) {
-        array_py_insert(self, start + value_idx, value_seq[value_idx]);
+        array_py_insert(self, start + value_idx, value[value_idx]);
     }
 }
 
-void array_py_delitem(WrappedArray& self, const py::object& py_idx) {
+void array_py_delitem(WrappedArray& self, py::ssize_t py_idx) {
+    auto start = convert_py_idx(self, py_idx);
+    array_delete_range(self, start, start + 1);
+}
+void array_py_delitem_slice(WrappedArray& self, const py::slice& slice) {
     py::ssize_t start = 0;
     py::ssize_t stop = 0;
     py::ssize_t step = 0;
     py::ssize_t slicelength = 0;
 
-    if (py::isinstance<py::int_>(py_idx)) {
-        start = static_cast<py::ssize_t>(convert_py_idx(self, py::cast<py::ssize_t>(py_idx)));
-        stop = start + 1;
-        step = 1;
-        slicelength = 1;
-    } else if (py::isinstance<py::slice>(py_idx)) {
-        auto slice = py::cast<py::slice>(py_idx);
-        if (!slice.compute(static_cast<py::ssize_t>(self.size()), &start, &stop, &step,
-                           &slicelength)) {
-            throw py::error_already_set();
-        }
-    } else {
-        std::string idx_type_name = py::str(py::type::of(py_idx).attr("__name__"));
-        throw py::type_error(unrealsdk::fmt::format(
-            "array indices must be integers or slices, not {}", idx_type_name));
+    if (!slice.compute(static_cast<py::ssize_t>(self.size()), &start, &stop, &step, &slicelength)) {
+        throw py::error_already_set();
     }
 
     // If nothing to delete, can early exit

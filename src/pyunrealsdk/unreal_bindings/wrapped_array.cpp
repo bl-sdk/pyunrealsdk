@@ -11,7 +11,7 @@ void register_wrapped_array(py::module_& mod) {
         .def("__new__", &impl::array_py_new_init)
         .def("__init__", &impl::array_py_new_init)
         .def("__repr__", &impl::array_py_repr,
-             "Gets a string representation of this struct.\n"
+             "Gets a string representation of this array.\n"
              "\n"
              "Returns:\n"
              "    The string representation.")
@@ -23,19 +23,40 @@ void register_wrapped_array(py::module_& mod) {
              "Returns:\n"
              "    The item at the given index.",
              "idx"_a)
+        .def("__getitem__", &impl::array_py_getitem_slice,
+             "Gets a range from the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to get.\n"
+             "Returns:\n"
+             "    The items in the given range.",
+             "range"_a)
         .def("__setitem__", &impl::array_py_setitem,
              "Sets an item in the array.\n"
              "\n"
              "Args:\n"
              "    idx: The index to set.\n"
-             "    value: The value to set.\n",
+             "    value: The value to set.",
              "idx"_a, "value"_a)
+        .def("__setitem__", &impl::array_py_setitem_slice,
+             "Sets a range of items in the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to set.\n"
+             "    value: The values to set.",
+             "range"_a, "value"_a)
         .def("__delitem__", &impl::array_py_delitem,
              "Deletes an item from the array.\n"
              "\n"
              "Args:\n"
-             "    idx: The index to delete.\n"
+             "    idx: The index to delete.",
              "idx"_a)
+        .def("__delitem__", &impl::array_py_delitem_slice,
+             "Deletes a range from the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to delete.",
+             "range"_a)
         .def("__len__", &WrappedArray::size,
              "Gets the length of the array.\n"
              "\n"
@@ -68,35 +89,41 @@ void register_wrapped_array(py::module_& mod) {
              "in the given sequence.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append.")
+             "    values: The sequence of values to append.",
+             "values"_a)
         .def("__radd__", &impl::array_py_radd, py::is_operator(),
              "Creates a list holding a copy of the array, and extends it with all the values\n"
              "in the given sequence.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append.")
+             "    values: The sequence of values to append.",
+             "values"_a)
         .def("__iadd__", &impl::array_py_iadd, py::is_operator(),
              "Extends the array with all the values in the given sequence in place.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append.")
+             "    values: The sequence of values to append.",
+             "values"_a)
         .def("__mul__", &impl::array_py_mul, py::is_operator(),
              "Creates a list holding a copy of the array, and repeats all values in it the\n"
              "given number of times.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append")
+             "    num: The number of times to repeat.",
+             "num"_a)
         .def("__rmul__", &impl::array_py_mul, py::is_operator(),
              "Creates a list holding a copy of the array, and repeats all values in it the\n"
              "given number of times.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append")
+             "    num: The number of times to repeat.",
+             "num"_a)
         .def("__imul__", &impl::array_py_imul, py::is_operator(),
              "Modifies this array in place, repeating all values the given number of times.\n"
              "\n"
              "Args:\n"
-             "    values: The sequence of values to append")
+             "    num: The number of times to repeat.",
+             "num"_a)
         .def("append", &impl::array_py_append,
              "Appends a value to the end of the array.\n"
              "\n"
@@ -159,6 +186,7 @@ void register_wrapped_array(py::module_& mod) {
              "Args:\n"
              "    key: A one-arg function used to extract a comparison key.\n"
              "    reverse: If true, the list is sorted as if each comparison were reversed.",
-             py::kw_only{}, "key"_a = py::none{}, "reverse"_a = false);
+             py::kw_only{}, "key"_a = py::none{}, "reverse"_a = false)
+        .def_readwrite("_type", &WrappedArray::type);
 }
 }  // namespace pyunrealsdk::unreal

@@ -20,3 +20,27 @@ msiextract -C x64 dev.msi dev_d.msi
 
 The script `download.py <version> <arch>` will do just this. It requires the python `requests`
 module. If not on Windows, it also requires `msiextract` (from `msitools`) to be on your path.
+
+When installing this project with CMake, it additionally looks for files matching:
+```
+(x86|x64)/DLLs/*.dll
+(x86|x64)/DLLs/*.pyd
+(x86|x64)/DLLs/*.zip
+(x86|x64)/*.dll
+(x86|x64)/*.pyd
+(x86|x64)/*.zip
+```
+These files will also be copied to the install dir if they exist, since you need them to get python
+running. It is not an error if they don't exist, you can compile fine without them, they're just
+needed at runtime.
+
+If you use `download.py`, they will all automatically be downloaded.
+
+If you have a standard Windows Python install, including all the development libraries, and used
+`symlink_this.py`, you will have everything *except for* the zips holding the standard library. You
+will instead have them extracted in the `Lib` folder. There are three ways to get a zip:
+- Just zip the `Lib` up folder, and rename it to `python3<version>.zip` (or `python3<version>_d.zip`
+  for debug)
+- Download the python embeddable package for the same version, and copy the zip from there. This
+  version contains precompiled bytecode instead of raw source files.
+- Create your own compiled zip using `zipfile.PyZipFile`.

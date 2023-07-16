@@ -23,7 +23,7 @@ struct Block {};
  * @param callback The python hook callback.
  * @return True if to block the function call.
  */
-bool handle_prehook(Details& hook, const py::function& callback) {
+bool handle_prehook(Details& hook, const py::object& callback) {
     auto ret = callback(hook.obj, hook.args, hook.func);
 
     if (py::isinstance<py::tuple>(ret)) {
@@ -63,7 +63,7 @@ bool handle_prehook(Details& hook, const py::function& callback) {
  * @param hook The hook details.
  * @param callback The python hook callback.
  */
-void handle_posthook(Details& hook, const py::function& callback) {
+void handle_posthook(Details& hook, const py::object& callback) {
     py::object ret;
     if (hook.ret.has_value()) {
         cast_prop(hook.ret.prop, [&hook, &ret]<typename T>(const T* /*prop*/) {
@@ -110,7 +110,7 @@ void register_module(py::module_& mod) {
     hooks.def(
         "add_hook",
         [](const std::wstring& func, Type type, const std::wstring& identifier,
-           const py::function& callback) {
+           const py::object& callback) {
             add_hook(func, type, identifier, [type, callback](Details& hook) {
                 try {
                     const py::gil_scoped_acquire gil{};

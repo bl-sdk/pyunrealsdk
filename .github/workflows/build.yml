@@ -214,10 +214,24 @@ jobs:
 
 # ==============================================================================
 
+  archive-stubs:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' &&  github.repository == 'bl-sdk/pyunrealsdk'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: stubs
+        path: stubs
+
   upload-releases:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' &&  github.repository == 'bl-sdk/pyunrealsdk'
-    needs: [build-windows, build-ubuntu]
+    needs: [archive-stubs, build-windows, build-ubuntu]
 
     steps:
     - name: Download artifacts

@@ -88,8 +88,10 @@ namespace detail {
 template <>
 struct type_caster<unrealsdk::unreal::FName> {
    public:
+    // The name we set here is used in the signatures added to the docstring, so set it as `str` so
+    // they appear valid
     // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, readability-identifier-length)
-    PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, py::detail::const_name("FName"));
+    PYBIND11_TYPE_CASTER(unrealsdk::unreal::FName, py::detail::const_name("str"));
 
     bool load(handle src, bool /*convert*/) {
         py::ssize_t size = 0;

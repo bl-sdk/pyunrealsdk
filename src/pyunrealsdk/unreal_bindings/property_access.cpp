@@ -25,38 +25,23 @@ bool dir_includes_unreal = true;
 
 }  // namespace
 
-UField* get_field_from_py_key(const py::object& key, const UStruct* type) {
-    if (py::isinstance<py::str>(key)) {
-        std::string key_str = py::str(key);
-        try {
-            return type->find(key_str);
-        } catch (const std::invalid_argument&) {
-            throw py::attribute_error(
-                unrealsdk::fmt::format("'{}' object has no attribute '{}'", type->Name, key_str));
-        }
+UField* py_find_field(const FName& name, const UStruct* type) {
+    try {
+        return type->find(name);
+    } catch (const std::invalid_argument&) {
+        throw py::attribute_error(
+            unrealsdk::fmt::format("'{}' object has no attribute '{}'", type->Name, name));
     }
-
-    if (py::isinstance<UField>(key)) {
-        auto field = py::cast<UField*>(key);
-        if (field == nullptr) {
-            throw py::attribute_error("cannot access null attribute");
-        }
-        return field;
-    }
-
-    std::string key_type_name = py::str(py::type::of(key).attr("__name__"));
-    throw py::attribute_error(
-        unrealsdk::fmt::format("attribute key has unknown type '{}'", key_type_name));
 }
 
 void register_property_helpers(py::module_& mod) {
     mod.def(
         "dir_includes_unreal", [](bool should_include) { dir_includes_unreal = should_include; },
-        "Sets if `__dir__` should include dynamic unreal properties, specific to the"
+        "Sets if `__dir__` should include dynamic unreal properties, specific to the\n"
         "object. Defaults to true.\n"
-        "\n",
+        "\n"
         "Args:\n"
-        "    should_include: True if to include dynamic properties, false to not.\n",
+        "    should_include: True if to include dynamic properties, false to not.",
         "should_include"_a);
 }
 
@@ -157,8 +142,8 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
                 && py::isinstance<py::sequence>(value_seq[0])) {
                 // Implement using slice assignment
                 auto arr = get_property<UArrayProperty>(prop, 0, base_addr);
-                impl::array_py_setitem(arr, py::slice(std::nullopt, std::nullopt, std::nullopt),
-                                       value_seq[0]);
+                impl::array_py_setitem_slice(
+                    arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
                 return;
             }
         }

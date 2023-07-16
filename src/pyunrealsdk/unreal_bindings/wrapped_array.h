@@ -2,6 +2,8 @@
 #define PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_H
 
 #include "pyunrealsdk/pch.h"
+#include <pybind11/detail/common.h>
+#include <pybind11/pytypes.h>
 
 namespace unrealsdk::unreal {
 
@@ -148,11 +150,14 @@ void array_py_new_init(const py::args& args, const py::kwargs& kwargs);
 // __repr__
 std::string array_py_repr(const WrappedArray& self);
 // __getitem__
-py::object array_py_getitem(const WrappedArray& self, const py::object& py_idx);
+py::object array_py_getitem(const WrappedArray& self, py::ssize_t py_idx);
+py::list array_py_getitem_slice(const WrappedArray& self, const py::slice& slice);
 // __setitem__
-void array_py_setitem(WrappedArray& self, const py::object& py_idx, const py::object& value);
+void array_py_setitem(WrappedArray& self, py::ssize_t py_idx, const py::object& value);
+void array_py_setitem_slice(WrappedArray& self, const py::slice& slice, const py::sequence& value);
 // __delitem__
-void array_py_delitem(WrappedArray& self, const py::object& py_idx);
+void array_py_delitem(WrappedArray& self, py::ssize_t py_idx);
+void array_py_delitem_slice(WrappedArray& self, const py::slice& slice);
 // __len__
 // &WrappedArray::size already works for this
 // __iter__
