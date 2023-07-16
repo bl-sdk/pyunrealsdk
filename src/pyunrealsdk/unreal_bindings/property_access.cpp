@@ -25,28 +25,13 @@ bool dir_includes_unreal = true;
 
 }  // namespace
 
-UField* get_field_from_py_key(const py::object& key, const UStruct* type) {
-    if (py::isinstance<py::str>(key)) {
-        std::string key_str = py::str(key);
-        try {
-            return type->find(key_str);
-        } catch (const std::invalid_argument&) {
-            throw py::attribute_error(
-                unrealsdk::fmt::format("'{}' object has no attribute '{}'", type->Name, key_str));
-        }
+UField* py_find_field(const FName& name, const UStruct* type) {
+    try {
+        return type->find(name);
+    } catch (const std::invalid_argument&) {
+        throw py::attribute_error(
+            unrealsdk::fmt::format("'{}' object has no attribute '{}'", type->Name, name));
     }
-
-    if (py::isinstance<UField>(key)) {
-        auto field = py::cast<UField*>(key);
-        if (field == nullptr) {
-            throw py::attribute_error("cannot access null attribute");
-        }
-        return field;
-    }
-
-    std::string key_type_name = py::str(py::type::of(key).attr("__name__"));
-    throw py::attribute_error(
-        unrealsdk::fmt::format("attribute key has unknown type '{}'", key_type_name));
 }
 
 void register_property_helpers(py::module_& mod) {

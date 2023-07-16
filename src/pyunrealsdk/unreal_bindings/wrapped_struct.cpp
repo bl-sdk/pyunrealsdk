@@ -97,53 +97,78 @@ void register_wrapped_struct(py::module_& mod) {
             "    A list of attributes which exist on this object.")
         .def(
             "__getattr__",
-            [](const WrappedStruct& self, const py::object& key) {
-                return py_getattr(get_field_from_py_key(key, self.type),
+            [](const WrappedStruct& self, const FName& name) {
+                return py_getattr(py_find_field(name, self.type),
                                   reinterpret_cast<uintptr_t>(self.base.get()), self.base);
             },
             "Reads an unreal field off of the struct.\n"
             "\n"
-            "Usually called with a string holding the field name (as is done in regular\n"
-            "attribute access), which automatically looks up the field.\n"
+            "Automatically looks up the relevant UField.\n"
             "\n"
-            "In performance critical situations, you can also look up the field beforehand\n"
-            "via struct._type._find(\"name\"), then pass the it directly to this function. This\n"
-            "does not get validated, passing a field which doesn't exist on the object is\n"
-            "undefined behaviour.\n"
+            "Args:\n"
+            "    name: The name of the field to get.\n"
+            "Returns:\n"
+            "    The field's value.",
+            "name"_a)
+        .def(
+            "__getattr__",
+            [](const WrappedStruct& self, UField* field) {
+                if (field == nullptr) {
+                    throw py::attribute_error("cannot access null attribute");
+                }
+                return py_getattr(field, reinterpret_cast<uintptr_t>(self.base.get()), self.base);
+            },
+            "Reads an unreal field off of the struct.\n"
+            "\n"
+            "In performance critical situations, you can look up the UField beforehand via\n"
+            "obj.Class._find(\"name\"), then pass it directly to this function. This does not\n"
+            "get validated, passing a field which doesn't exist on the object is undefined\n"
+            "behaviour.\n"
             "\n"
             "Note that getattr() only supports string keys, when passing a field you must\n"
             "call this function directly.\n"
             "\n"
             "Args:\n"
-            "    key: The field's name, or the field object itself.\n"
+            "    field: The field to get.\n"
             "Returns:\n"
             "    The field's value.",
-            "key"_a)
+            "field"_a)
         .def(
             "__setattr__",
-            [](WrappedStruct& self, const py::object& key, const py::object& value) {
-                py_setattr(get_field_from_py_key(key, self.type),
+            [](WrappedStruct& self, const FName& name, const py::object& value) {
+                py_setattr(py_find_field(name, self.type),
                            reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
-            "Writes a value to an unreal property.\n"
+            "Writes a value to an unreal field on the struct.\n"
             "\n"
-            "Usually called with a string holding the field name (as is done in regular\n"
-            "attribute access), which automatically looks up the field.\n"
+            "Automatically looks up the relevant UField.\n"
             "\n"
-            "In performance critical situations, you can also look up the field beforehand\n"
-            "via struct._type._find(\"name\"), then pass the it directly to this function. This\n"
-            "does not get validated, passing a field which doesn't exist on the object is\n"
-            "undefined behaviour.\n"
+            "Args:\n"
+            "    name: The name of the field to set.\n"
+            "    value: The value to write.",
+            "name"_a, "value"_a)
+        .def(
+            "__setattr__",
+            [](WrappedStruct& self, UField* field, const py::object& value) {
+                if (field == nullptr) {
+                    throw py::attribute_error("cannot access null attribute");
+                }
+                py_setattr(field, reinterpret_cast<uintptr_t>(self.base.get()), value);
+            },
+            "Writes a value to an unreal field on the struct.\n"
+            "\n"
+            "In performance critical situations, you can look up the UField beforehand via\n"
+            "obj.Class._find(\"name\"), then pass it directly to this function. This does not\n"
+            "get validated, passing a field which doesn't exist on the object is undefined\n"
+            "behaviour.\n"
             "\n"
             "Note that setattr() only supports string keys, when passing a field you must\n"
             "call this function directly.\n"
             "\n"
             "Args:\n"
-            "    key: The field's name, or the field object itself.\n"
-            "    value: The value to write.\n"
-            "Returns:\n"
-            "    The field's value.",
-            "key"_a, "value"_a)
+            "    field: The field to set.\n"
+            "    value: The value to write.",
+            "field"_a, "value"_a)
         .def_readwrite("_type", &WrappedStruct::type);
 }
 

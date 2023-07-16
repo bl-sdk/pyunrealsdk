@@ -6,6 +6,7 @@
 
 namespace unrealsdk::unreal {
 
+struct FName;
 class UObject;
 class UField;
 class UStruct;
@@ -23,15 +24,14 @@ namespace pyunrealsdk::unreal {
 void register_property_helpers(py::module_& mod);
 
 /**
- * @brief Gets a field off of an object based on the key given to getattr/setattr.
- * @note Allows both strings and direct field references.
+ * @brief Searches for a field on a struct, throwing an attribute error if it doesn't exist.
  *
- * @param key The python key.
+ * @param name The field name.
  * @param type The type of the unreal object this access is reading off of.
  * @return The field. Invalid keys throw, so will never be null.
  */
-unrealsdk::unreal::UField* get_field_from_py_key(const py::object& key,
-                                                 const unrealsdk::unreal::UStruct* type);
+unrealsdk::unreal::UField* py_find_field(const unrealsdk::unreal::FName& name,
+                                         const unrealsdk::unreal::UStruct* type);
 
 /**
  * @brief Implements `__dir__`.
