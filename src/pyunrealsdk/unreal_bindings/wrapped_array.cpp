@@ -23,6 +23,14 @@ void register_wrapped_array(py::module_& mod) {
              "Returns:\n"
              "    The item at the given index.",
              "idx"_a)
+        .def("__getitem__", &impl::array_py_getitem_slice,
+             "Gets a range from the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to get.\n"
+             "Returns:\n"
+             "    The items in the given range.",
+             "range"_a)
         .def("__setitem__", &impl::array_py_setitem,
              "Sets an item in the array.\n"
              "\n"
@@ -30,12 +38,25 @@ void register_wrapped_array(py::module_& mod) {
              "    idx: The index to set.\n"
              "    value: The value to set.",
              "idx"_a, "value"_a)
+        .def("__setitem__", &impl::array_py_setitem_slice,
+             "Sets a range of items in the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to set.\n"
+             "    value: The values to set.",
+             "range"_a, "value"_a)
         .def("__delitem__", &impl::array_py_delitem,
              "Deletes an item from the array.\n"
              "\n"
              "Args:\n"
              "    idx: The index to delete.",
              "idx"_a)
+        .def("__delitem__", &impl::array_py_delitem_slice,
+             "Deletes a range from the array.\n"
+             "\n"
+             "Args:\n"
+             "    range: The range to delete.",
+             "range"_a)
         .def("__len__", &WrappedArray::size,
              "Gets the length of the array.\n"
              "\n"

@@ -142,8 +142,8 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
                 && py::isinstance<py::sequence>(value_seq[0])) {
                 // Implement using slice assignment
                 auto arr = get_property<UArrayProperty>(prop, 0, base_addr);
-                impl::array_py_setitem(arr, py::slice(std::nullopt, std::nullopt, std::nullopt),
-                                       value_seq[0]);
+                impl::array_py_setitem_slice(
+                    arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
                 return;
             }
         }
