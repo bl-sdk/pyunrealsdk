@@ -88,7 +88,7 @@ UScriptStruct* find_scriptstruct_potentially_qualified(const std::wstring& name,
 
     // If not fully qualified, do a quick fname lookup
     if (!fully_qualified.value()) {
-        FName fname{name};
+        const FName fname{name};
         return scriptstruct_cache.contains(fname) ? scriptstruct_cache[fname] : nullptr;
     }
 
@@ -131,7 +131,7 @@ void register_base_bindings(py::module_& mod) {
                                                              unrealsdk::utils::narrow(name)));
             }
 
-            py::args empty_args{};
+            const py::args empty_args{};
             return unreal::make_struct(type, empty_args, kwargs);
         },
         "Finds and constructs a WrappedStruct by name.\n"
