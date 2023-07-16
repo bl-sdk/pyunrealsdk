@@ -1,0 +1,140 @@
+# pyunrealsdk
+[![Developer Discord](https://img.shields.io/static/v1?label=&message=Developer%20Discord&logo=discord&color=222)](https://discord.gg/VJXtHvh)
+
+Python bindings for [unrealsdk](https://github.com/bl-sdk/unrealsdk), and embedded interpreter.
+
+# Usage Overview
+There are two ways of using the python sdk: via console command, or via the initialization script.
+
+## Console Commands
+The python sdk registers two custom console commands which you can use to execute python code.
+
+`py` lets you run small snippets of python. By default, it executes one line at a time, stripping
+any leading whitespace.
+
+```py
+py print(unrealsdk.find_all("PlayerController", exact=False))
+```
+
+You can also use heredoc-like syntax to execute multiline queries. This happens if the first two
+non-whitespace characters are `<<` (which is invalid python syntax for a single line).
+```py
+py << EOF
+obj = unrealsdk.find_object("WillowGameEngine", "Transient.WillowGameEngine_0")
+if obj:
+    print("Found engine:", obj)
+else:
+    print("Couldn't find engine!")
+EOF
+```
+
+`pyexec` is useful for more complex scripts - it executes an entire file (relative to the game cwd).
+Note that this is *not* running a python script in the traditional sense, it's instead more similar
+to something like `eval(open(file).read())`. The interpreter is not restarted, and there's no way to
+accept arguments into `sys.argv`.
+
+## Initialization Script
+If you want to make more permanent mods, you'll want to use the initialization script. By default
+this is `__main__.py` in the game's cwd, though you can overwrite this with the
+`PYUNREALSDK_INIT_SCRIPT` environment variable. The initialization script is automatically run after
+sdk initialization, so you can use it to import other files and generally perform all your setup.
+
+## Using SDK bindings
+Once you've got code running, you probably want to setup some hooks - the sdk can run callbacks
+whenever an unreal function is called, allowing you to interact with it's args, and mess with it's
+execution.
+
+```py
+def on_main_menu(
+    obj: unrealsdk.unreal.UObject,
+    args: unrealsdk.unreal.WrappedStruct,
+    func: unrealsdk.unreal.BoundFunction
+) -> None:
+    print("Reached main menu!")
+
+unrealsdk.hooks.add_hook(
+    "WillowGame.FrontendGFxMovie:Start",
+    unrealsdk.hooks.Type.PRE,
+    "main_menu_hook",
+    on_main_menu
+)
+```
+
+Alternatively, if you're simply using `pyexec` scripts, you might be able to find the objects you
+want directly using `find_all` and/or `find_object`.
+
+Once you have some unreal objects, you can access unreal properties through regular python attribute
+access. This gets dynamically resolved to the relevant unreal property.
+
+```py
+paused = args.StartPaused
+
+obj.MessagesOfTheDay[obj.MessageOfTheDayIdx].Body = "No MOTD today"
+
+op_string = obj.BuildOverpowerPromptString(1, 10)
+```
+
+# Installation
+1. Download the relevant [release](https://github.com/bl-sdk/pyunrealsdk/releases).
+
+   If you don't know which compiler's version to get, we recommend MSVC (so functions log messages
+   include namespaces).
+
+2. Install some game specific plugin loader. The released dlls are not set up to alias any system
+   dlls, you can't just call it `d3d9.dll` and assume your game will load fine.
+
+   If you know a specific dll name is fine to use without aliasing, rename `pyunrealsdk.dll`.
+
+3. Extract all files to somewhere in your game's dll search path. Your plugin loader's plugins
+   folder may work, otherwise you can fall back to the same directory as the executable.
+
+# Development
+To build:
+
+1. Clone the repo (including submodules).
+   ```sh
+   git clone --recursive https://github.com/bl-sdk/unrealsdk.git
+   ```
+
+2. Setup the python dev files. The simplest way is as follows:
+   ```sh
+   apt install msitools # Or equivalent for other package managers, not required on Windows
+
+   pip install requests
+   python python_dev/download.py 3.11.4 amd64
+   ```
+   See the [readme](python_dev/Readme.md) for more advanced details.
+
+3. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
+
+4. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
+   ```
+   cmake . --preset msvc-ue4-x64-debug
+   cmake --build out/build/msvc-ue4-x64-debug
+   ```
+
+5. (OPTIONAL) Copy the python runtime files to the game's directory. At a minimum, you probably
+   want these:
+   ```
+   python3.dll
+   python311.dll
+   python311.zip
+   ```
+
+   A CMake install will copy these files, as well as several other useful libraries, to the install
+   dir for you.
+   ```
+   cmake --build out/build/msvc-ue4-x64-debug --target install
+   ```
+
+   As an alternative to this and step 3, you could point the CMake install dir directly at your
+   game, so everything's automatically copied. This however will only work with one game at a time.
+
+6. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
+   executable, containing the game's Steam App Id.
+
+   Normally, games compiled with Steamworks will call
+   [`SteamAPI_RestartAppIfNecessary`](https://partner.steamgames.com/doc/sdk/api#SteamAPI_RestartAppIfNecessary),
+   which will drop your debugger session when launching the exe directly - adding this file prevents
+   that. Not only does this let you debug from entry, it also unlocks some really useful debugger
+   features which you can't access from just an attach (i.e. Visual Studio's Edit and Continue).
