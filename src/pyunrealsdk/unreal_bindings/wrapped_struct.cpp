@@ -94,7 +94,7 @@ void register_wrapped_struct(py::module_& mod) {
             "python attributes by calling dir_includes_unreal.\n"
             "\n"
             "Returns:\n"
-            "    A list of attributes which exist on this object.")
+            "    A list of attributes which exist on this struct.")
         .def(
             "__getattr__",
             [](const WrappedStruct& self, const FName& name) {

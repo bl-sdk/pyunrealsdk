@@ -92,7 +92,7 @@ void register_module(py::module_& mod) {
 
     commands.def(
         "add_command",
-        [](const std::wstring& cmd, const py::function& callback) {
+        [](const std::wstring& cmd, const py::object& callback) {
             unrealsdk::commands::add_command(
                 cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
                     try {
@@ -135,12 +135,12 @@ void register_module(py::module_& mod) {
         "cmd"_a, "callback"_a);
 
     commands.def("has_command", &unrealsdk::commands::has_command,
-                 "Check if a custom console command is registered.\n"
+                 "Check if a custom console command has been registered.\n"
                  "\n"
                  "Args:\n"
                  "    cmd: The command to match.\n"
                  "Returns:\n"
-                 "    True if the command is registered.",
+                 "    True if the command has been registered.",
                  "cmd"_a);
 
     commands.def("remove_command", &unrealsdk::commands::remove_command,

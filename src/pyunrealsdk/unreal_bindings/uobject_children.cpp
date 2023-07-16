@@ -95,13 +95,14 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UClass, UStruct>(mod, "UClass", "An unreal class object.")
         .def(
             "_implements",
-            [](UClass* self, UClass* iface) { return self->implements(iface, nullptr); },
+            [](UClass* self, UClass* interface) { return self->implements(interface, nullptr); },
             "Checks if this class implements a given interface.\n"
             "\n"
             "Args:\n"
-            "    iface: The interface to check.\n"
+            "    interface: The interface to check.\n"
             "Returns:\n"
-            "    True if this class implements the interface, false otherwise.")
+            "    True if this class implements the interface, false otherwise.",
+            "interface"_a)
         .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject);
 
     PyUEClass<UFunction, UStruct>(mod, "UFunction", "An unreal function object.")

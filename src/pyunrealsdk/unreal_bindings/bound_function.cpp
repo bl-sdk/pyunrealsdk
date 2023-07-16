@@ -168,7 +168,7 @@ void register_bound_function(py::module_& mod) {
             "Args:\n"
             "    The unreal function's args. Out params will be used to initialized the\n"
             "    unreal value, but the python value is not modified in place. Kwargs are\n"
-            "    supported."
+            "    supported.\n"
 #ifdef UE3
             "    Optional params should also be optional.\n"
 #endif

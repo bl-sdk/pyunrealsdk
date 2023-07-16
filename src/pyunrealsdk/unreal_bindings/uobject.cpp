@@ -124,7 +124,7 @@ void register_uobject(py::module_& mod) {
         .def(
             "_get_address", [](UObject* self) { return reinterpret_cast<uintptr_t>(self); },
             "Gets the address of this object, for debugging.\n"
-            "\n",
+            "\n"
             "Returns:\n"
             "    This object's address.")
         .def_readwrite("ObjectFlags", &UObject::ObjectFlags)

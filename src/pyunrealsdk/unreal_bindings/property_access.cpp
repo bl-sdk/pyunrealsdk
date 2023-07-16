@@ -37,11 +37,11 @@ UField* py_find_field(const FName& name, const UStruct* type) {
 void register_property_helpers(py::module_& mod) {
     mod.def(
         "dir_includes_unreal", [](bool should_include) { dir_includes_unreal = should_include; },
-        "Sets if `__dir__` should include dynamic unreal properties, specific to the"
+        "Sets if `__dir__` should include dynamic unreal properties, specific to the\n"
         "object. Defaults to true.\n"
-        "\n",
+        "\n"
         "Args:\n"
-        "    should_include: True if to include dynamic properties, false to not.\n",
+        "    should_include: True if to include dynamic properties, false to not.",
         "should_include"_a);
 }
 
