@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Sequence
+from types import GenericAlias
 from typing import Any, Generic, Never, TypeVar, overload
 
 from ._uobject_children import UProperty
@@ -21,6 +22,16 @@ class WrappedArray(Generic[T]):
 
         Args:
             values: The sequence of values to append.
+        """
+    @classmethod
+    def __class_getitem__(cls, *args: Any, **kwargs: Any) -> GenericAlias:
+        """
+        No-op, implemented to allow type stubs to treat this as a generic type.
+
+        Args:
+            *args, **kwargs: Ignored.
+        Returns:
+            The WrappedArray class.
         """
     def __contains__(self, value: T) -> bool:
         """

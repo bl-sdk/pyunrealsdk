@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
+#include <pybind11/pytypes.h>
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
@@ -7,8 +8,8 @@ using namespace unrealsdk::unreal;
 namespace pyunrealsdk::unreal {
 
 void register_wrapped_array(py::module_& mod) {
-    py::class_<WrappedArray>(mod, "WrappedArray", "An unreal array wrapper.")
-        .def("__new__", &impl::array_py_new_init)
+    auto cls = py::class_<WrappedArray>(mod, "WrappedArray", "An unreal array wrapper.");
+    cls.def("__new__", &impl::array_py_new_init)
         .def("__init__", &impl::array_py_new_init)
         .def("__repr__", &impl::array_py_repr,
              "Gets a string representation of this array.\n"
@@ -188,5 +189,17 @@ void register_wrapped_array(py::module_& mod) {
              "    reverse: If true, the list is sorted as if each comparison were reversed.",
              py::kw_only{}, "key"_a = py::none{}, "reverse"_a = false)
         .def_readwrite("_type", &WrappedArray::type);
+
+    // Create as a class method, see pybind11#1693
+    cls.attr("__class_getitem__") = py::reinterpret_borrow<py::object>(PyClassMethod_New(
+        py::cpp_function(&impl::array_py_class_getitem,
+                         "No-op, implemented to allow type stubs to treat this as a generic type.\n"
+                         "\n"
+                         "Args:\n"
+                         "    *args, **kwargs: Ignored.\n"
+                         "Returns:\n"
+                         "    The WrappedArray class.",
+                         "cls"_a)
+            .ptr()));
 }
 }  // namespace pyunrealsdk::unreal

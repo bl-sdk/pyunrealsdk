@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Never, overload
+from typing import Any, Never
 
 from ._uobject_children import UClass, UField
 
@@ -25,7 +25,6 @@ class UObject:
         Returns:
             A list of attributes which exist on this object.
         """
-    @overload
     def __getattr__(self, name: str) -> Any:
         """
         Reads an unreal field off of the object.
@@ -34,24 +33,6 @@ class UObject:
 
         Args:
             name: The name of the field to get.
-        Returns:
-            The field's value.
-        """
-    @overload
-    def __getattr__(self, field: UField) -> Any:  # type: ignore[misc]  # invalid signature for getattr
-        """
-        Reads an unreal field off of the object.
-
-        In performance critical situations, you can look up the UField beforehand via
-        obj.Class._find("name"), then pass it directly to this function. This does not
-        get validated, passing a field which doesn't exist on the object is undefined
-        behaviour.
-
-        Note that getattr() only supports string keys, when passing a field you must
-        call this function directly.
-
-        Args:
-            field: The field to get.
         Returns:
             The field's value.
         """
@@ -64,7 +45,6 @@ class UObject:
         Returns:
             This object's name.
         """
-    @overload
     def __setattr__(self, name: str, value: Any) -> None:
         """
         Writes a value to an unreal field on the object.
@@ -75,27 +55,37 @@ class UObject:
             name: The name of the field to set.
             value: The value to write.
         """
-    @overload
-    def __setattr__(self, field: UField, value: Any) -> None:  # type: ignore[misc]  # invalid signature for getattr
-        """
-        Writes a value to an unreal field on the object.
-
-        In performance critical situations, you can look up the UField beforehand via
-        obj.Class._find("name"), then pass it directly to this function. This does not
-        get validated, passing a field which doesn't exist on the object is undefined
-        behaviour.
-
-        Note that setattr() only supports string keys, when passing a field you must
-        call this function directly.
-
-        Args:
-            field: The field to set.
-            value: The value to write.
-        """
     def _get_address(self) -> int:
         """
         Gets the address of this object, for debugging.
 
         Returns:
             This object's address.
+        """
+    def _get_field(self, field: UField) -> Any:
+        """
+        Reads an unreal field off of the object.
+
+        In performance critical situations, rather than use __getattr__, you can look up
+        the UField beforehand (via obj.Class._find()), then pass it directly to this
+        function. This does not get validated, passing a field which doesn't exist on
+        the object is undefined behaviour.
+
+        Args:
+            field: The field to get.
+        Returns:
+            The field's value.
+        """
+    def _set_field(self, field: UField, value: Any) -> None:
+        """
+        Writes a value to an unreal field on the object.
+
+        In performance critical situations, rather than use __setattr__, you can look up
+        the UField beforehand (via obj.Class._find()), then pass it directly to this
+        function. This does not get validated, passing a field which doesn't exist on
+        the object is undefined behaviour.
+
+        Args:
+            field: The field to set.
+            value: The value to write.
         """

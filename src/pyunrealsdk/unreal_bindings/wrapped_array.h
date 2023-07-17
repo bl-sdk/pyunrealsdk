@@ -176,6 +176,10 @@ WrappedArray& array_py_iadd(WrappedArray& self, const py::sequence& other);
 py::list array_py_mul(WrappedArray& self, py::ssize_t other);
 // __imul__
 WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other);
+// __class_getitem__
+py::type array_py_class_getitem(const py::type& cls,
+                                const py::args& args,
+                                const py::kwargs& kwargs);
 // append
 void array_py_append(WrappedArray& self, const py::object& value);
 // clear
