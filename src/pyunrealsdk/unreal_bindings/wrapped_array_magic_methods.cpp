@@ -220,4 +220,10 @@ WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other) {
     return self;
 }
 
+py::type array_py_class_getitem(const py::type& cls,
+                                const py::args& /*args*/,
+                                const py::kwargs& /*kwargs*/) {
+    return cls;
+}
+
 }  // namespace pyunrealsdk::unreal::impl
