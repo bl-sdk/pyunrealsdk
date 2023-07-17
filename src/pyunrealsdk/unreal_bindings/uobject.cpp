@@ -63,7 +63,7 @@ void register_uobject(py::module_& mod) {
             "    The field's value.",
             "name"_a)
         .def(
-            "__getattr__",
+            "_get_field",
             [](UObject* self, UField* field) {
                 if (field == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
@@ -72,13 +72,10 @@ void register_uobject(py::module_& mod) {
             },
             "Reads an unreal field off of the object.\n"
             "\n"
-            "In performance critical situations, you can look up the UField beforehand via\n"
-            "obj.Class._find(\"name\"), then pass it directly to this function. This does not\n"
-            "get validated, passing a field which doesn't exist on the object is undefined\n"
-            "behaviour.\n"
-            "\n"
-            "Note that getattr() only supports string keys, when passing a field you must\n"
-            "call this function directly.\n"
+            "In performance critical situations, rather than use __getattr__, you can look up\n"
+            "the UField beforehand (via obj.Class._find()), then pass it directly to this\n"
+            "function. This does not get validated, passing a field which doesn't exist on\n"
+            "the object is undefined behaviour.\n"
             "\n"
             "Args:\n"
             "    field: The field to get.\n"
@@ -100,7 +97,7 @@ void register_uobject(py::module_& mod) {
             "    value: The value to write.",
             "name"_a, "value"_a)
         .def(
-            "__setattr__",
+            "_set_field",
             [](UObject* self, UField* field, const py::object& value) {
                 if (field == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
@@ -109,13 +106,10 @@ void register_uobject(py::module_& mod) {
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"
-            "In performance critical situations, you can look up the UField beforehand via\n"
-            "obj.Class._find(\"name\"), then pass it directly to this function. This does not\n"
-            "get validated, passing a field which doesn't exist on the object is undefined\n"
-            "behaviour.\n"
-            "\n"
-            "Note that setattr() only supports string keys, when passing a field you must\n"
-            "call this function directly.\n"
+            "In performance critical situations, rather than use __setattr__, you can look up\n"
+            "the UField beforehand (via obj.Class._find()), then pass it directly to this\n"
+            "function. This does not get validated, passing a field which doesn't exist on\n"
+            "the object is undefined behaviour.\n"
             "\n"
             "Args:\n"
             "    field: The field to set.\n"
