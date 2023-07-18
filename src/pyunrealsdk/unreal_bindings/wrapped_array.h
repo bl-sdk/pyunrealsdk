@@ -2,8 +2,6 @@
 #define PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_H
 
 #include "pyunrealsdk/pch.h"
-#include <pybind11/detail/common.h>
-#include <pybind11/pytypes.h>
 
 namespace unrealsdk::unreal {
 
