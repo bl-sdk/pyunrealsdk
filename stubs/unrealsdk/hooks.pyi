@@ -63,9 +63,9 @@ class Type(metaclass=EnumMeta):
 
 HookBlockSignal = None | EllipsisType | Block | type[Block]
 PreHookCallback = Callable[
-    [UObject, UFunction, WrappedStruct], HookBlockSignal | tuple[HookBlockSignal, Any]
+    [UObject, WrappedStruct, UFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
 ]
-PostHookCallback = Callable[[UObject, UFunction, WrappedStruct, Any], None]
+PostHookCallback = Callable[[UObject, WrappedStruct, UFunction, Any], None]
 
 PreHookType = Literal[Type.PRE]
 PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
