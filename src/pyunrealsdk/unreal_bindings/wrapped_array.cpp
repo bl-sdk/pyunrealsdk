@@ -1,6 +1,5 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include <pybind11/pytypes.h>
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
