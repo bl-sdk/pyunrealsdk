@@ -4,7 +4,7 @@ from enum import EnumMeta
 from types import EllipsisType
 from typing import Any, Callable, ClassVar, Literal, overload
 
-from .unreal import UFunction, UObject, WrappedStruct
+from .unreal import BoundFunction, UObject, WrappedStruct
 
 __all__: tuple[str, ...] = (
     "Block",
@@ -63,9 +63,9 @@ class Type(metaclass=EnumMeta):
 
 HookBlockSignal = None | EllipsisType | Block | type[Block]
 PreHookCallback = Callable[
-    [UObject, WrappedStruct, UFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
+    [UObject, WrappedStruct, BoundFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
 ]
-PostHookCallback = Callable[[UObject, WrappedStruct, UFunction, Any], None]
+PostHookCallback = Callable[[UObject, WrappedStruct, BoundFunction, Any], None]
 
 PreHookType = Literal[Type.PRE]
 PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
