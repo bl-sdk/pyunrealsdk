@@ -2,6 +2,7 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
