@@ -13,7 +13,7 @@ class UObject:
     InternalIndex: int
     Name: str
     ObjectFlags: int
-    Outer: UObject
+    Outer: UObject | None
 
     def __dir__(self) -> list[str]:
         """

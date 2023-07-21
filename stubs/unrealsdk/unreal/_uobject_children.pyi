@@ -11,7 +11,7 @@ class UField(UObject):
     An unreal field object.
     """
 
-    Next: UField
+    Next: UField | None
 
 class UProperty(UField):
     """
@@ -22,16 +22,16 @@ class UProperty(UField):
     ElementSize: int
     Offset_Internal: int
     PropertyFlags: int
-    PropertyLinkNext: UProperty
+    PropertyLinkNext: UProperty | None
 
 class UStruct(UField):
     """
     An unreal struct object.
     """
 
-    Children: UField
-    PropertyLink: UProperty
-    SuperField: UStruct
+    Children: UField | None
+    PropertyLink: UProperty | None
+    SuperField: UStruct | None
 
     def _fields(self) -> Iterator[UField]:
         """
@@ -126,7 +126,7 @@ class UFunction(UStruct):
     ParamsSize: int
     ReturnValueOffset: int
 
-    def _find_return_param(self) -> UProperty:
+    def _find_return_param(self) -> UProperty | None:
         """
         Finds the return param for this function (if it exists).
 
