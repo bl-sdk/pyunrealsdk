@@ -2,6 +2,7 @@
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/uobject.h"
 #include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
@@ -21,6 +22,7 @@ void register_module(py::module_& mod) {
 
     register_uobject(unreal);
     register_uobject_children(unreal);
+    register_uenum(unreal);
     register_wrapped_array(unreal);
     register_wrapped_struct(unreal);
     register_bound_function(unreal);

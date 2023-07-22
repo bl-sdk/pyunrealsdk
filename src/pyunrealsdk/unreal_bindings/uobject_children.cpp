@@ -6,11 +6,15 @@
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/properties/uboolproperty.h"
 #include "unrealsdk/unreal/classes/properties/uclassproperty.h"
+#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/properties/uinterfaceproperty.h"
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustrproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustructproperty.h"
+#include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
+#include "unrealsdk/unreal/classes/uconst.h"
+#include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -105,6 +109,9 @@ void register_uobject_children(py::module_& mod) {
             "interface"_a)
         .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject);
 
+    PyUEClass<UBlueprintGeneratedClass, UClass>(mod, "UBlueprintGeneratedClass",
+                                                "An unreal blueprint-generated class object.");
+
     PyUEClass<UFunction, UStruct>(mod, "UFunction", "An unreal function object.")
         .def("_find_return_param", &UFunction::find_return_param,
              "Finds the return param for this function (if it exists).\n"
@@ -125,6 +132,11 @@ void register_uobject_children(py::module_& mod) {
              "Returns:\n"
              "    A new WrappedStruct.")
         .def_readwrite("StructFlags", &UScriptStruct::StructFlags);
+
+    PyUEClass<UConst, UField>(mod, "UConst", "An unreal constant object.")
+        .def_property(
+            "Value", [](const UConst* self) { return (std::string)self->Value; },
+            [](UConst* self, const std::string& new_value) { self->Value = new_value; });
 
     PyUEClass<UProperty, UField>(mod, "UProperty", "The base class of all unreal properties.")
         .def_readwrite("ArrayDim", &UProperty::ArrayDim)
@@ -151,9 +163,11 @@ void register_uobject_children(py::module_& mod) {
 
     PyUEClass<UArrayProperty, UProperty>(mod, "UArrayProperty", "An unreal array property object.")
         .def_property_readonly("Inner", &UArrayProperty::get_inner);
-
     PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty", "An unreal bool property object.")
         .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
+    PyUEClass<UEnumProperty, UProperty>(mod, "UEnumProperty", "An unreal enum property object.")
+        .def_property_readonly("UnderlyingProp", &UEnumProperty::get_underlying_prop)
+        .def_property_readonly("Enum", &UEnumProperty::get_enum);
     PyUEClass<UInterfaceProperty, UProperty>(mod, "UInterfaceProperty",
                                              "An unreal interface property object.")
         .def_property_readonly("InterfaceClass", &UInterfaceProperty::get_interface_class);
