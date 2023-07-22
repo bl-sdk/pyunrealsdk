@@ -1,7 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
@@ -75,7 +75,7 @@ py::object py_getattr(UField* field,
         // Store in a list for now so we can still append.
         py::list ret{prop->ArrayDim};
 
-        cast_prop(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
+        cast(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
                 ret[i] = get_property<T>(prop, i, base_addr, parent);
             }
@@ -127,7 +127,7 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
         value_seq = py::make_tuple(value);
     }
 
-    cast_prop(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
+    cast(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
         using value_type = typename PropTraits<T>::Value;
 
         const size_t seq_size = value_seq.size();

@@ -1,6 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
@@ -20,25 +20,24 @@ size_t convert_py_idx(const WrappedArray& arr, py::ssize_t idx) {
 
 py::object array_get(const WrappedArray& arr, size_t idx) {
     py::object ret{};
-    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) { ret = py::cast(arr.get_at<T>(idx)); });
+    cast(arr.type, [&]<typename T>(const T* /*prop*/) { ret = py::cast(arr.get_at<T>(idx)); });
 
     return ret;
 }
 
 void array_set(WrappedArray& arr, size_t idx, const py::object& value) {
-    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) {
+    cast(arr.type, [&]<typename T>(const T* /*prop*/) {
         arr.set_at<T>(idx, py::cast<typename PropTraits<T>::Value>(value));
     });
 }
 
 void array_validate_value(const WrappedArray& arr, const py::object& value) {
-    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) {
-        py::cast<typename PropTraits<T>::Value>(value);
-    });
+    cast(arr.type,
+         [&]<typename T>(const T* /*prop*/) { py::cast<typename PropTraits<T>::Value>(value); });
 }
 
 void array_delete_range(WrappedArray& arr, size_t start, size_t stop) {
-    cast_prop(arr.type, [&]<typename T>(const T* /*prop*/) {
+    cast(arr.type, [&]<typename T>(const T* /*prop*/) {
         for (auto idx = start; idx < stop; idx++) {
             arr.destroy_at<T>(idx);
         }
