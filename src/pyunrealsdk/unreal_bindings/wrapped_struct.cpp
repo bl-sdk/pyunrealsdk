@@ -2,6 +2,7 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
@@ -48,7 +49,7 @@ WrappedStruct make_struct(const UScriptStruct* type,
 
 void register_wrapped_struct(py::module_& mod) {
     py::class_<WrappedStruct>(
-        mod, "WrappedStruct", "An unreal struct wrapper.",
+        mod, "WrappedStruct",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
         .def(py::init(&make_struct),

@@ -1,8 +1,12 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
+#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
+#include "unrealsdk/unreal/classes/uconst.h"
+#include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -75,9 +79,17 @@ py::object py_getattr(UField* field,
         // Store in a list for now so we can still append.
         py::list ret{prop->ArrayDim};
 
-        cast_prop(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
+        cast(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
-                ret[i] = get_property<T>(prop, i, base_addr, parent);
+                auto val = get_property<T>(prop, i, base_addr, parent);
+
+                if constexpr (std::is_same_v<T, UEnumProperty>) {
+                    // If the value we're reading is an enum, convert it to a python enum
+                    ret[i] = enum_as_py_enum(prop->get_enum())(val);
+                } else {
+                    // Otherwise store as is
+                    ret[i] = std::move(val);
+                }
             }
         });
         if (prop->ArrayDim == 1) {
@@ -93,8 +105,17 @@ py::object py_getattr(UField* field,
 
         return py::cast(BoundFunction{reinterpret_cast<UFunction*>(field), func_obj});
     }
+
     if (field->is_instance(find_class<UScriptStruct>())) {
         return py::cast(field);
+    }
+
+    if (field->is_instance(find_class<UConst>())) {
+        return py::cast((std::string) reinterpret_cast<UConst*>(field)->Value);
+    }
+
+    if (field->is_instance(find_class<UEnum>())) {
+        return enum_as_py_enum(reinterpret_cast<UEnum*>(field));
     }
 
     throw py::attribute_error(unrealsdk::fmt::format("attribute '{}' has unknown type '{}'",
@@ -127,7 +148,7 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
         value_seq = py::make_tuple(value);
     }
 
-    cast_prop(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
+    cast(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
         using value_type = typename PropTraits<T>::Value;
 
         const size_t seq_size = value_seq.size();

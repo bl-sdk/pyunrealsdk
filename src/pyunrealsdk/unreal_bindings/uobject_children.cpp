@@ -6,11 +6,15 @@
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/properties/uboolproperty.h"
 #include "unrealsdk/unreal/classes/properties/uclassproperty.h"
+#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/properties/uinterfaceproperty.h"
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustrproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustructproperty.h"
+#include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
+#include "unrealsdk/unreal/classes/uconst.h"
+#include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -23,10 +27,25 @@ using namespace unrealsdk::unreal;
 namespace pyunrealsdk::unreal {
 
 void register_uobject_children(py::module_& mod) {
-    PyUEClass<UField, UObject>(mod, "UField", "An unreal field object.")
-        .def_readwrite("Next", &UField::Next);
+    // ======== First Layer Subclasses ========
 
-    PyUEClass<UStruct, UField>(mod, "UStruct", "An unreal struct object.")
+    PyUEClass<UField, UObject>(mod, "UField").def_readwrite("Next", &UField::Next);
+
+    // ======== Second Layer Subclasses ========
+
+    PyUEClass<UConst, UField>(mod, "UConst")
+        .def_property(
+            "Value", [](const UConst* self) { return (std::string)self->Value; },
+            [](UConst* self, const std::string& new_value) { self->Value = new_value; });
+
+    PyUEClass<UProperty, UField>(mod, "UProperty")
+        .def_readwrite("ArrayDim", &UProperty::ArrayDim)
+        .def_readwrite("ElementSize", &UProperty::ElementSize)
+        .def_readwrite("PropertyFlags", &UProperty::PropertyFlags)
+        .def_readwrite("Offset_Internal", &UProperty::Offset_Internal)
+        .def_readwrite("PropertyLinkNext", &UProperty::PropertyLinkNext);
+
+    PyUEClass<UStruct, UField>(mod, "UStruct")
         .def(
             "_fields",
             [](UStruct* self) {
@@ -92,7 +111,17 @@ void register_uobject_children(py::module_& mod) {
         .def_readwrite("Children", &UStruct::Children)
         .def_readwrite("PropertyLink", &UStruct::PropertyLink);
 
-    PyUEClass<UClass, UStruct>(mod, "UClass", "An unreal class object.")
+    // ======== Third Layer Subclasses ========
+
+    PyUEClass<UArrayProperty, UProperty>(mod, "UArrayProperty")
+        .def_property_readonly("Inner", &UArrayProperty::get_inner);
+
+    PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty")
+        .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
+
+    PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty");
+
+    PyUEClass<UClass, UStruct>(mod, "UClass")
         .def(
             "_implements",
             [](UClass* self, UClass* interface) { return self->implements(interface, nullptr); },
@@ -105,7 +134,15 @@ void register_uobject_children(py::module_& mod) {
             "interface"_a)
         .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject);
 
-    PyUEClass<UFunction, UStruct>(mod, "UFunction", "An unreal function object.")
+    PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
+
+    PyUEClass<UEnumProperty, UProperty>(mod, "UEnumProperty")
+        .def_property_readonly("UnderlyingProp", &UEnumProperty::get_underlying_prop)
+        .def_property_readonly("Enum", &UEnumProperty::get_enum);
+
+    PyUEClass<UFloatProperty, UProperty>(mod, "UFloatProperty");
+
+    PyUEClass<UFunction, UStruct>(mod, "UFunction")
         .def("_find_return_param", &UFunction::find_return_param,
              "Finds the return param for this function (if it exists).\n"
              "\n"
@@ -116,7 +153,23 @@ void register_uobject_children(py::module_& mod) {
         .def_readwrite("ParamsSize", &UFunction::ParamsSize)
         .def_readwrite("ReturnValueOffset", &UFunction::ReturnValueOffset);
 
-    PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct", "An unreal script struct object.")
+    PyUEClass<UInt8Property, UProperty>(mod, "UInt8Property");
+
+    PyUEClass<UInt16Property, UProperty>(mod, "UInt16Property");
+
+    PyUEClass<UInt64Property, UProperty>(mod, "UInt64Property");
+
+    PyUEClass<UInterfaceProperty, UProperty>(mod, "UInterfaceProperty")
+        .def_property_readonly("InterfaceClass", &UInterfaceProperty::get_interface_class);
+
+    PyUEClass<UIntProperty, UProperty>(mod, "UIntProperty");
+
+    PyUEClass<UNameProperty, UProperty>(mod, "UNameProperty");
+
+    PyUEClass<UObjectProperty, UProperty>(mod, "UObjectProperty")
+        .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
+
+    PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
         .def("__call__", &make_struct,
              "Helper to create a new wrapped struct using this type.\n"
              "\n"
@@ -126,47 +179,22 @@ void register_uobject_children(py::module_& mod) {
              "    A new WrappedStruct.")
         .def_readwrite("StructFlags", &UScriptStruct::StructFlags);
 
-    PyUEClass<UProperty, UField>(mod, "UProperty", "The base class of all unreal properties.")
-        .def_readwrite("ArrayDim", &UProperty::ArrayDim)
-        .def_readwrite("ElementSize", &UProperty::ElementSize)
-        .def_readwrite("PropertyFlags", &UProperty::PropertyFlags)
-        .def_readwrite("Offset_Internal", &UProperty::Offset_Internal)
-        .def_readwrite("PropertyLinkNext", &UProperty::PropertyLinkNext);
+    PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");
 
-    PyUEClass<UInt8Property, UProperty>(mod, "UInt8Property", "An unreal int8 property object.");
-    PyUEClass<UInt16Property, UProperty>(mod, "UInt16Property", "An unreal int16 property object.");
-    PyUEClass<UIntProperty, UProperty>(mod, "UIntProperty", "An unreal int32 property object.");
-    PyUEClass<UInt64Property, UProperty>(mod, "UInt64Property", "An unreal int64 property object.");
-    PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty", "An unreal uint8 property object.");
-    PyUEClass<UUInt16Property, UProperty>(mod, "UUInt16Property",
-                                          "An unreal uint16 property object.");
-    PyUEClass<UUInt32Property, UProperty>(mod, "UUInt32Property",
-                                          "An unreal uint32 property object.");
-    PyUEClass<UUInt64Property, UProperty>(mod, "UUInt64Property",
-                                          "An unreal uint64 property object.");
-    PyUEClass<UFloatProperty, UProperty>(mod, "UFloatProperty", "An unreal float property object.");
-    PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty",
-                                          "An unreal double property object.");
-    PyUEClass<UNameProperty, UProperty>(mod, "UNameProperty", "An unreal name property object.");
-
-    PyUEClass<UArrayProperty, UProperty>(mod, "UArrayProperty", "An unreal array property object.")
-        .def_property_readonly("Inner", &UArrayProperty::get_inner);
-
-    PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty", "An unreal bool property object.")
-        .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
-    PyUEClass<UInterfaceProperty, UProperty>(mod, "UInterfaceProperty",
-                                             "An unreal interface property object.")
-        .def_property_readonly("InterfaceClass", &UInterfaceProperty::get_interface_class);
-    PyUEClass<UObjectProperty, UProperty>(mod, "UObjectProperty",
-                                          "An unreal object property object.")
-        .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
-    PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty", "An unreal string property object.");
-    PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty",
-                                          "An unreal struct property object.")
+    PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
         .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
 
-    PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty",
-                                               "An unreal class property object.")
+    PyUEClass<UUInt16Property, UProperty>(mod, "UUInt16Property");
+
+    PyUEClass<UUInt32Property, UProperty>(mod, "UUInt32Property");
+
+    PyUEClass<UUInt64Property, UProperty>(mod, "UUInt64Property");
+
+    // ======== Fourth Layer Subclasses ========
+
+    PyUEClass<UBlueprintGeneratedClass, UClass>(mod, "UBlueprintGeneratedClass");
+
+    PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty")
         .def_property_readonly("MetaClass", &UClassProperty::get_meta_class);
 }
 

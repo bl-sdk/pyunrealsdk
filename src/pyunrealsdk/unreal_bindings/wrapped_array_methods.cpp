@@ -1,6 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
@@ -94,7 +94,7 @@ py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
     auto idx = convert_py_idx(self, py_idx);
 
     py::object ret{};
-    cast_prop(self.type, [&self, &ret, idx]<typename T>(const T* /*prop*/) {
+    cast(self.type, [&self, &ret, idx]<typename T>(const T* /*prop*/) {
         auto val = self.get_at<T>(idx);
 
         // Explicitly make a copy
@@ -117,7 +117,7 @@ void array_py_remove(WrappedArray& self, const py::object& value) {
 }
 
 void array_py_reverse(WrappedArray& self) {
-    cast_prop(self.type, [&]<typename T>(const T* /*prop*/) {
+    cast(self.type, [&]<typename T>(const T* /*prop*/) {
         auto size = self.size();
         for (size_t i = 0; i < (size / 2); i++) {
             auto upper_idx = size - i - 1;
@@ -136,7 +136,7 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
     py::sequence sorted =
         py::module_::import("builtins").attr("sorted")(self, "key"_a = key, "reverse"_a = reverse);
 
-    cast_prop(self.type, [&self, &sorted]<typename T>(const T* /*prop*/) {
+    cast(self.type, [&self, &sorted]<typename T>(const T* /*prop*/) {
         auto size = self.size();
         for (size_t i = 0; i < size; i++) {
             auto val = py::cast<typename PropTraits<T>::Value>(sorted[i]);

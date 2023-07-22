@@ -55,7 +55,7 @@ def find_all(cls: object, exact: bool = True) -> Iterator[UObject]:
         A list of all instances of the class.
     """
 
-def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
+def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
     """
     Finds a class by name.
 
@@ -67,7 +67,7 @@ def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
         The class, or None if not found.
     """
 
-def find_object(cls: object, name: str) -> unreal.UObject:
+def find_object(cls: object, name: str) -> UObject | None:
     """
     Finds an object by name.
 

@@ -2,7 +2,7 @@
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
 #include "unrealsdk/hook_manager.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/prop_traits.h"
 #include "unrealsdk/unreal/wrappers/property_proxy.h"
 
@@ -43,7 +43,7 @@ bool handle_prehook(Details& hook, const py::object& callback) {
             }
 
             auto ret_override = ret_tuple[1];
-            cast_prop(hook.ret.prop, [&hook, &ret_override]<typename T>(const T* /*prop*/) {
+            cast(hook.ret.prop, [&hook, &ret_override]<typename T>(const T* /*prop*/) {
                 auto value = py::cast<typename PropTraits<T>::Value>(ret_override);
                 hook.ret.set<T>(value);
             });
@@ -66,9 +66,8 @@ bool handle_prehook(Details& hook, const py::object& callback) {
 void handle_posthook(Details& hook, const py::object& callback) {
     py::object ret;
     if (hook.ret.has_value()) {
-        cast_prop(hook.ret.prop, [&hook, &ret]<typename T>(const T* /*prop*/) {
-            ret = py::cast(hook.ret.get<T>());
-        });
+        cast(hook.ret.prop,
+             [&hook, &ret]<typename T>(const T* /*prop*/) { ret = py::cast(hook.ret.get<T>()); });
     } else {
         ret = py::ellipsis{};
     }

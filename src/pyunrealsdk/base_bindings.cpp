@@ -6,6 +6,7 @@
 #include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/gobjects.h"
+#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/utils.h"
 

@@ -1,6 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
-#include "unrealsdk/unreal/cast_prop.h"
+#include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 using namespace unrealsdk::unreal;
@@ -199,7 +199,7 @@ WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other) {
         return self;
     }
 
-    cast_prop(self.type, [&self, other]<typename T>(const T* /*prop*/) {
+    cast(self.type, [&self, other]<typename T>(const T* /*prop*/) {
         auto size = self.size();
         self.reserve(size * other);
 

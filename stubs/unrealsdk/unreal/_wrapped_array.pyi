@@ -9,10 +9,6 @@ from ._uobject_children import UProperty
 T = TypeVar("T")
 
 class WrappedArray(Generic[T]):
-    """
-    An unreal array wrapper.
-    """
-
     _type: UProperty
 
     def __add__(self, values: Sequence[T]) -> list[T]:
