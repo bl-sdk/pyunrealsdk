@@ -15,7 +15,11 @@ namespace pyunrealsdk::unreal {
 
 void register_uobject(py::module_& mod) {
     PyUEClass<UObject>(
-        mod, "UObject", "The base class of all unreal objects.",
+        mod, "UObject",
+        "The base class of all unreal objects.\n"
+        "\n"
+        "Most objects you interact with will be this type in python, even if their unreal\n"
+        "class is something different.",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
         .def("__new__",

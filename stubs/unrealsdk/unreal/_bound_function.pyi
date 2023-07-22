@@ -6,10 +6,6 @@ from ._uobject import UObject
 from ._uobject_children import UFunction
 
 class BoundFunction:
-    """
-    A bound unreal function.
-    """
-
     func: UFunction
     object: UObject
 

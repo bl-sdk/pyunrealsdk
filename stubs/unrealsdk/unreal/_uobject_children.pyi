@@ -3,14 +3,11 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
+from ._uenum import UEnum
 from ._uobject import UObject
 from ._wrapped_struct import WrappedStruct
 
 class UField(UObject):
-    """
-    An unreal field object.
-    """
-
     Next: UField | None
 
 class UProperty(UField):
@@ -25,10 +22,6 @@ class UProperty(UField):
     PropertyLinkNext: UProperty | None
 
 class UStruct(UField):
-    """
-    An unreal struct object.
-    """
-
     Children: UField | None
     PropertyLink: UProperty | None
     SuperField: UStruct | None
@@ -91,36 +84,18 @@ class UStruct(UField):
         """
 
 class UObjectProperty(UProperty):
-    """
-    An unreal object property object.
-    """
-
     @property
     def PropertyClass(self) -> UClass: ...
 
-class UDoubleProperty(UProperty):
-    """
-    An unreal double property object.
-    """
+class UDoubleProperty(UProperty): ...
 
 class UArrayProperty(UProperty):
-    """
-    An unreal array property object.
-    """
-
     @property
     def Inner(self) -> UProperty: ...
 
-class UFloatProperty(UProperty):
-    """
-    An unreal float property object.
-    """
+class UFloatProperty(UProperty): ...
 
 class UFunction(UStruct):
-    """
-    An unreal function object.
-    """
-
     FunctionFlags: int
     NumParams: int
     ParamsSize: int
@@ -134,65 +109,28 @@ class UFunction(UStruct):
             The return param, or None if it doesn't exist.
         """
 
-class UInt16Property(UProperty):
-    """
-    An unreal int16 property object.
-    """
-
-class UInt64Property(UProperty):
-    """
-    An unreal int64 property object.
-    """
-
-class UInt8Property(UProperty):
-    """
-    An unreal int8 property object.
-    """
-
-class UIntProperty(UProperty):
-    """
-    An unreal int32 property object.
-    """
+class UInt16Property(UProperty): ...
+class UInt64Property(UProperty): ...
+class UInt8Property(UProperty): ...
+class UIntProperty(UProperty): ...
 
 class UInterfaceProperty(UProperty):
-    """
-    An unreal interface property object.
-    """
-
     @property
     def InterfaceClass(self) -> UClass: ...
 
-class UNameProperty(UProperty):
-    """
-    An unreal name property object.
-    """
+class UNameProperty(UProperty): ...
 
 class UBoolProperty(UProperty):
-    """
-    An unreal bool property object.
-    """
-
     @property
     def FieldMask(self) -> int: ...
 
 class UClassProperty(UObjectProperty):
-    """
-    An unreal class property object.
-    """
-
     @property
     def MetaClass(self) -> UClass: ...
 
-class UByteProperty(UProperty):
-    """
-    An unreal uint8 property object.
-    """
+class UByteProperty(UProperty): ...
 
 class UScriptStruct(UStruct):
-    """
-    An unreal script struct object.
-    """
-
     StructFlags: int
 
     def __call__(self, *args: Any, **kwargs: Any) -> WrappedStruct:
@@ -205,16 +143,9 @@ class UScriptStruct(UStruct):
             A new WrappedStruct.
         """
 
-class UStrProperty(UProperty):
-    """
-    An unreal string property object.
-    """
+class UStrProperty(UProperty): ...
 
 class UClass(UStruct):
-    """
-    An unreal class object.
-    """
-
     ClassDefaultObject: UObject
 
     def _implements(self, interface: UClass) -> bool:
@@ -228,24 +159,22 @@ class UClass(UStruct):
         """
 
 class UStructProperty(UProperty):
-    """
-    An unreal struct property object.
-    """
-
     @property
     def Struct(self) -> UScriptStruct: ...
 
-class UUInt16Property(UProperty):
-    """
-    An unreal uint16 property object.
-    """
+class UUInt16Property(UProperty): ...
+class UUInt32Property(UProperty): ...
+class UUInt64Property(UProperty): ...
+class UBlueprintGeneratedClass(UClass): ...
 
-class UUInt32Property(UProperty):
-    """
-    An unreal uint32 property object.
-    """
+class UConst:
+    @property
+    def Value(self) -> str: ...
+    @Value.setter
+    def Value(self, Value: str) -> None: ...
 
-class UUInt64Property(UProperty):
-    """
-    An unreal uint64 property object.
-    """
+class UEnumProperty(UProperty, UField, UObject):
+    @property
+    def Enum(self) -> UEnum: ...
+    @property
+    def UnderlyingProp(self) -> UProperty: ...

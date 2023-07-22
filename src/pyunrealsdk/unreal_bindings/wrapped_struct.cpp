@@ -49,7 +49,7 @@ WrappedStruct make_struct(const UScriptStruct* type,
 
 void register_wrapped_struct(py::module_& mod) {
     py::class_<WrappedStruct>(
-        mod, "WrappedStruct", "An unreal struct wrapper.",
+        mod, "WrappedStruct",
         // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
         py::dynamic_attr())
         .def(py::init(&make_struct),

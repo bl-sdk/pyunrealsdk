@@ -7,6 +7,9 @@ from ._uobject_children import UClass, UField
 class UObject:
     """
     The base class of all unreal objects.
+
+    Most objects you interact with will be this type in python, even if their unreal
+    class is something different.
     """
 
     Class: UClass

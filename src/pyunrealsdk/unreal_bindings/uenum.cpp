@@ -21,7 +21,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
 }
 
 void register_uenum(py::module_& mod) {
-    PyUEClass<UEnum, UField>(mod, "UEnum", "An unreal enum object.")
+    PyUEClass<UEnum, UField>(mod, "UEnum")
         .def("_as_py", &enum_as_py_enum,
              "Generates a compatible IntFlag enum.\n"
              "\n"

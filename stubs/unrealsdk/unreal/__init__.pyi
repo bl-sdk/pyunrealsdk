@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 from ._bound_function import BoundFunction
+from ._uenum import UEnum
 from ._uobject import UObject
 from ._uobject_children import (
     UArrayProperty,
+    UBlueprintGeneratedClass,
     UBoolProperty,
     UByteProperty,
     UClass,
     UClassProperty,
+    UConst,
     UDoubleProperty,
+    UEnumProperty,
     UField,
     UFloatProperty,
     UFunction,
@@ -34,11 +38,15 @@ from ._wrapped_struct import WrappedStruct
 __all__: tuple[str, ...] = (
     "BoundFunction",
     "UArrayProperty",
+    "UBlueprintGeneratedClass",
     "UBoolProperty",
     "UByteProperty",
     "UClass",
     "UClassProperty",
+    "UConst",
     "UDoubleProperty",
+    "UEnum",
+    "UEnumProperty",
     "UField",
     "UFloatProperty",
     "UFunction",

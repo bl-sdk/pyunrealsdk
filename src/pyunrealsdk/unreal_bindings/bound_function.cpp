@@ -139,7 +139,7 @@ py::object get_py_return(const WrappedStruct& params,
 }  // namespace
 
 void register_bound_function(py::module_& mod) {
-    py::class_<BoundFunction>(mod, "BoundFunction", "A bound unreal function.")
+    py::class_<BoundFunction>(mod, "BoundFunction")
         .def(py::init<UFunction*, UObject*>(),
              "Creates a new bound function.\n"
              "\n"

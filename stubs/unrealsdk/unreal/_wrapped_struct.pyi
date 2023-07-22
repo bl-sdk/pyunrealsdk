@@ -5,10 +5,6 @@ from typing import Any
 from ._uobject_children import UField, UScriptStruct, UStruct
 
 class WrappedStruct:
-    """
-    An unreal struct wrapper.
-    """
-
     _type: UStruct
 
     def __dir__(self) -> list[str]:
