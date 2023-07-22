@@ -10,11 +10,13 @@ from ._wrapped_struct import WrappedStruct
 class UField(UObject):
     Next: UField | None
 
-class UProperty(UField):
-    """
-    The base class of all unreal properties.
-    """
+class UConst(UField):
+    @property
+    def Value(self) -> str: ...
+    @Value.setter
+    def Value(self, Value: str) -> None: ...
 
+class UProperty(UField):
     ArrayDim: int
     ElementSize: int
     Offset_Internal: int
@@ -83,15 +85,36 @@ class UStruct(UField):
             An iterator over all properties in the struct.
         """
 
-class UObjectProperty(UProperty):
-    @property
-    def PropertyClass(self) -> UClass: ...
-
-class UDoubleProperty(UProperty): ...
-
 class UArrayProperty(UProperty):
     @property
     def Inner(self) -> UProperty: ...
+
+class UBoolProperty(UProperty):
+    @property
+    def FieldMask(self) -> int: ...
+
+class UByteProperty(UProperty): ...
+
+class UClass(UStruct):
+    ClassDefaultObject: UObject
+
+    def _implements(self, interface: UClass) -> bool:
+        """
+        Checks if this class implements a given interface.
+
+        Args:
+            interface: The interface to check.
+        Returns:
+            True if this class implements the interface, false otherwise.
+        """
+
+class UDoubleProperty(UProperty): ...
+
+class UEnumProperty(UProperty):
+    @property
+    def Enum(self) -> UEnum: ...
+    @property
+    def UnderlyingProp(self) -> UProperty: ...
 
 class UFloatProperty(UProperty): ...
 
@@ -109,26 +132,20 @@ class UFunction(UStruct):
             The return param, or None if it doesn't exist.
         """
 
+class UInt8Property(UProperty): ...
 class UInt16Property(UProperty): ...
 class UInt64Property(UProperty): ...
-class UInt8Property(UProperty): ...
-class UIntProperty(UProperty): ...
 
 class UInterfaceProperty(UProperty):
     @property
     def InterfaceClass(self) -> UClass: ...
 
+class UIntProperty(UProperty): ...
 class UNameProperty(UProperty): ...
 
-class UBoolProperty(UProperty):
+class UObjectProperty(UProperty):
     @property
-    def FieldMask(self) -> int: ...
-
-class UClassProperty(UObjectProperty):
-    @property
-    def MetaClass(self) -> UClass: ...
-
-class UByteProperty(UProperty): ...
+    def PropertyClass(self) -> UClass: ...
 
 class UScriptStruct(UStruct):
     StructFlags: int
@@ -145,19 +162,6 @@ class UScriptStruct(UStruct):
 
 class UStrProperty(UProperty): ...
 
-class UClass(UStruct):
-    ClassDefaultObject: UObject
-
-    def _implements(self, interface: UClass) -> bool:
-        """
-        Checks if this class implements a given interface.
-
-        Args:
-            interface: The interface to check.
-        Returns:
-            True if this class implements the interface, false otherwise.
-        """
-
 class UStructProperty(UProperty):
     @property
     def Struct(self) -> UScriptStruct: ...
@@ -167,14 +171,6 @@ class UUInt32Property(UProperty): ...
 class UUInt64Property(UProperty): ...
 class UBlueprintGeneratedClass(UClass): ...
 
-class UConst:
+class UClassProperty(UObjectProperty):
     @property
-    def Value(self) -> str: ...
-    @Value.setter
-    def Value(self, Value: str) -> None: ...
-
-class UEnumProperty(UProperty, UField, UObject):
-    @property
-    def Enum(self) -> UEnum: ...
-    @property
-    def UnderlyingProp(self) -> UProperty: ...
+    def MetaClass(self) -> UClass: ...
