@@ -11,6 +11,7 @@
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustrproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustructproperty.h"
+#include "unrealsdk/unreal/classes/properties/utextproperty.h"
 #include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uconst.h"
@@ -132,7 +133,14 @@ void register_uobject_children(py::module_& mod) {
             "Returns:\n"
             "    True if this class implements the interface, false otherwise.",
             "interface"_a)
-        .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject);
+        .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject)
+        .def_property_readonly("Interfaces", [](const UClass* self) {
+            std::vector<UClass*> interfaces{};
+            for (const auto& iface : self->Interfaces) {
+                interfaces.push_back(iface.Class);
+            }
+            return interfaces;
+        });
 
     PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
 
@@ -183,6 +191,10 @@ void register_uobject_children(py::module_& mod) {
 
     PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
         .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
+
+#ifdef UE4
+    PyUEClass<UTextProperty, UProperty>(mod, "UTextProperty");
+#endif
 
     PyUEClass<UUInt16Property, UProperty>(mod, "UUInt16Property");
 

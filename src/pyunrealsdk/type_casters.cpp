@@ -9,7 +9,7 @@ namespace pyunrealsdk::type_casters {
 
 const void* downcast_unreal(const UObject* src, const std::type_info*& type) {
     if (src != nullptr) {
-        cast<include_input_class>(
+        cast<cast_options<true, true>>(
             src,
             // On successful cast: return the templated type
             [&type]<typename T>(const T* /*obj*/) { type = &typeid(T); },
