@@ -11,6 +11,7 @@
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustrproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustructproperty.h"
+#include "unrealsdk/unreal/classes/properties/utextproperty.h"
 #include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uconst.h"
@@ -183,6 +184,8 @@ void register_uobject_children(py::module_& mod) {
 
     PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
         .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
+
+    PyUEClass<UTextProperty, UProperty>(mod, "UTextProperty");
 
     PyUEClass<UUInt16Property, UProperty>(mod, "UUInt16Property");
 
