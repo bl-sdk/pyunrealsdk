@@ -133,7 +133,14 @@ void register_uobject_children(py::module_& mod) {
             "Returns:\n"
             "    True if this class implements the interface, false otherwise.",
             "interface"_a)
-        .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject);
+        .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject)
+        .def_property_readonly("Interfaces", [](const UClass* self) {
+            std::vector<UClass*> interfaces{};
+            for (const auto& iface : self->Interfaces) {
+                interfaces.push_back(iface.Class);
+            }
+            return interfaces;
+        });
 
     PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
 

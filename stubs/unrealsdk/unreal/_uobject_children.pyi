@@ -97,6 +97,7 @@ class UByteProperty(UProperty): ...
 
 class UClass(UStruct):
     ClassDefaultObject: UObject
+    Interfaces: list[UClass]
 
     def _implements(self, interface: UClass) -> bool:
         """
