@@ -135,6 +135,23 @@ py::object get_py_return(const WrappedStruct& params,
     }
     return py::tuple(ret);
 }
+py::object get_py_return(const WrappedStruct& params) {
+    // If only called with the struct, re-gather the return + out params
+    UProperty* return_param = nullptr;
+    std::vector<UProperty*> out_params{};
+
+    for (auto prop : params.type->properties()) {
+        if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0 && return_param == nullptr) {
+            return_param = prop;
+            continue;
+        }
+        if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
+            out_params.push_back(prop);
+        }
+    }
+
+    return get_py_return(params, return_param, out_params);
+}
 
 }  // namespace
 
@@ -156,6 +173,14 @@ void register_bound_function(py::module_& mod) {
                                                self.func->Name, self.func->NumParams, args.size()));
                 }
 
+                if (args.size() == 1 && kwargs.empty() && py::isinstance<WrappedStruct>(args[0])) {
+                    auto args_struct = py::cast<WrappedStruct>(args[0]);
+                    if (args_struct.type == self.func) {
+                        self.call<void>(args_struct);
+                        return get_py_return(args_struct);
+                    }
+                }
+
                 WrappedStruct params{self.func};
                 auto [return_param, out_params] = fill_py_params(params, args, kwargs);
 
@@ -172,6 +197,8 @@ void register_bound_function(py::module_& mod) {
 #ifdef UE3
             "    Optional params should also be optional.\n"
 #endif
+            "    Alternatively, may call with a single positional WrappedStruct which matches\n"
+            "    the type of the function, in order to reuse the args already stored in it.\n"
             "Returns:\n"
             "    If the function has no out params, returns the actual return value, or\n"
             "    Ellipsis for a void function.\n"
