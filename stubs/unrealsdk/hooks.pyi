@@ -61,6 +61,12 @@ class Type(metaclass=EnumMeta):
     @property
     def value(self) -> int: ...
 
+class Unset:
+    """
+    A sentinel used to indicate a return value override is unset - i.e. the actual
+    return value will be used.
+    """
+
 HookBlockSignal = None | EllipsisType | Block | type[Block]
 PreHookCallback = Callable[
     [UObject, WrappedStruct, Any, BoundFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
@@ -82,8 +88,8 @@ def add_hook(func: str, type: PostHookType, identifier: str, callback: PostHookC
         args: The arguments the hooked function was called with. Note that while
               this is mutable, modifying it will *not* modify the actual function
               arguments.
-        ret: The return value of the unreal function. This may have been overwritten
-             by a previous pre-hook.
+        ret: The return value of the unreal function, or the value of the previous
+             return value override, if it has yet to run.
              Note that while there may be a `ReturnValue` property in the args
              struct, it is not necessarily correct, this always will be.
         func: The function which was called, bound to the same object. Can be used
@@ -91,22 +97,23 @@ def add_hook(func: str, type: PostHookType, identifier: str, callback: PostHookC
 
     Pre-hooks can influence execution of the unreal function: they can block it from
     running, and/or overwrite it's return value.
-    To block execution, return the special `Block` class (or an instance thereof),
+
+    To block execution, return the sentinel `Block` type, (or an instance thereof),
     either by itself or as the first element of a tuple. Any other value will allow
-    execution to continue - suggest using Ellipsis when a value's required.
-    To overwrite the return value, return it as the second element of a tuple. A
-    value of Ellipsis means "don't overwrite". If you need to provide a value,
-    but don't care about what, best practice to forward the value in `ret`.
+    execution continue - suggest using Ellipsis when a value's required. If there
+    are multiple hooks on the same function, execution is blocked if any hook
+    requests it.
 
-    Multiple hooks of the same type on the same function run in an undefined order.
-    Execution is blocked if any hook signals to do so.
-    The return value is overwritten with the value set after calling the final hook.
-    The value passed in `ret` will be set to what the previous hook requested, hooks
-    can try cooperate by inspecting and modifying it.
+    To overwrite the return value, return it as the second element of a tuple. The
+    the sentinel `Unset` type will prevent an override, while using Ellipsis will
+    forward the previous value (rather than needing to copy it from `ret`). If there
+    are multiple hooks on the same function, they will be run in an undefined order,
+    where each hook is passed the previous override's value in `ret`, and the value
+    returned by the final hook is what will be used.
 
-    Post-hooks perform the same return value processing, however as the function's
-    already run, the effects are dropped. Overwriting the return value only serves
-    to change what's passed in `ret` during any later hooks.
+    Post-hooks perform the same block/return override value processing, however as
+    the function's already run, the effects are dropped. Overwriting the return
+    value only serves to change what's passed in `ret` during any later hooks.
 
     Args
         func: The function to hook.

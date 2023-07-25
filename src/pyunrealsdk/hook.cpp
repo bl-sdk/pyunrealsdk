@@ -13,8 +13,9 @@ namespace pyunrealsdk::hooks {
 
 namespace {
 
-// Sentinel class for python.
+// Sentinel classes for python.
 struct Block {};
+struct Unset {};
 
 /**
  * @brief Handles calling a python hook.
@@ -30,7 +31,7 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
             ret_arg = py::cast(hook.ret.get<T>());
         });
     } else {
-        ret_arg = py::ellipsis{};
+        ret_arg = py::type::of<Unset>();
     }
 
     auto should_block = callback(hook.obj, hook.args, ret_arg, hook.func);
@@ -53,9 +54,9 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
 
             auto ret_override = ret_tuple[1];
 
-            if (py::ellipsis{}.equal(ret_override)) {
+            if (py::type::of<Unset>().is(ret_override) || py::isinstance<Unset>(ret_override)) {
                 hook.ret.destroy();
-            } else {
+            } else if (!py::ellipsis{}.equal(ret_override)) {
                 cast(hook.ret.prop, [&hook, &ret_override]<typename T>(const T* /*prop*/) {
                     auto value = py::cast<typename PropTraits<T>::Value>(ret_override);
                     hook.ret.set<T>(value);
@@ -66,7 +67,7 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
         should_block = std::move(ret_tuple[0]);
     }
 
-    return py::isinstance<Block>(should_block) || should_block.equal(py::type::of<Block>());
+    return py::isinstance<Block>(should_block) || py::type::of<Block>().is(should_block);
 }
 
 }  // namespace
@@ -85,6 +86,12 @@ void register_module(py::module_& mod) {
         hooks, "Block",
         "A sentinel used to indicate a hook should block execution of the unrealscript\n"
         "function.")
+        .def(py::init<>());
+
+    py::class_<Unset>(
+        hooks, "Unset",
+        "A sentinel used to indicate a return value override is unset - i.e. the actual\n"
+        "return value will be used.")
         .def(py::init<>());
 
     hooks.def("log_all_calls", &log_all_calls,
@@ -122,8 +129,8 @@ void register_module(py::module_& mod) {
         "    args: The arguments the hooked function was called with. Note that while\n"
         "          this is mutable, modifying it will *not* modify the actual function\n"
         "          arguments.\n"
-        "    ret: The return value of the unreal function. This may have been overwritten\n"
-        "         by a previous pre-hook.\n"
+        "    ret: The return value of the unreal function, or the value of the previous\n"
+        "         return value override, if it has yet to run.\n"
         "         Note that while there may be a `ReturnValue` property in the args\n"
         "         struct, it is not necessarily correct, this always will be.\n"
         "    func: The function which was called, bound to the same object. Can be used\n"
@@ -131,22 +138,23 @@ void register_module(py::module_& mod) {
         "\n"
         "Pre-hooks can influence execution of the unreal function: they can block it from\n"
         "running, and/or overwrite it's return value.\n"
-        "To block execution, return the special `Block` class (or an instance thereof),\n"
+        "\n"
+        "To block execution, return the sentinel `Block` type, (or an instance thereof),\n"
         "either by itself or as the first element of a tuple. Any other value will allow\n"
-        "execution to continue - suggest using Ellipsis when a value's required.\n"
-        "To overwrite the return value, return it as the second element of a tuple. A\n"
-        "value of Ellipsis means \"don't overwrite\". If you need to provide a value,\n"
-        "but don't care about what, best practice to forward the value in `ret`.\n"
+        "execution continue - suggest using Ellipsis when a value's required. If there\n"
+        "are multiple hooks on the same function, execution is blocked if any hook\n"
+        "requests it.\n"
         "\n"
-        "Multiple hooks of the same type on the same function run in an undefined order.\n"
-        "Execution is blocked if any hook signals to do so.\n"
-        "The return value is overwritten with the value set after calling the final hook.\n"
-        "The value passed in `ret` will be set to what the previous hook requested, hooks\n"
-        "can try cooperate by inspecting and modifying it.\n"
+        "To overwrite the return value, return it as the second element of a tuple. The\n"
+        "the sentinel `Unset` type will prevent an override, while using Ellipsis will\n"
+        "forward the previous value (rather than needing to copy it from `ret`). If there\n"
+        "are multiple hooks on the same function, they will be run in an undefined order,\n"
+        "where each hook is passed the previous override's value in `ret`, and the value\n"
+        "returned by the final hook is what will be used.\n"
         "\n"
-        "Post-hooks perform the same return value processing, however as the function's\n"
-        "already run, the effects are dropped. Overwriting the return value only serves\n"
-        "to change what's passed in `ret` during any later hooks.\n"
+        "Post-hooks perform the same block/return override value processing, however as\n"
+        "the function's already run, the effects are dropped. Overwriting the return\n"
+        "value only serves to change what's passed in `ret` during any later hooks.\n"
         "\n"
         "Args\n"
         "    func: The function to hook.\n"
