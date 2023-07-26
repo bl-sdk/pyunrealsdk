@@ -209,7 +209,14 @@ WrappedArray& array_py_imul(WrappedArray& self, py::ssize_t other) {
         for (auto repetition = 0; repetition < other; repetition++) {
             for (size_t base_idx = 0; base_idx < size; base_idx++) {
                 auto copy_idx = (repetition * size) + base_idx;
-                self.set_at<T>(copy_idx, self.get_at<T>(base_idx));
+
+                try {
+                    self.set_at<T>(copy_idx, self.get_at<T>(base_idx));
+                } catch (...) {
+                    // On exception, make sure to delete whatever value may have just been set
+                    self.destroy_at<T>(copy_idx);
+                    throw;
+                }
 
                 self.resize(copy_idx + 1);
             }

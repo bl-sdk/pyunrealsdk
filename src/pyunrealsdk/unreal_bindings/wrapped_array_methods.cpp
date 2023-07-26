@@ -16,7 +16,6 @@ void array_py_append(WrappedArray& self, const py::object& value) {
 }
 
 void array_py_clear(WrappedArray& self) {
-    array_delete_range(self, 0, self.size());
     self.resize(0);
 }
 
@@ -40,9 +39,15 @@ void array_py_extend(WrappedArray& self, const py::sequence& values) {
     self.reserve(idx + values.size());
 
     for (const auto& val : values) {
-        // Set beyond the end of the array - we know the memory's reserved.
-        // if we throw, the size won't have increased.
-        array_set(self, idx, val);
+        // Set beyond the end of the array - we know the memory's reserved so it's safe.
+        // This means we only up the size after having successfully added a new entry.
+        try {
+            array_set(self, idx, val);
+        } catch (...) {
+            // On exception, make sure to delete whatever value may have just been set
+            array_delete_range(self, idx, idx + 1);
+            throw;
+        }
 
         // Since we previously reserved memory, this shouldn't cause re-allocations.
         self.resize(++idx);
@@ -75,6 +80,8 @@ void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& v
     // insert(-1) should insert before the last element, so goes through the normal conversion
     auto idx = static_cast<size_t>(py_idx) == size ? py_idx : convert_py_idx(self, py_idx);
 
+    self.resize(size + 1);
+
     // Don't move if appending
     if (idx != size) {
         auto data = reinterpret_cast<uintptr_t>(self.base->data);
@@ -86,7 +93,6 @@ void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& v
                 remaining_size);
     }
 
-    self.resize(size + 1);
     array_set(self, idx, value);
 }
 
