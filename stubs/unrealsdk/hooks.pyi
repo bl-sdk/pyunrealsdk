@@ -61,11 +61,17 @@ class Type(metaclass=EnumMeta):
     @property
     def value(self) -> int: ...
 
+class Unset:
+    """
+    A sentinel used to indicate a return value override is unset - i.e. the actual
+    return value will be used.
+    """
+
 HookBlockSignal = None | EllipsisType | Block | type[Block]
 PreHookCallback = Callable[
-    [UObject, WrappedStruct, BoundFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
+    [UObject, WrappedStruct, Any, BoundFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
 ]
-PostHookCallback = Callable[[UObject, WrappedStruct, BoundFunction, Any], None]
+PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
 
 PreHookType = Literal[Type.PRE]
 PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
@@ -75,29 +81,39 @@ def add_hook(func: str, type: PreHookType, identifier: str, callback: PreHookCal
 @overload
 def add_hook(func: str, type: PostHookType, identifier: str, callback: PostHookCallback) -> None:
     """
-    Adds a hook.
+    Adds a hook which runs when an unreal function is called.
 
-    Pre-hook callbacks take three positional args. These are, in order:
+    Hook callbacks take four positional args. These are, in order:
         obj: The object the hooked function was called on.
         args: The arguments the hooked function was called with. Note that while
               this is mutable, modifying it will *not* modify the actual function
               arguments.
-        func: The function which was called, bound to the same object. Can be used
-              to re-call it.
-    Pre-hooks may return the special `Block` value to block execution of the unreal
-    function. Any other value will allow the function to continue.
-    Additionally, if it returns a 2-tuple, the first entry will be used as above,
-    while the second entry will overwrite the function's return value. Suggest using
-    Ellipsis for the first arg if you want to allow the function to continue while
-    overwriting it's return.
-
-    Post-hook callbacks take a fourth positional arg:
-        ret: The return value of the unreal function. This may have been overwritten
-             by a pre-hook. If execution was blocked, and it was not overwritten, it
-             it will be set to Ellipsis.
+        ret: The return value of the unreal function, or the value of the previous
+             return value override, if it has yet to run.
              Note that while there may be a `ReturnValue` property in the args
              struct, it is not necessarily correct, this always will be.
-    Post-hook return values are ignored.
+        func: The function which was called, bound to the same object. Can be used
+              to re-call it.
+
+    Pre-hooks can influence execution of the unreal function: they can block it from
+    running, and/or overwrite it's return value.
+
+    To block execution, return the sentinel `Block` type, (or an instance thereof),
+    either by itself or as the first element of a tuple. Any other value will allow
+    execution continue - suggest using Ellipsis when a value's required. If there
+    are multiple hooks on the same function, execution is blocked if any hook
+    requests it.
+
+    To overwrite the return value, return it as the second element of a tuple. The
+    the sentinel `Unset` type will prevent an override, while using Ellipsis will
+    forward the previous value (rather than needing to copy it from `ret`). If there
+    are multiple hooks on the same function, they will be run in an undefined order,
+    where each hook is passed the previous override's value in `ret`, and the value
+    returned by the final hook is what will be used.
+
+    Post-hooks perform the same block/return override value processing, however as
+    the function's already run, the effects are dropped. Overwriting the return
+    value only serves to change what's passed in `ret` during any later hooks.
 
     Args
         func: The function to hook.

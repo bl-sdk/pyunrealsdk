@@ -17,7 +17,9 @@ class BoundFunction:
             The unreal function's args. Out params will be used to initialized the
             unreal value, but the python value is not modified in place. Kwargs are
             supported.
-            UE3 optional params should also be optional.
+            In UE3, optional params should also be optional.
+            Alternatively, may call with a single positional WrappedStruct which matches
+            the type of the function, in order to reuse the args already stored in it.
         Returns:
             If the function has no out params, returns the actual return value, or
             Ellipsis for a void function.
