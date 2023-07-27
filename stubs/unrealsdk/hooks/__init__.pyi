@@ -4,7 +4,7 @@ from enum import EnumMeta
 from types import EllipsisType
 from typing import Any, Callable, ClassVar, Literal, overload
 
-from .unreal import BoundFunction, UObject, WrappedStruct
+from ..unreal import BoundFunction, UObject, WrappedStruct
 
 __all__: tuple[str, ...] = (
     "Block",
