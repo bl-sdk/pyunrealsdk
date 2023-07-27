@@ -2,6 +2,7 @@
 #include "pyunrealsdk/base_bindings.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/uclass.h"
+#include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/structs/fname.h"
@@ -33,27 +34,6 @@ UClass* find_class_potentially_qualified(const std::wstring& name,
         return find_class(name);
     }
     return find_class(FName{name});
-}
-
-/**
- * @brief Gets a class from a python object which may be the class itself, or it's name.
- * @note Throws if the class can't be found.
- *
- * @param cls The python object.
- * @return The class.
- */
-UClass* find_class_potentially_given(const py::object& cls) {
-    if (py::isinstance<UClass>(cls)) {
-        return py::cast<UClass*>(cls);
-    }
-
-    auto class_name = py::cast<std::wstring>(cls);
-    auto class_ptr = find_class_potentially_qualified(class_name, std::nullopt);
-    if (class_ptr == nullptr) {
-        throw py::value_error(
-            unrealsdk::fmt::format("Couldn't find class {}", unrealsdk::utils::narrow(class_name)));
-    }
-    return class_ptr;
 }
 
 /**
@@ -148,8 +128,12 @@ void register_base_bindings(py::module_& mod) {
 
     mod.def(
         "find_object",
-        [](const py::object& cls, const std::wstring& name) {
-            return unrealsdk::find_object(find_class_potentially_given(cls), name);
+        [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
+            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
+                               ? std::get<UClass*>(cls_arg)
+                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
+                                                                  std::nullopt);
+            return unrealsdk::find_object(cls_ptr, name);
         },
         "Finds an object by name.\n"
         "\n"
@@ -164,18 +148,21 @@ void register_base_bindings(py::module_& mod) {
 
     mod.def(
         "find_all",
-        [](const py::object& cls, bool exact) {
-            auto class_ptr = find_class_potentially_given(cls);
+        [](const std::variant<UClass*, std::wstring>& cls_arg, bool exact) {
+            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
+                               ? std::get<UClass*>(cls_arg)
+                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
+                                                                  std::nullopt);
 
             auto gobjects = unrealsdk::gobjects();
 
             std::vector<UObject*> results{};
             if (exact) {
                 std::copy_if(gobjects.begin(), gobjects.end(), std::back_inserter(results),
-                             [class_ptr](UObject* obj) { return obj->Class == class_ptr; });
+                             [cls_ptr](UObject* obj) { return obj->Class == cls_ptr; });
             } else {
                 std::copy_if(gobjects.begin(), gobjects.end(), std::back_inserter(results),
-                             [class_ptr](UObject* obj) { return obj->is_instance(class_ptr); });
+                             [cls_ptr](UObject* obj) { return obj->is_instance(cls_ptr); });
             }
 
             return results;
@@ -192,18 +179,30 @@ void register_base_bindings(py::module_& mod) {
         "    A list of all instances of the class.",
         "cls"_a, "exact"_a = true);
 
-    mod.def("construct_object", &unrealsdk::construct_object,
-            "Constructs a new object\n"
-            "\n"
-            "Args:\n"
-            "    cls: The class to construct. Required.\n"
-            "    outer: The outer object to construct the new object under. Required.\n"
-            "    name: The new object's name.\n"
-            "    flags: Object flags to set.\n"
-            "    template_obj: The template object to use.\n"
-            "Returns:\n"
-            "    The constructed object.\n",
-            "cls"_a, "outer"_a, "name"_a = FName{0, 0}, "flags"_a = 0, "template_obj"_a = nullptr);
+    mod.def(
+        "construct_object",
+        [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
+           decltype(UObject::ObjectFlags) flags, UObject* template_obj) {
+            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
+                               ? std::get<UClass*>(cls_arg)
+                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
+                                                                  std::nullopt);
+
+            return unrealsdk::construct_object(cls_ptr, outer, name, flags, template_obj);
+        },
+        "Constructs a new object\n"
+        "\n"
+        "Args:\n"
+        "    cls: The class to construct, or it's name. Required. If given as the name,\n"
+        "         always autodetects if fully qualified - call find_class() directly if\n"
+        "         you need to specify.\n"
+        "    outer: The outer object to construct the new object under. Required.\n"
+        "    name: The new object's name.\n"
+        "    flags: Object flags to set.\n"
+        "    template_obj: The template object to use.\n"
+        "Returns:\n"
+        "    The constructed object.\n",
+        "cls"_a, "outer"_a, "name"_a = FName{0, 0}, "flags"_a = 0, "template_obj"_a = nullptr);
 }
 
 }  // namespace pyunrealsdk
