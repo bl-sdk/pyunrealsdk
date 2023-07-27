@@ -5,6 +5,7 @@
 #include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/find_class.h"
+#include "unrealsdk/unreal/namedobjectcache.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/gobjects.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
@@ -17,96 +18,96 @@ using namespace unrealsdk::unreal;
 
 namespace {
 
+NamedObjectCache<UScriptStruct> scriptstruct_cache{};
+
 /**
- * @brief Finds a class by name, which may be fully qualified.
+ * @brief Finds an object from a name cache, where the name might be fully qualified.
  *
- * @param name The class name.
- * @param fully_qualified If the class name is fully qualified, or nullopt to autodetect.
- * @return The class, or nullptr if not found.
+ * @tparam CachedType The type of the cached object.
+ * @tparam StrGetterFunc The type of the string getter.
+ * @tparam NameGetterFunc The type of the string getter.
+ * @param name The name to lookup.
+ * @param fully_qualified If the name is fully qualified, or nullopt to autodetect.
+ * @param str_getter The getter function to use on fully qualified names, called with a wstring.
+ * @param name_getter The getter function to use with partial names, called with an fname.
+ * @return The cached value, or it's default if unable to find.
  */
-UClass* find_class_potentially_qualified(const std::wstring& name,
-                                         std::optional<bool> fully_qualified) {
+template <typename CachedType, typename StrGetterFunc, typename NameGetterFunc>
+CachedType find_cached_potentially_qualified(const std::wstring& name,
+                                             std::optional<bool> fully_qualified,
+                                             StrGetterFunc str_getter,
+                                             NameGetterFunc fname_getter) {
     if (!fully_qualified.has_value()) {
         fully_qualified = name.find_first_of(L".:") != std::string::npos;
     }
 
     if (fully_qualified.value()) {
-        return find_class(name);
+        return str_getter(name);
     }
-    return find_class(FName{name});
+    return fname_getter(FName{name});
 }
 
 /**
- * @brief Finds a script struct by name, which may be fully qualified.
- * @note If two structs (presumably from different packages) share a name, non fully qualified
- *       lookup returns an undefined instance.
+ * @brief Given an argument which accepts either a class or it's name, attempt to find the class.
+ * @note Always auto-detects if fully qualified.
+ * @note Throws if unable to find a valid object.
  *
- * @param name The script struct name.
- * @param fully_qualified If the script struct name is fully qualified, or nullopt to autodetect.
- * @return The script struct, or nullptr if not found.
+ * @param cls_arg The class argument.
+ * @return The class object.
  */
-UScriptStruct* find_scriptstruct_potentially_qualified(const std::wstring& name,
-                                                       std::optional<bool> fully_qualified) {
-    static std::unordered_map<FName, UScriptStruct*> scriptstruct_cache{};
-    static const auto scriptstruct_cls = find_class<UScriptStruct>();
-
-    // If the cache is empty, do an initial parse through all objects
-    if (scriptstruct_cache.empty()) {
-        for (const auto& obj : unrealsdk::gobjects()) {
-            if (!obj->is_instance(scriptstruct_cls)) {
-                continue;
-            }
-
-            // We'll let this overwrite on first pass
-            // Duplicate names are undefined
-            scriptstruct_cache[obj->Name] = reinterpret_cast<UScriptStruct*>(obj);
+UClass* evaluate_class_arg(const std::variant<UClass*, std::wstring>& cls_arg) {
+    if (std::holds_alternative<UClass*>(cls_arg)) {
+        auto cls_ptr = std::get<UClass*>(cls_arg);
+        if (cls_ptr == nullptr) {
+            throw std::invalid_argument("Passed class was null!");
         }
+        return cls_ptr;
     }
 
-    if (!fully_qualified.has_value()) {
-        fully_qualified = name.find_first_of(L".:") != std::string::npos;
+    auto cls_name = std::get<std::wstring>(cls_arg);
+    auto cls_ptr = find_cached_potentially_qualified<UClass*>(
+        cls_name, std::nullopt,
+        [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
+        [](const FName& name) { return unrealsdk::unreal::find_class(name); });
+
+    if (cls_ptr == nullptr) {
+        throw std::invalid_argument(
+            unrealsdk::fmt::format("Couldn't find class {}", unrealsdk::utils::narrow(cls_name)));
     }
 
-    // If not fully qualified, do a quick fname lookup
-    if (!fully_qualified.value()) {
-        const FName fname{name};
-        return scriptstruct_cache.contains(fname) ? scriptstruct_cache[fname] : nullptr;
-    }
-
-    // Otherwise call find object
-    auto obj = unrealsdk::find_object(scriptstruct_cls, name);
-    if (obj == nullptr) {
-        return nullptr;
-    }
-    auto found_struct = validate_type<UScriptStruct>(obj);
-
-    // Don't overwrite an existing entry
-    if (!scriptstruct_cache.contains(found_struct->Name)) {
-        scriptstruct_cache[found_struct->Name] = found_struct;
-    }
-
-    return found_struct;
+    return cls_ptr;
 }
 
 }  // namespace
 
 void register_base_bindings(py::module_& mod) {
-    mod.def("find_class", &find_class_potentially_qualified,
-            "Finds a class by name.\n"
-            "\n"
-            "Args:\n"
-            "    name: The class name.\n"
-            "    fully_qualified: If the class name is fully qualified, or None (the default)\n"
-            "                     to autodetect.\n"
-            "Returns:\n"
-            "    The class, or None if not found.",
-            "name"_a, "fully_qualified"_a = std::nullopt);
+    mod.def(
+        "find_class",
+        [](const std::wstring& name, std::optional<bool> fully_qualified) {
+            return find_cached_potentially_qualified<UClass*>(
+                name, fully_qualified,
+                [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
+                [](const FName& name) { return unrealsdk::unreal::find_class(name); });
+        },
+        "Finds a class by name.\n"
+        "\n"
+        "Args:\n"
+        "    name: The class name.\n"
+        "    fully_qualified: If the class name is fully qualified, or None (the default)\n"
+        "                     to autodetect.\n"
+        "Returns:\n"
+        "    The class, or None if not found.",
+        "name"_a, "fully_qualified"_a = std::nullopt);
 
     mod.def(
         "make_struct",
         [](const std::wstring& name, std::optional<bool> fully_qualified,
            const py::kwargs& kwargs) {
-            auto type = find_scriptstruct_potentially_qualified(name, fully_qualified);
+            auto type = find_cached_potentially_qualified<UScriptStruct*>(
+                name, fully_qualified,
+                [](const std::wstring& name) { return scriptstruct_cache.find(name); },
+                [](const FName& name) { return scriptstruct_cache.find(name); });
+
             if (type == nullptr) {
                 throw py::value_error(unrealsdk::fmt::format("Couldn't find script struct {}",
                                                              unrealsdk::utils::narrow(name)));
@@ -129,11 +130,7 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         "find_object",
         [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
-            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
-                               ? std::get<UClass*>(cls_arg)
-                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
-                                                                  std::nullopt);
-            return unrealsdk::find_object(cls_ptr, name);
+            return unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
         },
         "Finds an object by name.\n"
         "\n"
@@ -149,11 +146,7 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         "find_all",
         [](const std::variant<UClass*, std::wstring>& cls_arg, bool exact) {
-            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
-                               ? std::get<UClass*>(cls_arg)
-                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
-                                                                  std::nullopt);
-
+            auto cls_ptr = evaluate_class_arg(cls_arg);
             auto gobjects = unrealsdk::gobjects();
 
             std::vector<UObject*> results{};
@@ -183,12 +176,8 @@ void register_base_bindings(py::module_& mod) {
         "construct_object",
         [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
            decltype(UObject::ObjectFlags) flags, UObject* template_obj) {
-            auto cls_ptr = std::holds_alternative<UClass*>(cls_arg)
-                               ? std::get<UClass*>(cls_arg)
-                               : find_class_potentially_qualified(std::get<std::wstring>(cls_arg),
-                                                                  std::nullopt);
-
-            return unrealsdk::construct_object(cls_ptr, outer, name, flags, template_obj);
+            return unrealsdk::construct_object(evaluate_class_arg(cls_arg), outer, name, flags,
+                                               template_obj);
         },
         "Constructs a new object\n"
         "\n"
