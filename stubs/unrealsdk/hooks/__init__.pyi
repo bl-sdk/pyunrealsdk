@@ -9,6 +9,7 @@ from ..unreal import BoundFunction, UObject, WrappedStruct
 __all__: tuple[str, ...] = (
     "Block",
     "Type",
+    "Unset",
     "add_hook",
     "has_hook",
     "inject_next_call",
@@ -67,19 +68,21 @@ class Unset:
     return value will be used.
     """
 
-HookBlockSignal = None | EllipsisType | Block | type[Block]
-PreHookCallback = Callable[
-    [UObject, WrappedStruct, Any, BoundFunction], HookBlockSignal | tuple[HookBlockSignal, Any]
+_HookBlockSignal = None | EllipsisType | Block | type[Block]
+_PreHookCallback = Callable[
+    [UObject, WrappedStruct, Any, BoundFunction], _HookBlockSignal | tuple[_HookBlockSignal, Any]
 ]
-PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
+_PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
 
-PreHookType = Literal[Type.PRE]
-PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
+_PreHookType = Literal[Type.PRE]
+_PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
 
 @overload
-def add_hook(func: str, type: PreHookType, identifier: str, callback: PreHookCallback) -> None: ...
+def add_hook(
+    func: str, type: _PreHookType, identifier: str, callback: _PreHookCallback
+) -> None: ...
 @overload
-def add_hook(func: str, type: PostHookType, identifier: str, callback: PostHookCallback) -> None:
+def add_hook(func: str, type: _PostHookType, identifier: str, callback: _PostHookCallback) -> None:
     """
     Adds a hook which runs when an unreal function is called.
 
