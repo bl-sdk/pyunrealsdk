@@ -15,7 +15,10 @@ void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     try {
         const py::gil_scoped_acquire gil{};
         const py::str file{PyUnicode_FromWideChar(file_start, static_cast<py::ssize_t>(file_len))};
-        py::eval_file(file);
+
+        // Use a custom globals so it's not contaminated from the init script/`py` commands
+        // This also ensures `__file__` gets redefined properly
+        py::eval_file(file, py::dict{});
     } catch (const std::exception& ex) {
         logging::log_python_exception(ex);
     }
@@ -77,9 +80,17 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     try {
         const py::gil_scoped_acquire gil{};
 
+        // Make sure unrealsdk is already in globals, for convenience
+        // The init script and `pyexec` commands both use a local dict, so this won't affect them
+        auto globals = py::globals();
+        if (!globals.contains("unrealsdk")) {
+            globals["unrealsdk"] = py::module_::import("unrealsdk");
+        }
+
         const py::str code_block{
             PyUnicode_FromWideChar(str.c_str(), static_cast<py::ssize_t>(str.size()))};
-        py::exec(code_block);
+
+        py::exec(code_block, globals);
     } catch (const std::exception& ex) {
         logging::log_python_exception(ex);
     }

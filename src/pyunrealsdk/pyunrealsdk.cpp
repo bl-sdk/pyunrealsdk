@@ -56,17 +56,21 @@ void init(void) {
     LOG(INFO, "{} loaded", pyunrealsdk::get_version_string());
 
     py::initialize_interpreter(true, 0, nullptr, false);
-    // We need to import the sdk module once so that we can use it's types
-    // We also want it to be in sys.modules, so you can immediately access it via console
-    // Doing this via an exec accomplishes both at once
-    py::exec("import unrealsdk");
+
+    // We need to import the sdk module once so that we can use it's types - e.g. we can't cast
+    // Logger to a python object when we try overwrite stdout unless it's been imported
+
+    // Need to be careful about destroying it while we still have GIL
+    { py::module_::import("unrealsdk"); }
 
     logging::py_init();
 
     commands::register_commands();
 
     try {
-        py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT));
+        // Use a custom globals to make sure we don't contaminate `py`/`pyexec` commands
+        // This also ensures `__file__` gets redefined properly
+        py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT), py::dict{});
     } catch (const std::exception& ex) {
         LOG(ERROR, "Error running python initialization script:");
         logging::log_python_exception(ex);
