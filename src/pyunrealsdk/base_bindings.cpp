@@ -25,12 +25,14 @@ NamedObjectCache<UEnum> enum_cache{};
 
 /**
  * @brief Finds an object from a name cache, where the name might be fully qualified.
+ * @note Throws if unable to find.
  *
  * @tparam CachedType The type of the cached object.
  * @tparam StrGetterFunc The type of the string getter.
  * @tparam NameGetterFunc The type of the string getter.
  * @param name The name to lookup.
  * @param fully_qualified If the name is fully qualified, or nullopt to autodetect.
+ * @param error_type_name The type name to use in "couldn't find" errors.
  * @param str_getter The getter function to use on fully qualified names, called with a wstring.
  * @param name_getter The getter function to use with partial names, called with an fname.
  * @return The cached value, or it's default if unable to find.
@@ -38,16 +40,21 @@ NamedObjectCache<UEnum> enum_cache{};
 template <typename CachedType, typename StrGetterFunc, typename NameGetterFunc>
 CachedType find_cached_potentially_qualified(const std::wstring& name,
                                              std::optional<bool> fully_qualified,
+                                             const std::string& error_type_name,
                                              StrGetterFunc str_getter,
                                              NameGetterFunc fname_getter) {
     if (!fully_qualified.has_value()) {
         fully_qualified = name.find_first_of(L".:") != std::string::npos;
     }
 
-    if (fully_qualified.value()) {
-        return str_getter(name);
+    auto val = fully_qualified.value() ? str_getter(name) : fname_getter(FName{name});
+
+    if (val == nullptr) {
+        throw std::invalid_argument(unrealsdk::fmt::format("Couldn't find {} '{}'", error_type_name,
+                                                           unrealsdk::utils::narrow(name)));
     }
-    return fname_getter(FName{name});
+
+    return val;
 }
 
 /**
@@ -69,14 +76,9 @@ UClass* evaluate_class_arg(const std::variant<UClass*, std::wstring>& cls_arg) {
 
     auto cls_name = std::get<std::wstring>(cls_arg);
     auto cls_ptr = find_cached_potentially_qualified<UClass*>(
-        cls_name, std::nullopt,
+        cls_name, std::nullopt, "class",
         [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
         [](const FName& name) { return unrealsdk::unreal::find_class(name); });
-
-    if (cls_ptr == nullptr) {
-        throw std::invalid_argument(
-            unrealsdk::fmt::format("Couldn't find class {}", unrealsdk::utils::narrow(cls_name)));
-    }
 
     return cls_ptr;
 }
@@ -88,7 +90,7 @@ void register_base_bindings(py::module_& mod) {
         "find_class",
         [](const std::wstring& name, std::optional<bool> fully_qualified) {
             return find_cached_potentially_qualified<UClass*>(
-                name, fully_qualified,
+                name, fully_qualified, "class",
                 [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
                 [](const FName& name) { return unrealsdk::unreal::find_class(name); });
         },
@@ -106,7 +108,7 @@ void register_base_bindings(py::module_& mod) {
         "find_enum",
         [](const std::wstring& name, std::optional<bool> fully_qualified) {
             auto enum_obj = find_cached_potentially_qualified<UEnum*>(
-                name, fully_qualified,
+                name, fully_qualified, "enum",
                 [](const std::wstring& name) { return enum_cache.find(name); },
                 [](const FName& name) { return enum_cache.find(name); });
 
@@ -127,14 +129,9 @@ void register_base_bindings(py::module_& mod) {
         [](const std::wstring& name, std::optional<bool> fully_qualified,
            const py::kwargs& kwargs) {
             auto type = find_cached_potentially_qualified<UScriptStruct*>(
-                name, fully_qualified,
+                name, fully_qualified, "struct",
                 [](const std::wstring& name) { return scriptstruct_cache.find(name); },
                 [](const FName& name) { return scriptstruct_cache.find(name); });
-
-            if (type == nullptr) {
-                throw py::value_error(unrealsdk::fmt::format("Couldn't find script struct {}",
-                                                             unrealsdk::utils::narrow(name)));
-            }
 
             const py::args empty_args{};
             return unreal::make_struct(type, empty_args, kwargs);
@@ -153,7 +150,12 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         "find_object",
         [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
-            return unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
+            auto val = unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
+            if (val == nullptr) {
+                throw std::invalid_argument(unrealsdk::fmt::format("Couldn't find object '{}'",
+                                                                   unrealsdk::utils::narrow(name)));
+            }
+            return val;
         },
         "Finds an object by name.\n"
         "\n"

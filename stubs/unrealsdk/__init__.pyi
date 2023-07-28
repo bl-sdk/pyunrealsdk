@@ -61,7 +61,7 @@ def find_all(cls: UClass | str, exact: bool = True) -> Iterator[UObject]:
         A list of all instances of the class.
     """
 
-def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
+def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
     """
     Finds a class by name.
 
@@ -73,7 +73,7 @@ def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
         The class, or None if not found.
     """
 
-def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnum] | None:
+def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnum]:
     """
     Finds an enum by name.
 
@@ -85,7 +85,7 @@ def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnu
         The enum, or None if not found.
     """
 
-def find_object(cls: UClass | str, name: str) -> UObject | None:
+def find_object(cls: UClass | str, name: str) -> UObject:
     """
     Finds an object by name.
 
