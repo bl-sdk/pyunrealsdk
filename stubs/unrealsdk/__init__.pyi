@@ -5,12 +5,16 @@ from typing import Any
 
 from . import commands, hooks, logging, unreal
 from .unreal import UClass, UObject, WrappedStruct
+from .unreal._uenum import _UnrealEnum  # pyright: ignore[reportPrivateUsage]
 
 __all__: tuple[str, ...] = (
+    "__version__",
+    "__version_info__",
     "commands",
     "construct_object",
     "find_all",
     "find_class",
+    "find_enum",
     "find_object",
     "hooks",
     "logging",
@@ -67,6 +71,18 @@ def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
                          to autodetect.
     Returns:
         The class, or None if not found.
+    """
+
+def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnum] | None:
+    """
+    Finds an enum by name.
+
+    Args:
+        name: The enum name.
+        fully_qualified: If the enum name is fully qualified, or None (the default)
+                         to autodetect.
+    Returns:
+        The enum, or None if not found.
     """
 
 def find_object(cls: UClass | str, name: str) -> UObject | None:

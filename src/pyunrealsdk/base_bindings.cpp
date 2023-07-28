@@ -1,7 +1,9 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/base_bindings.h"
+#include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/uclass.h"
+#include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/find_class.h"
@@ -19,6 +21,7 @@ using namespace unrealsdk::unreal;
 namespace {
 
 NamedObjectCache<UScriptStruct> scriptstruct_cache{};
+NamedObjectCache<UEnum> enum_cache{};
 
 /**
  * @brief Finds an object from a name cache, where the name might be fully qualified.
@@ -97,6 +100,26 @@ void register_base_bindings(py::module_& mod) {
         "                     to autodetect.\n"
         "Returns:\n"
         "    The class, or None if not found.",
+        "name"_a, "fully_qualified"_a = std::nullopt);
+
+    mod.def(
+        "find_enum",
+        [](const std::wstring& name, std::optional<bool> fully_qualified) {
+            auto enum_obj = find_cached_potentially_qualified<UEnum*>(
+                name, fully_qualified,
+                [](const std::wstring& name) { return enum_cache.find(name); },
+                [](const FName& name) { return enum_cache.find(name); });
+
+            return unreal::enum_as_py_enum(enum_obj);
+        },
+        "Finds an enum by name.\n"
+        "\n"
+        "Args:\n"
+        "    name: The enum name.\n"
+        "    fully_qualified: If the enum name is fully qualified, or None (the default)\n"
+        "                     to autodetect.\n"
+        "Returns:\n"
+        "    The enum, or None if not found.",
         "name"_a, "fully_qualified"_a = std::nullopt);
 
     mod.def(

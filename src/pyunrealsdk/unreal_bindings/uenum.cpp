@@ -15,6 +15,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
 
     if (!enum_cache.contains(enum_obj)) {
         enum_cache.emplace(enum_obj, intenum(enum_obj->Name, enum_obj->get_names()));
+        enum_cache[enum_obj].attr("_unreal") = enum_obj;
     }
 
     return enum_cache[enum_obj];
