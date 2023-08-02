@@ -5,3 +5,6 @@
 	path = libs/pybind11
 	url = git@github.com:pybind/pybind11.git
 	branch = stable
+[submodule "common_cmake"]
+	path = common_cmake
+	url = git@github.com:bl-sdk/common_cmake.git
