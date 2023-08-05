@@ -87,10 +87,12 @@ jobs:
       run: |
         pip install requests
 
-        python python_dev/download.py                                             `
+        cd common_cmake/explicit_python
+        python download.py                                                        `
           ${{ env.PYTHON_VERSION }}                                               `
           ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
           --no-debug
+        cd ../..
 
         cmake . --preset ${{ matrix.preset }}
 
@@ -191,10 +193,12 @@ jobs:
       run: |
         pip install requests
 
-        python python_dev/download.py                                             \
+        cd common_cmake/explicit_python
+        python download.py                                                        \
           ${{ env.PYTHON_VERSION }}                                               \
           ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   \
           --no-debug
+        cd ../..
 
         cmake .                           \
         --preset ${{ matrix.preset }}     \
@@ -289,10 +293,12 @@ jobs:
       run: |
         pip install pyyaml requests
 
-        python python_dev/download.py                                             `
+        cd common_cmake/explicit_python
+        python download.py                                                        `
           ${{ env.PYTHON_VERSION }}                                               `
           ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
           --no-debug
+        cd ../..
 
         cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
 

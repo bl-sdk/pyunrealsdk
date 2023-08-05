@@ -100,10 +100,11 @@ To build:
    ```sh
    apt install msitools # Or equivalent for other package managers, not required on Windows
 
+   cd common_cmake/explicit_python
    pip install requests
-   python python_dev/download.py 3.11.4 amd64
+   python download.py 3.11.4 amd64
    ```
-   See the [readme](python_dev/Readme.md) for more advanced details.
+   See the [readme](common_cmake/explicit_python/Readme.md) for more advanced details.
 
 3. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
 

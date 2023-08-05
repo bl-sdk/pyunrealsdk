@@ -5,12 +5,16 @@ from typing import Any
 
 from . import commands, hooks, logging, unreal
 from .unreal import UClass, UObject, WrappedStruct
+from .unreal._uenum import _UnrealEnum  # pyright: ignore[reportPrivateUsage]
 
 __all__: tuple[str, ...] = (
+    "__version__",
+    "__version_info__",
     "commands",
     "construct_object",
     "find_all",
     "find_class",
+    "find_enum",
     "find_object",
     "hooks",
     "logging",
@@ -22,7 +26,7 @@ __version__: str
 __version_info__: tuple[int, int, int]
 
 def construct_object(
-    cls: UClass,
+    cls: UClass | str,
     outer: UObject,
     name: str = "None",
     flags: int = 0,
@@ -32,7 +36,9 @@ def construct_object(
     Constructs a new object
 
     Args:
-        cls: The class to construct. Required.
+        cls: The class to construct, or it's name. Required. If given as the name,
+             always autodetects if fully qualified - call find_class() directly if
+             you need to specify.
         outer: The outer object to construct the new object under. Required.
         name: The new object's name.
         flags: Object flags to set.
@@ -41,7 +47,7 @@ def construct_object(
         The constructed object.
     """
 
-def find_all(cls: object, exact: bool = True) -> Iterator[UObject]:
+def find_all(cls: UClass | str, exact: bool = True) -> Iterator[UObject]:
     """
     Finds all instances of a class.
 
@@ -55,7 +61,7 @@ def find_all(cls: object, exact: bool = True) -> Iterator[UObject]:
         A list of all instances of the class.
     """
 
-def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
+def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
     """
     Finds a class by name.
 
@@ -67,7 +73,19 @@ def find_class(name: str, fully_qualified: None | bool = None) -> UClass | None:
         The class, or None if not found.
     """
 
-def find_object(cls: object, name: str) -> UObject | None:
+def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnum]:
+    """
+    Finds an enum by name.
+
+    Args:
+        name: The enum name.
+        fully_qualified: If the enum name is fully qualified, or None (the default)
+                         to autodetect.
+    Returns:
+        The enum, or None if not found.
+    """
+
+def find_object(cls: UClass | str, name: str) -> UObject:
     """
     Finds an object by name.
 

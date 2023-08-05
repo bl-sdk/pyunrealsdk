@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any
 
 from ._uenum import UEnum
 from ._uobject import UObject
-from ._wrapped_struct import WrappedStruct
 
 class UField(UObject):
     Next: UField | None
@@ -150,16 +148,6 @@ class UObjectProperty(UProperty):
 
 class UScriptStruct(UStruct):
     StructFlags: int
-
-    def __call__(self, *args: Any, **kwargs: Any) -> WrappedStruct:
-        """
-        Helper to create a new wrapped struct using this type.
-
-        Args:
-            *args, **kwargs: Fields on the struct to initialize.
-        Returns:
-            A new WrappedStruct.
-        """
 
 class UStrProperty(UProperty): ...
 

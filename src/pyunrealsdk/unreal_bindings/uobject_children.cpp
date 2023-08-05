@@ -178,13 +178,6 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
-        .def("__call__", &make_struct,
-             "Helper to create a new wrapped struct using this type.\n"
-             "\n"
-             "Args:\n"
-             "    *args, **kwargs: Fields on the struct to initialize.\n"
-             "Returns:\n"
-             "    A new WrappedStruct.")
         .def_readwrite("StructFlags", &UScriptStruct::StructFlags);
 
     PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");

@@ -19,9 +19,9 @@ endif()
 
 set(GIT_PRE_CONFIGURE_FILE "src/pyunrealsdk/version.cpp.in")
 set(GIT_POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
-include(cmake/git_watcher.cmake)
+include(common_cmake/git_watcher.cmake)
 
-add_subdirectory(python_dev)
+add_subdirectory(common_cmake/explicit_python)
 
 set(PYBIND11_NOPYTHON True)
 add_subdirectory(libs/pybind11 EXCLUDE_FROM_ALL)
@@ -35,7 +35,7 @@ target_sources(pyunrealsdk PRIVATE ${sources})
 
 target_include_directories(pyunrealsdk PUBLIC "src")
 target_link_libraries(pyunrealsdk PUBLIC
-    _pyunrealsdk_python
+    explicit_python
     unrealsdk
     pybind11::embed
     pybind11::windows_extras # Does nothing if not using MSVC
@@ -74,6 +74,9 @@ endif()
 if(MINGW)
     # Link `libc++.dll` and `libunwind.dll` statically
     target_link_options(pyunrealsdk PRIVATE "-static-libstdc++" "-Wl,-Bstatic" "-lunwind")
+
+    # Workaround until llvm-project 692518d04b makes it into a release (i.e. 17)
+    target_compile_definitions(pyunrealsdk PRIVATE _LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS)
 endif()
 
 # Postbuild
