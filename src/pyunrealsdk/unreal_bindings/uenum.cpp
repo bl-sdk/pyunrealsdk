@@ -8,18 +8,9 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
-py::object enum_as_py_enum(const UEnum* enum_obj) {
-    // Use IntFlag, as it natively supports unknown values
-    static auto intenum = py::module_::import("enum").attr("IntFlag");
-    static std::unordered_map<const UEnum*, py::object> enum_cache{};
+PYUNREALSDK_CAPI PyObject* enum_as_py_enum_capi(const UEnum* enum_obj) PYUNREALSDK_CAPI_SUFFIX;
 
-    if (!enum_cache.contains(enum_obj)) {
-        enum_cache.emplace(enum_obj, intenum(enum_obj->Name, enum_obj->get_names()));
-        enum_cache[enum_obj].attr("_unreal") = enum_obj;
-    }
-
-    return enum_cache[enum_obj];
-}
+#ifdef PYUNREALSDK_INTERNAL
 
 void register_uenum(py::module_& mod) {
     PyUEClass<UEnum, UField>(mod, "UEnum")
@@ -29,5 +20,37 @@ void register_uenum(py::module_& mod) {
              "Returns:\n"
              "    An IntFlag enum compatible with this enum.");
 }
+
+py::object enum_as_py_enum(const UEnum* enum_obj) {
+    const py::gil_scoped_acquire gil{};
+
+    // Use IntFlag, as it natively supports unknown values
+    static auto intflag = py::module_::import("enum").attr("IntFlag");
+    static std::unordered_map<const UEnum*, py::object> enum_cache{};
+
+    if (!enum_cache.contains(enum_obj)) {
+        enum_cache.emplace(enum_obj, intflag(enum_obj->Name, enum_obj->get_names()));
+        enum_cache[enum_obj].attr("_unreal") = enum_obj;
+    }
+
+    return enum_cache[enum_obj];
+}
+
+PYUNREALSDK_CAPI PyObject* enum_as_py_enum_capi(const UEnum* enum_obj) PYUNREALSDK_CAPI_SUFFIX {
+    const py::gil_scoped_acquire gil{};
+
+    auto obj = enum_as_py_enum(enum_obj);
+    // Add an extra ref, so the python object sticks around when we destroy the py::object
+    obj.inc_ref();
+    return obj.ptr();
+}
+#else
+py::object enum_as_py_enum(const UEnum* enum_obj) {
+    const py::gil_scoped_acquire gil{};
+
+    // Steal the reference which we incremented on the other side of this call
+    return py::reinterpret_steal<py::object>(enum_as_py_enum_capi(enum_obj));
+}
+#endif
 
 }  // namespace pyunrealsdk::unreal

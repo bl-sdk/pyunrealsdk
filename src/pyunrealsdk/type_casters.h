@@ -13,6 +13,10 @@ class UObject;
 
 }
 
+#ifdef PYUNREALSDK_INTERNAL
+// TODO: Provide a downcaster for external modules
+//       We can't use this one because std::type_info isn't safe to cross between dlls
+
 namespace pyunrealsdk::type_casters {
 
 /**
@@ -26,8 +30,11 @@ const void* downcast_unreal(const unrealsdk::unreal::UObject* src, const std::ty
 
 }  // namespace pyunrealsdk::type_casters
 
+#endif
+
 namespace pybind11 {
 
+#ifdef PYUNREALSDK_INTERNAL
 // Make the UObject hierarchy automatically downcast
 template <typename itype>
 struct polymorphic_type_hook<
@@ -37,6 +44,7 @@ struct polymorphic_type_hook<
         return pyunrealsdk::type_casters::downcast_unreal(src, type);
     }
 };
+#endif
 
 namespace detail {
 
