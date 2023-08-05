@@ -1,6 +1,8 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/pyunrealsdk.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace {
 
 /**
@@ -42,3 +44,5 @@ BOOL APIENTRY DllMain(HMODULE h_module, DWORD ul_reason_for_call, LPVOID /*unuse
     }
     return TRUE;
 }
+
+#endif

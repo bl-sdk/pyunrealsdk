@@ -3,6 +3,8 @@
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal::impl {
@@ -107,3 +109,5 @@ ArrayIterator ArrayIterator::end(const WrappedArray& arr) {
 }
 
 }  // namespace pyunrealsdk::unreal::impl
+
+#endif

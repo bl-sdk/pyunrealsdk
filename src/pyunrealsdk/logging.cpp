@@ -40,6 +40,8 @@ std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) 
     return {filename, line_num};
 }
 
+#ifdef PYUNREALSDK_INTERNAL
+
 /**
  * @brief A write only file object which redirects to the unrealsdk log system.
  */
@@ -133,7 +135,11 @@ void register_per_log_level_printer(py::module_& logging,
         docstring.c_str());
 }
 
+#endif
+
 }  // namespace
+
+#ifdef PYUNREALSDK_INTERNAL
 
 void register_module(py::module_& mod) {
     auto logging = mod.def_submodule("logging");
@@ -202,6 +208,8 @@ void py_init(void) {
     sys.attr("stdout") = Logger{Level::INFO};
     sys.attr("stderr") = Logger{Level::ERROR};
 }
+
+#endif
 
 void log_python_exception(const std::exception& exc) {
     PyFrameObject* frame = nullptr;

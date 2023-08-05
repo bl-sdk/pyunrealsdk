@@ -6,6 +6,8 @@
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -168,3 +170,5 @@ void register_wrapped_struct(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk::unreal
+
+#endif

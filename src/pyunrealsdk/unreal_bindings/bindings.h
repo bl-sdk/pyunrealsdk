@@ -5,6 +5,8 @@
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk::unreal {
 
 /**
@@ -24,5 +26,7 @@ template <typename T, typename... Options>
 using PyUEClass = py::class_<T, Options..., std::unique_ptr<T, py::nodelete>>;
 
 }  // namespace pyunrealsdk::unreal
+
+#endif
 
 #endif /* PYUNREALSDK_UNREAL_BINDINGS_UNREAL_H */

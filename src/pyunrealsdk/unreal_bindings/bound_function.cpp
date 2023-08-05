@@ -10,6 +10,8 @@
 #include "unrealsdk/unreal/wrappers/bound_function.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -208,4 +210,7 @@ void register_bound_function(py::module_& mod) {
         .def_readwrite("func", &BoundFunction::func)
         .def_readwrite("object", &BoundFunction::object);
 }
+
 }  // namespace pyunrealsdk::unreal
+
+#endif

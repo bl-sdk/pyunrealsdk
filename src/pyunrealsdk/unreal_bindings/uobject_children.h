@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk::unreal {
 
 /**
@@ -13,5 +15,7 @@ namespace pyunrealsdk::unreal {
 void register_uobject_children(py::module_& mod);
 
 }  // namespace pyunrealsdk::unreal
+
+#endif
 
 #endif /* PYUNREALSDK_UNREAL_BINDINGS_UCLASS_H */

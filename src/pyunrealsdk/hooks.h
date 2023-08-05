@@ -5,12 +5,22 @@
 
 namespace pyunrealsdk::hooks {
 
+#ifdef PYUNREALSDK_INTERNAL
 /**
  * @brief Registers everything needed for the hooks module.
  *
  * @param mod The module to register within.
  */
 void register_module(py::module_& mod);
+#endif
+
+/**
+ * @brief Checks if a python object is the block sentinel.
+ *
+ * @param obj The object to check.
+ * @return True if the object says to block execution.
+ */
+bool is_block_sentinel(const py::object& obj);
 
 }  // namespace pyunrealsdk::hooks
 

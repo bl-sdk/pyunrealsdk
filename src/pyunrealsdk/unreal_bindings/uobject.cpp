@@ -9,6 +9,8 @@
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/utils.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -133,3 +135,5 @@ void register_uobject(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk::unreal
+
+#endif

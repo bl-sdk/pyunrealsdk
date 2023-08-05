@@ -1,6 +1,11 @@
 #ifndef PYUNREALSDK_PCH_H
 #define PYUNREALSDK_PCH_H
 
+// Include the C exports library first, so we can use it everywhere
+// This file is purely macros, it doesn't rely on anything else
+#include "pyunrealsdk/exports.h"
+
+// Inherit all of unrealsdk's PCH
 #include "unrealsdk/pch.h"
 
 #ifdef __clang__

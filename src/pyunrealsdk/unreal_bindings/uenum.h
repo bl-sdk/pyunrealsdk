@@ -11,12 +11,16 @@ class UEnum;
 
 namespace pyunrealsdk::unreal {
 
+#ifdef PYUNREALSDK_INTERNAL
+
 /**
  * @brief Registers UEnum.
  *
  * @param mod The module to register within.
  */
 void register_uenum(py::module_& mod);
+
+#endif
 
 /**
  * @brief Creates a python enum from an unreal enum.

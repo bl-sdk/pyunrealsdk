@@ -4,6 +4,8 @@
 #include "unrealsdk/commands.h"
 #include "unrealsdk/utils.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk::commands {
 
 namespace {
@@ -172,3 +174,5 @@ void register_commands(void) {
 }
 
 }  // namespace pyunrealsdk::commands
+
+#endif

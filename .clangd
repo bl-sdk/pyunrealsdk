@@ -15,3 +15,9 @@ If:
     PathMatch: src/.*\.in
 Diagnostics:
     Suppress: expected_expression
+---
+# Make sure the highlighting acts as if we're exporting
+If:
+    PathMatch: src/.*
+CompileFlags:
+    Add: [-DPYUNREALSDK_INTERNAL]

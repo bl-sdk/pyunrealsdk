@@ -9,6 +9,8 @@
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/version.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 // NOLINTNEXTLINE(readability-identifier-length)
 PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
     m.attr("__version__") = unrealsdk::get_version_string();
@@ -80,3 +82,5 @@ void init(void) {
 }
 
 }  // namespace pyunrealsdk
+
+#endif

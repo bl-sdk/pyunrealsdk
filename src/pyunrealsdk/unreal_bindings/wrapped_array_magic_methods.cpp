@@ -3,6 +3,8 @@
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal::impl {
@@ -233,3 +235,5 @@ py::type array_py_class_getitem(const py::type& cls,
 }
 
 }  // namespace pyunrealsdk::unreal::impl
+
+#endif

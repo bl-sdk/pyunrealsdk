@@ -21,17 +21,18 @@ set(GIT_PRE_CONFIGURE_FILE "src/pyunrealsdk/version.cpp.in")
 set(GIT_POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 include(common_cmake/git_watcher.cmake)
 
-add_subdirectory(common_cmake/explicit_python)
-
 set(PYBIND11_NOPYTHON True)
 add_subdirectory(libs/pybind11 EXCLUDE_FROM_ALL)
 
 set(UNREALSDK_SHARED True)
 add_subdirectory(libs/unrealsdk EXCLUDE_FROM_ALL)
 
+# Make sure to include after unrealsdk, to make sure the arch define is set
+add_subdirectory(common_cmake/explicit_python)
+
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/pyunrealsdk/*.cpp" "src/pyunrealsdk/*.h")
 list(APPEND sources ${GIT_POST_CONFIGURE_FILE})
-target_sources(pyunrealsdk PRIVATE ${sources})
+target_sources(pyunrealsdk PUBLIC ${sources})
 
 target_include_directories(pyunrealsdk PUBLIC "src")
 target_link_libraries(pyunrealsdk PUBLIC
@@ -50,6 +51,7 @@ target_compile_definitions(pyunrealsdk PUBLIC
     PYBIND11_SIMPLE_GIL_MANAGEMENT
     PYBIND11_DETAILED_ERROR_MESSAGES
 )
+target_compile_definitions(pyunrealsdk PRIVATE PYUNREALSDK_INTERNAL)
 
 target_precompile_headers(pyunrealsdk PUBLIC "src/pyunrealsdk/pch.h")
 

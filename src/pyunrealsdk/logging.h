@@ -5,6 +5,8 @@
 
 namespace pyunrealsdk::logging {
 
+#ifdef PYUNREALSDK_INTERNAL
+
 /**
  * @brief Registers everything needed for the logging module.
  *
@@ -17,6 +19,8 @@ void register_module(py::module_& mod);
  * @note Sets up the stdout/err redirection.
  */
 void py_init(void);
+
+#endif
 
 /**
  * @brief Logs an exception using the current python stack frame.

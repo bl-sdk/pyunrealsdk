@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
 #include "unrealsdk/hook_manager.h"
@@ -10,6 +11,10 @@ using namespace unrealsdk::unreal;
 using namespace unrealsdk::hook_manager;
 
 namespace pyunrealsdk::hooks {
+
+PYUNREALSDK_CAPI(bool, is_block_sentinel, PyObject* obj);
+
+#ifdef PYUNREALSDK_INTERNAL
 
 namespace {
 
@@ -67,7 +72,7 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
         should_block = std::move(ret_tuple[0]);
     }
 
-    return py::isinstance<Block>(should_block) || py::type::of<Block>().is(should_block);
+    return is_block_sentinel(should_block);
 }
 
 }  // namespace
@@ -186,6 +191,20 @@ void register_module(py::module_& mod) {
               "Returns:\n"
               "    True if successfully removed, false if no hook with the given details exists.",
               "func"_a, "type"_a, "identifier"_a);
+}
+
+PYUNREALSDK_CAPI(bool, is_block_sentinel, PyObject* obj) {
+    const py::gil_scoped_acquire gil{};
+
+    // Borrow, so that we add our own reference to it
+    auto py_obj = py::reinterpret_borrow<py::object>(obj);
+    return py::isinstance<Block>(py_obj) || py::type::of<Block>().is(py_obj);
+}
+
+#endif
+
+bool is_block_sentinel(const py::object& obj) {
+    return PYUNREALSDK_MANGLE(is_block_sentinel)(obj.ptr());
 }
 
 }  // namespace pyunrealsdk::hooks
