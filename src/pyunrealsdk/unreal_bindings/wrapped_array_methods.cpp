@@ -3,6 +3,8 @@
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal::impl {
@@ -152,3 +154,5 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
 }
 
 }  // namespace pyunrealsdk::unreal::impl
+
+#endif

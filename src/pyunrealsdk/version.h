@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk {
 
 inline constexpr auto VERSION_MAJOR = 1;
@@ -17,5 +19,7 @@ inline constexpr auto VERSION_PATCH = 0;
 const std::string& get_version_string(void);
 
 }  // namespace pyunrealsdk
+
+#endif
 
 #endif /* PYUNREALSDK_VERSION_H */

@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk {
 
 /**
@@ -13,5 +15,7 @@ namespace pyunrealsdk {
 void register_base_bindings(py::module_& mod);
 
 }  // namespace pyunrealsdk
+
+#endif
 
 #endif /* PYUNREALSDK_BASE_BINDINGS_H */

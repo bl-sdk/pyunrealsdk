@@ -1,6 +1,8 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/version.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk {
 
 namespace {
@@ -29,3 +31,5 @@ const std::string& get_version_string(void) {
 }
 
 }  // namespace pyunrealsdk
+
+#endif

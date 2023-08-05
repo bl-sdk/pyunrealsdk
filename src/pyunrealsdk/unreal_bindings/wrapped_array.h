@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace unrealsdk::unreal {
 
 class WrappedArray;
@@ -207,5 +209,7 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse);
 }  // namespace impl
 
 }  // namespace pyunrealsdk::unreal
+
+#endif
 
 #endif /* PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_ARRAY_H */

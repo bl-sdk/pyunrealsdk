@@ -3,6 +3,8 @@
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/uobject.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::type_casters {
@@ -21,3 +23,5 @@ const void* downcast_unreal(const UObject* src, const std::type_info*& type) {
 }
 
 }  // namespace pyunrealsdk::type_casters
+
+#endif

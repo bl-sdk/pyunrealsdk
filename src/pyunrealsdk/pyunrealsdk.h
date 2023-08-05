@@ -1,6 +1,8 @@
 #ifndef PYUNREALSDK_PYUNREALSDK_H
 #define PYUNREALSDK_PYUNREALSDK_H
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk {
 
 /**
@@ -9,5 +11,7 @@ namespace pyunrealsdk {
 void init(void);
 
 }  // namespace pyunrealsdk
+
+#endif
 
 #endif /* PYUNREALSDK_PYUNREALSDK_H */

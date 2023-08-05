@@ -6,6 +6,8 @@
 #include "unrealsdk/unreal/prop_traits.h"
 #include "unrealsdk/unreal/wrappers/property_proxy.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 using namespace unrealsdk::hook_manager;
 
@@ -189,3 +191,5 @@ void register_module(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk::hooks
+
+#endif

@@ -19,6 +19,8 @@
 #include "unrealsdk/unreal/wrappers/bound_function.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -192,3 +194,5 @@ void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
 }
 
 }  // namespace pyunrealsdk::unreal
+
+#endif

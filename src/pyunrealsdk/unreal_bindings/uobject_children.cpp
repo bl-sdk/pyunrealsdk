@@ -23,6 +23,8 @@
 #include "unrealsdk/unreal/classes/ustruct.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -204,3 +206,5 @@ void register_uobject_children(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk::unreal
+
+#endif

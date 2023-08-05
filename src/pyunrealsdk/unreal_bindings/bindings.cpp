@@ -11,6 +11,8 @@
 #include "unrealsdk/unreal/classes/ustruct.h"
 #include "unrealsdk/unreal/classes/ustruct_funcs.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -29,3 +31,5 @@ void register_module(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk::unreal
+
+#endif

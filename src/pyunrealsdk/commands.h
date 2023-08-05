@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk::commands {
 
 /**
@@ -18,5 +20,7 @@ void register_module(py::module_& mod);
 void register_commands(void);
 
 }  // namespace pyunrealsdk::commands
+
+#endif
 
 #endif /* PYUNREALSDK_COMMANDS_H */

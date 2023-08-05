@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk::hooks {
 
 /**
@@ -13,5 +15,7 @@ namespace pyunrealsdk::hooks {
 void register_module(py::module_& mod);
 
 }  // namespace pyunrealsdk::hooks
+
+#endif
 
 #endif /* PYUNREALSDK_HOOKS_H */

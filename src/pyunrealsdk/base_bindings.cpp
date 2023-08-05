@@ -14,6 +14,8 @@
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/utils.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace pyunrealsdk {
 
 using namespace unrealsdk::unreal;
@@ -220,3 +222,5 @@ void register_base_bindings(py::module_& mod) {
 }
 
 }  // namespace pyunrealsdk
+
+#endif

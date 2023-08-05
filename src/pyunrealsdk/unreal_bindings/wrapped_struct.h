@@ -3,6 +3,8 @@
 
 #include "pyunrealsdk/pch.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace unrealsdk::unreal {
 
 class UScriptStruct;
@@ -32,5 +34,7 @@ unrealsdk::unreal::WrappedStruct make_struct(const unrealsdk::unreal::UScriptStr
                                              const py::kwargs& kwargs);
 
 }  // namespace pyunrealsdk::unreal
+
+#endif
 
 #endif /* PYUNREALSDK_UNREAL_BINDINGS_WRAPPED_STRUCT_H */

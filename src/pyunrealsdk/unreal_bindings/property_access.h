@@ -4,6 +4,8 @@
 #include "pyunrealsdk/pch.h"
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 namespace unrealsdk::unreal {
 
 struct FName;
@@ -66,5 +68,7 @@ py::object py_getattr(unrealsdk::unreal::UField* field,
 void py_setattr(unrealsdk::unreal::UField* field, uintptr_t base_addr, const py::object& value);
 
 }  // namespace pyunrealsdk::unreal
+
+#endif
 
 #endif /* PYUNREALSDK_UNREAL_BINDINGS_PROPERTY_ACCESS_H */

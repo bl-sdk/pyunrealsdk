@@ -2,6 +2,8 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
+#ifdef PYUNREALSDK_INTERNAL
+
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
@@ -201,4 +203,7 @@ void register_wrapped_array(py::module_& mod) {
                          "cls"_a)
             .ptr()));
 }
+
 }  // namespace pyunrealsdk::unreal
+
+#endif
