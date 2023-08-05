@@ -1,8 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/version.h"
 
-#ifdef PYUNREALSDK_INTERNAL
-
 namespace pyunrealsdk {
 
 namespace {
@@ -16,6 +14,21 @@ namespace {
 [[maybe_unused]] const constexpr bool GIT_DIRTY = @GIT_IS_DIRTY@;
 // clang-format on
 
+}  // namespace
+
+PYUNREALSDK_CAPI([[nodiscard]] uint32_t, get_version);
+#ifdef PYUNREALSDK_INTERNAL
+PYUNREALSDK_CAPI([[nodiscard]] uint32_t, get_version) {
+    // NOLINTNEXTLINE(readability-magic-numbers)
+    return (VERSION_MAJOR & 0xFF) << 16 | (VERSION_MINOR & 0xFF) << 8 | (VERSION_PATCH & 0xFF);
+}
+#endif
+[[nodiscard]] uint32_t get_version(void) {
+    return PYUNREALSDK_MANGLE(get_version)();
+}
+
+namespace {
+#ifdef PYUNREALSDK_INTERNAL
 const constexpr auto GIT_HASH_CHARS = 8;
 const std::string VERSION_STR = unrealsdk::fmt::format("pyunrealsdk v{}.{}.{} ({}{})",
                                                        VERSION_MAJOR,
@@ -23,13 +36,24 @@ const std::string VERSION_STR = unrealsdk::fmt::format("pyunrealsdk v{}.{}.{} ({
                                                        VERSION_PATCH,
                                                        GIT_HASH.substr(0, GIT_HASH_CHARS),
                                                        GIT_DIRTY ? ", dirty" : "");
-
+#endif
 }  // namespace
 
-const std::string& get_version_string(void) {
-    return VERSION_STR;
+PYUNREALSDK_CAPI([[nodiscard]] const char*, get_version_string);
+#ifdef PYUNREALSDK_INTERNAL
+PYUNREALSDK_CAPI([[nodiscard]] const char*, get_version_string) {
+    return VERSION_STR.data();
 }
 
-}  // namespace pyunrealsdk
-
+[[nodiscard]] const std::string& get_version_string(void) {
+    return VERSION_STR;
+}
+#else
+[[nodiscard]] const std::string& get_version_string(void) {
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    static const std::string VERSION_STR = PYUNREALSDK_MANGLE(get_version_string)();
+    return VERSION_STR;
+}
 #endif
+
+}  // namespace pyunrealsdk

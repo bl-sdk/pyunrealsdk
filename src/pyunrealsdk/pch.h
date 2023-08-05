@@ -1,36 +1,11 @@
 #ifndef PYUNREALSDK_PCH_H
 #define PYUNREALSDK_PCH_H
 
-#if defined(PYUNREALSDK_INTERNAL)
+// Include the C exports library first, so we can use it everywhere
+// This file is purely macros, it doesn't rely on anything else
+#include "pyunrealsdk/exports.h"
 
-// If compiling internals, C api functions are exported
-#if defined(__clang__) || defined(__MINGW32__)
-#define PYUNREALSDK_CAPI extern "C" [[gnu::dllexport]]
-#elif defined(_MSC_VER)
-#define PYUNREALSDK_CAPI extern "C" __declspec(dllexport)
-#else
-#error Unknown dllexport attribute
-#endif
-
-// MSVC needs this to allow exceptions through the C interface
-// Since it's standard C++, might as well just add it to everything
-#define PYUNREALSDK_CAPI_SUFFIX noexcept(false)
-
-#else
-
-// If included as a library, we want to import from the internals
-#if defined(__clang__) || defined(__MINGW32__)
-#define PYUNREALSDK_CAPI extern "C" [[gnu::dllimport]]
-#elif defined(_MSC_VER)
-#define PYUNREALSDK_CAPI extern "C" __declspec(dllimport)
-#else
-#error Unknown dllimport attribute
-#endif
-
-#define PYUNREALSDK_CAPI_SUFFIX noexcept(false)
-
-#endif
-
+// Inherit all of unrealsdk's PCH
 #include "unrealsdk/pch.h"
 
 #ifdef __clang__

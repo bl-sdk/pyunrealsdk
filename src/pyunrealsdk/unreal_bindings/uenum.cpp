@@ -8,7 +8,7 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
-PYUNREALSDK_CAPI PyObject* enum_as_py_enum_capi(const UEnum* enum_obj) PYUNREALSDK_CAPI_SUFFIX;
+PYUNREALSDK_CAPI(PyObject*, enum_as_py_enum, const UEnum* enum_obj);
 
 #ifdef PYUNREALSDK_INTERNAL
 
@@ -36,7 +36,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     return enum_cache[enum_obj];
 }
 
-PYUNREALSDK_CAPI PyObject* enum_as_py_enum_capi(const UEnum* enum_obj) PYUNREALSDK_CAPI_SUFFIX {
+PYUNREALSDK_CAPI(PyObject*, enum_as_py_enum, const UEnum* enum_obj) {
     const py::gil_scoped_acquire gil{};
 
     auto obj = enum_as_py_enum(enum_obj);
@@ -49,7 +49,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     const py::gil_scoped_acquire gil{};
 
     // Steal the reference which we incremented on the other side of this call
-    return py::reinterpret_steal<py::object>(enum_as_py_enum_capi(enum_obj));
+    return py::reinterpret_steal<py::object>(PYUNREALSDK_MANGLE(enum_as_py_enum)(enum_obj));
 }
 #endif
 
