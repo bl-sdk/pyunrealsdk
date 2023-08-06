@@ -5,6 +5,8 @@ from collections.abc import Iterator
 from ._uenum import UEnum
 from ._uobject import UObject
 
+# ruff: noqa: N802, N803
+
 class UField(UObject):
     Next: UField | None
 

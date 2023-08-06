@@ -1,4 +1,4 @@
-"""This module exists purely for version information, and has no other contents."""
+"""This module exists purely for version information, and has no other contents."""  # noqa: D404
 
 __all__: tuple[str, ...] = (
     "__version__",

@@ -104,7 +104,7 @@ void register_module(py::module_& mod) {
               "debugging.\n"
               "\n"
               "Args:\n"
-              "    should_log True to turn on logging all calls, false to turn it off.",
+              "    should_log: True to turn on logging all calls, false to turn it off.",
               "should_log"_a);
 
     hooks.def("inject_next_call", &inject_next_call,
@@ -161,7 +161,7 @@ void register_module(py::module_& mod) {
         "the function's already run, the effects are dropped. Overwriting the return\n"
         "value only serves to change what's passed in `ret` during any later hooks.\n"
         "\n"
-        "Args\n"
+        "Args:\n"
         "    func: The function to hook.\n"
         "    type: Which type of hook to add.\n"
         "    identifier: The hook identifier.\n"

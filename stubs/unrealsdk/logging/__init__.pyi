@@ -50,14 +50,12 @@ class Level:
     def __repr__(self) -> str: ...
     def __setstate__(self, state: int) -> None: ...
     @property
-    def name(self) -> str: ...
+    def name(self) -> str: ...  # noqa: D102
     @property
-    def value(self) -> int: ...
+    def value(self) -> int: ...  # noqa: D102
 
 class Logger:
-    """
-    A write only file object which redirects to the unrealsdk log system.
-    """
+    """A write only file object which redirects to the unrealsdk log system."""
 
     level: Level
 
@@ -69,9 +67,7 @@ class Logger:
             level: The default log level to initialize to.
         """
     def flush(self) -> None:
-        """
-        Flushes the stream.
-        """
+        """Flushes the stream."""
     def write(self, text: str) -> int:
         """
         Writes a string to the stream.
@@ -91,7 +87,7 @@ def dev_warning(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """
+    """  # noqa: D205
 
 def error(*args: Any, **kwargs: Any) -> None:
     """
@@ -101,7 +97,7 @@ def error(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """
+    """  # noqa: D205
 
 def info(*args: Any, **kwargs: Any) -> None:
     """
@@ -111,7 +107,7 @@ def info(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """
+    """  # noqa: D205
 
 def is_console_ready() -> bool:
     """
@@ -131,7 +127,7 @@ def misc(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """
+    """  # noqa: D205
 
 def set_console_level(level: Level) -> bool:
     """
@@ -153,4 +149,4 @@ def warning(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """
+    """  # noqa: D205

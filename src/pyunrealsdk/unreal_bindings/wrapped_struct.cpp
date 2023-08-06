@@ -59,7 +59,8 @@ void register_wrapped_struct(py::module_& mod) {
              "\n"
              "Args:\n"
              "    type: The type of struct to create.\n"
-             "    *args, **kwargs: Fields on the struct to initialize.",
+             "    *args: Fields on the struct to initialize.\n"
+             "    **kwargs: Fields on the struct to initialize.",
              "type"_a, py::pos_only{})
         .def(
             "__repr__",
