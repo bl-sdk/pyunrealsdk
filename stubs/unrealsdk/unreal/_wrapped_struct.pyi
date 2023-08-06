@@ -34,7 +34,8 @@ class WrappedStruct:
 
         Args:
             type: The type of struct to create.
-            *args, **kwargs: Fields on the struct to initialize.
+            *args: Fields on the struct to initialize.
+            **kwargs: Fields on the struct to initialize.
         """
     def __repr__(self) -> str:
         """

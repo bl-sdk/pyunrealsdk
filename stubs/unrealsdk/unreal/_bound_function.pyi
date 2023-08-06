@@ -9,7 +9,7 @@ class BoundFunction:
     func: UFunction
     object: UObject
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:  # noqa: D417
         """
         Calls the function.
 

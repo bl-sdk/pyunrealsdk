@@ -206,7 +206,7 @@ void register_base_bindings(py::module_& mod) {
             return unrealsdk::construct_object(evaluate_class_arg(cls_arg), outer, name, flags,
                                                template_obj);
         },
-        "Constructs a new object\n"
+        "Constructs a new object.\n"
         "\n"
         "Args:\n"
         "    cls: The class to construct, or it's name. Required. If given as the name,\n"

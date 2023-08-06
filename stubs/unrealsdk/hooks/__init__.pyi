@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import EnumMeta
 from types import EllipsisType
-from typing import Any, Callable, ClassVar, Literal, overload
+from typing import Any, ClassVar, Literal, TypeAlias, overload
 
-from ..unreal import BoundFunction, UObject, WrappedStruct
+from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
 
 __all__: tuple[str, ...] = (
     "Block",
@@ -21,7 +22,7 @@ class Block:
     """
     A sentinel used to indicate a hook should block execution of the unrealscript
     function.
-    """
+    """  # noqa: D205
 
 # HACK: Pybind enums are completely normal classes, they don't inherit from the standard library
 #       enums, which means we're not allowed to use them in Literal type hints.
@@ -58,28 +59,32 @@ class Type(metaclass=EnumMeta):
     def __repr__(self) -> str: ...
     def __setstate__(self, state: int) -> None: ...
     @property
-    def name(self) -> str: ...
+    def name(self) -> str: ...  # noqa: D102
     @property
-    def value(self) -> int: ...
+    def value(self) -> int: ...  # noqa: D102
 
 class Unset:
     """
     A sentinel used to indicate a return value override is unset - i.e. the actual
     return value will be used.
-    """
+    """  # noqa: D205
 
-_HookBlockSignal = None | EllipsisType | Block | type[Block]
-_PreHookCallback = Callable[
-    [UObject, WrappedStruct, Any, BoundFunction], _HookBlockSignal | tuple[_HookBlockSignal, Any]
+_HookBlockSignal: TypeAlias = None | EllipsisType | Block | type[Block]
+_PreHookCallback: TypeAlias = Callable[
+    [UObject, WrappedStruct, Any, BoundFunction],
+    _HookBlockSignal | tuple[_HookBlockSignal, Any],
 ]
-_PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
+_PostHookCallback: TypeAlias = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
 
-_PreHookType = Literal[Type.PRE]
-_PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
+_PreHookType: TypeAlias = Literal[Type.PRE]
+_PostHookType: TypeAlias = Literal[Type.POST, Type.POST_UNCONDITIONAL]
 
 @overload
 def add_hook(
-    func: str, type: _PreHookType, identifier: str, callback: _PreHookCallback
+    func: str,
+    type: _PreHookType,
+    identifier: str,
+    callback: _PreHookCallback,
 ) -> None: ...
 @overload
 def add_hook(func: str, type: _PostHookType, identifier: str, callback: _PostHookCallback) -> None:
@@ -118,7 +123,7 @@ def add_hook(func: str, type: _PostHookType, identifier: str, callback: _PostHoo
     the function's already run, the effects are dropped. Overwriting the return
     value only serves to change what's passed in `ret` during any later hooks.
 
-    Args
+    Args:
         func: The function to hook.
         type: Which type of hook to add.
         identifier: The hook identifier.
@@ -152,8 +157,8 @@ def log_all_calls(should_log: bool) -> None:
     debugging.
 
     Args:
-        should_log True to turn on logging all calls, false to turn it off.
-    """
+        should_log: True to turn on logging all calls, false to turn it off.
+    """  # noqa: D205
 
 def remove_hook(func: str, type: Type, identifier: str) -> bool:
     """

@@ -197,7 +197,8 @@ void register_wrapped_array(py::module_& mod) {
                          "No-op, implemented to allow type stubs to treat this as a generic type.\n"
                          "\n"
                          "Args:\n"
-                         "    *args, **kwargs: Ignored.\n"
+                         "    *args: Ignored.\n"
+                         "    **kwargs: Ignored.\n"
                          "Returns:\n"
                          "    The WrappedArray class.",
                          "cls"_a)

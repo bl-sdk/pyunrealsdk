@@ -33,7 +33,7 @@ def construct_object(
     template_obj: None | UObject = None,
 ) -> UObject:
     """
-    Constructs a new object
+    Constructs a new object.
 
     Args:
         cls: The class to construct, or it's name. Required. If given as the name,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import IntFlag, EnumMeta
+from enum import EnumMeta, IntFlag
 
 from ._uobject_children import UField
 

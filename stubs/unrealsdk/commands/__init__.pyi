@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable, Final
+from collections.abc import Callable
+from typing import Final, TypeAlias
 
 __all__: tuple[str, ...] = (
     "NEXT_LINE",
@@ -11,9 +12,9 @@ __all__: tuple[str, ...] = (
 
 NEXT_LINE: Final[str] = ...
 
-CommandCallback = Callable[[str, int], None]
+_CommandCallback: TypeAlias = Callable[[str, int], None]
 
-def add_command(cmd: str, callback: CommandCallback) -> None:
+def add_command(cmd: str, callback: _CommandCallback) -> None:
     """
     Adds a custom console command.
 
