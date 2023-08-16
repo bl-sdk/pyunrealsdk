@@ -5,7 +5,7 @@ from typing import Any
 
 from . import commands, hooks, logging, unreal
 from .unreal import UClass, UObject, WrappedStruct
-from .unreal._uenum import _UnrealEnum  # pyright: ignore[reportPrivateUsage]
+from .unreal._uenum import _GenericUnrealEnum  # pyright: ignore[reportPrivateUsage]
 
 __all__: tuple[str, ...] = (
     "__version__",
@@ -73,7 +73,7 @@ def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
         The class, or None if not found.
     """
 
-def find_enum(name: str, fully_qualified: None | bool = None) -> type[_UnrealEnum]:
+def find_enum(name: str, fully_qualified: None | bool = None) -> type[_GenericUnrealEnum]:
     """
     Finds an enum by name.
 
