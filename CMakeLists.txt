@@ -55,32 +55,6 @@ target_compile_definitions(pyunrealsdk PRIVATE PYUNREALSDK_INTERNAL)
 
 target_precompile_headers(pyunrealsdk PUBLIC "src/pyunrealsdk/pch.h")
 
-if(MSVC)
-    # Enable Edit and Continue - replace /Zi with /ZI
-    string(REPLACE "/Zi" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    target_compile_options(pyunrealsdk PUBLIC "$<$<CONFIG:DEBUG>:/ZI>")
-
-    target_link_options(pyunrealsdk PUBLIC "/INCREMENTAL")
-
-    # Only enable /GL (which conflicts with /ZI) in release mode
-    string(REPLACE "/GL" "" CMAKE_C_COMPILE_OPTIONS_IPO "${CMAKE_C_COMPILE_OPTIONS_IPO}")
-    string(REPLACE "/GL" "" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
-    target_compile_options(pyunrealsdk PUBLIC "$<$<CONFIG:RELEASE>:/GL>")
-
-    # UTF-8 encoded source files
-    target_compile_options(pyunrealsdk PUBLIC "/utf-8")
-endif()
-
-
-if(MINGW)
-    # Link `libc++.dll` and `libunwind.dll` statically
-    target_link_options(pyunrealsdk PRIVATE "-static-libstdc++" "-Wl,-Bstatic" "-lunwind")
-
-    # Workaround until llvm-project 692518d04b makes it into a release (i.e. 17)
-    target_compile_definitions(pyunrealsdk PRIVATE _LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS)
-endif()
-
 # Postbuild
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(POSTBUILD_SCRIPT "postbuild")
@@ -107,3 +81,22 @@ install(
     TARGETS pyunrealsdk unrealsdk
     RUNTIME DESTINATION .
 )
+
+function(pyunrealsdk_add_module target_name)
+    add_library(${target_name} MODULE ${ARGN})
+    set_target_properties(${target_name} PROPERTIES
+        COMPILE_WARNING_AS_ERROR True
+        INTERPROCEDURAL_OPTIMIZATION True
+        EXPORT_COMPILE_COMMANDS True
+        PREFIX ""
+        DEBUG_POSTFIX "_d"
+        SUFFIX ".pyd"
+    )
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    target_link_libraries(${target_name} PUBLIC pyunrealsdk)
+endfunction()
