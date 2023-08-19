@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+﻿cmake_minimum_required(VERSION 3.24)
 
 project(pyunrealsdk)
 
@@ -81,3 +81,22 @@ install(
     TARGETS pyunrealsdk unrealsdk
     RUNTIME DESTINATION .
 )
+
+function(pyunrealsdk_add_module target_name)
+    add_library(${target_name} MODULE ${ARGN})
+    set_target_properties(${target_name} PROPERTIES
+        COMPILE_WARNING_AS_ERROR True
+        INTERPROCEDURAL_OPTIMIZATION True
+        EXPORT_COMPILE_COMMANDS True
+        PREFIX ""
+        DEBUG_POSTFIX "_d"
+        SUFFIX ".pyd"
+    )
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    target_link_libraries(${target_name} PUBLIC pyunrealsdk)
+endfunction()

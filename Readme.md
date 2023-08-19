@@ -139,3 +139,23 @@ To build:
    which will drop your debugger session when launching the exe directly - adding this file prevents
    that. Not only does this let you debug from entry, it also unlocks some really useful debugger
    features which you can't access from just an attach (i.e. Visual Studio's Edit and Continue).
+
+# Python Extension Modules
+The sdk provides some helpers to let you build extensions as python modules.
+
+The sdk compiles to a shared module. As with unrealsdk itself, a few functions are exported to let
+you interact with it's internal state from other modules (i.e. python extensions). This is done
+transparently, you can just call the available C++ functions and they will automatically call into
+the dll. Note that a lot of sdk code relates to hosting the interpreter, which is not exported.
+
+The sdk also provides the `pyunrealsdk_add_module` CMake function, which creates a new target
+linking against it, and building to a pyd. From this you also have full access to the libraries it
+links against, so you can also call into any unrealsdk functions.
+```cmake
+cmake_minimum_required(VERSION 3.24)
+project(my_project)
+
+add_subdirectory(pyunrealsdk EXCLUDE_FROM_ALL)
+
+pyunrealsdk_add_module(my_module my_module.cpp)
+```
