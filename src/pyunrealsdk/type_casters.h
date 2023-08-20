@@ -11,13 +11,11 @@ namespace unrealsdk::unreal {
 
 class UObject;
 
-}
-
-#ifdef PYUNREALSDK_INTERNAL
-// TODO: Provide a downcaster for external modules
-//       We can't use this one because std::type_info isn't safe to cross between dlls
+}  // namespace unrealsdk::unreal
 
 namespace pyunrealsdk::type_casters {
+
+#ifdef PYUNREALSDK_INTERNAL
 
 /**
  * @brief Downcaster for objects inheriting from UObject.
@@ -28,9 +26,35 @@ namespace pyunrealsdk::type_casters {
  */
 const void* downcast_unreal(const unrealsdk::unreal::UObject* src, const std::type_info*& type);
 
-}  // namespace pyunrealsdk::type_casters
+#endif
+
+#ifndef PYUNREALSDK_INTERNAL
+// These casters are only provided for external use, when working internally use regular `py::cast`.
+
+/**
+ * @brief Casts an unreal object to a python object.
+ *
+ * @param src The source unreal object.
+ * @return The python object.
+ */
+py::object cast(const unrealsdk::unreal::UObject* src);
+
+/**
+ * @brief Casts a python object to an unreal object.
+ *
+ * @tparam T The unreal type to cast to.
+ * @param src The source python object.
+ * @return The unreal object.
+ */
+template <typename T>
+T cast(const py::object& src);
+
+template <>
+unrealsdk::unreal::UObject* cast<unrealsdk::unreal::UObject*>(const py::object& src);
 
 #endif
+
+}  // namespace pyunrealsdk::type_casters
 
 namespace pybind11 {
 
