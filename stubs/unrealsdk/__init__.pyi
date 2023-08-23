@@ -27,7 +27,7 @@ __version_info__: tuple[int, int, int]
 
 def construct_object(
     cls: UClass | str,
-    outer: UObject,
+    outer: UObject | None,
     name: str = "None",
     flags: int = 0,
     template_obj: None | UObject = None,
