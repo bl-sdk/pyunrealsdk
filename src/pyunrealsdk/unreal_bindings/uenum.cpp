@@ -29,7 +29,27 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     static std::unordered_map<const UEnum*, py::object> enum_cache{};
 
     if (!enum_cache.contains(enum_obj)) {
-        enum_cache.emplace(enum_obj, intflag(enum_obj->Name, enum_obj->get_names()));
+        py::object py_enum;
+
+#ifdef UE4
+        // UE4 enums include the enum name and a namespace separator before the name - strip them
+        std::unordered_map<std::string, uint64_t> stripped_enum_names{};
+
+        for (const auto& [key, value] : enum_obj->get_names()) {
+            std::string str_key{key};
+
+            auto after_colons = str_key.find_first_not_of(':', str_key.find_first_of(':'));
+            stripped_enum_names.emplace(
+                after_colons == std::string::npos ? str_key : str_key.substr(after_colons), value);
+        }
+
+        py_enum = intflag(enum_obj->Name, stripped_enum_names);
+#else
+        // UE3 enums are just the name, so we can use the dict directly
+        py_enum = intflag(enum_obj->Name, enum_obj->get_names());
+#endif
+
+        enum_cache.emplace(enum_obj, py_enum);
         enum_cache[enum_obj].attr("_unreal") = enum_obj;
     }
 
