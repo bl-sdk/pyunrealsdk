@@ -36,7 +36,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
         std::unordered_map<std::string, uint64_t> stripped_enum_names{};
 
         for (const auto& [key, value] : enum_obj->get_names()) {
-            std::string str_key{key};
+            const std::string str_key{key};
 
             auto after_colons = str_key.find_first_not_of(':', str_key.find_first_of(':'));
             stripped_enum_names.emplace(
