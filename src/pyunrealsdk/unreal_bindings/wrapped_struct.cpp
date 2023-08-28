@@ -74,10 +74,14 @@ void register_wrapped_struct(py::module_& mod) {
                         output << ", ";
                     }
                     first = false;
+                    output << prop->Name << ": ";
 
-                    auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()));
-
-                    output << prop->Name << ": " << py::repr(value);
+                    try {
+                        auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()));
+                        output << py::repr(value);
+                    } catch (...) {
+                        output << "<unknown " << prop->Class->Name << ">";
+                    }
                 }
 
                 output << "}";
