@@ -87,7 +87,19 @@ def add_hook(
     callback: _PreHookCallback,
 ) -> None: ...
 @overload
-def add_hook(func: str, type: _PostHookType, identifier: str, callback: _PostHookCallback) -> None:
+def add_hook(
+    func: str,
+    type: _PostHookType,
+    identifier: str,
+    callback: _PostHookCallback,
+) -> None: ...
+@overload
+def add_hook(
+    func: str,
+    type: Type,
+    identifier: str,
+    callback: _PreHookCallback | _PostHookCallback,
+) -> None:
     """
     Adds a hook which runs when an unreal function is called.
 
