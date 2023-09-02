@@ -59,9 +59,9 @@ class Type(metaclass=EnumMeta):
     def __repr__(self) -> str: ...
     def __setstate__(self, state: int) -> None: ...
     @property
-    def name(self) -> str: ...  # noqa: D102
+    def name(self) -> str: ...
     @property
-    def value(self) -> int: ...  # noqa: D102
+    def value(self) -> int: ...
 
 class Unset:
     """
@@ -87,7 +87,19 @@ def add_hook(
     callback: _PreHookCallback,
 ) -> None: ...
 @overload
-def add_hook(func: str, type: _PostHookType, identifier: str, callback: _PostHookCallback) -> None:
+def add_hook(
+    func: str,
+    type: _PostHookType,
+    identifier: str,
+    callback: _PostHookCallback,
+) -> None: ...
+@overload
+def add_hook(
+    func: str,
+    type: Type,
+    identifier: str,
+    callback: _PreHookCallback | _PostHookCallback,
+) -> None:
     """
     Adds a hook which runs when an unreal function is called.
 

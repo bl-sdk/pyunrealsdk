@@ -10,6 +10,7 @@
 namespace unrealsdk::unreal {
 
 class UObject;
+class WrappedStruct;
 
 }  // namespace unrealsdk::unreal
 
@@ -37,7 +38,8 @@ const void* downcast_unreal(const unrealsdk::unreal::UObject* src, const std::ty
  * @param src The source unreal object.
  * @return The python object.
  */
-py::object cast(const unrealsdk::unreal::UObject* src);
+py::object cast(unrealsdk::unreal::UObject* src);
+py::object cast(unrealsdk::unreal::WrappedStruct* src);
 
 /**
  * @brief Casts a python object to an unreal object.
