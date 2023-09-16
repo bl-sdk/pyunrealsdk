@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
@@ -25,8 +26,8 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     const py::gil_scoped_acquire gil{};
 
     // Use IntFlag, as it natively supports unknown values
-    static auto intflag = py::module_::import("enum").attr("IntFlag");
-    static std::unordered_map<const UEnum*, py::object> enum_cache{};
+    static const StaticPyObject intflag = (py::object)py::module_::import("enum").attr("IntFlag");
+    static std::unordered_map<const UEnum*, StaticPyObject> enum_cache{};
 
     if (!enum_cache.contains(enum_obj)) {
         py::object py_enum;
@@ -49,8 +50,9 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
         py_enum = intflag(enum_obj->Name, enum_obj->get_names());
 #endif
 
+        py_enum.attr("_unreal") = enum_obj;
+
         enum_cache.emplace(enum_obj, py_enum);
-        enum_cache[enum_obj].attr("_unreal") = enum_obj;
     }
 
     return enum_cache[enum_obj];
