@@ -297,8 +297,13 @@ jobs:
         cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
 
     - name: Run clang-tidy
-      shell: bash # To follow the shebang
-      run: run-clang-tidy -j ${{ env.CLANG_TIDY_JOBS }} -p out/build/${{ matrix.preset }} -export-fixes clang-tidy-fixes.yml
+      working-directory: ${{ env.GITHUB_WORKSPACE }}
+      run: |
+        python (Get-Command run-clang-tidy).Source                              `
+          -j ${{ env.CLANG_TIDY_JOBS }}                                         `
+          -p "out\build\${{ matrix.preset }}"                                   `
+          -export-fixes clang-tidy-fixes.yml                                    `
+          $([Regex]::Escape("$pwd\src"))
 
     - name: Process clang-tidy warnings
       uses: asarium/clang-tidy-action@v1
@@ -322,8 +327,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run clang-format
-      shell: bash # for find / command substitution
-      run: clang-format -n -Werror $(find src -type f)
+      run: clang-format -n -Werror $(Get-ChildItem src -File -Recurse | % FullName)
 
   spelling:
     runs-on: ubuntu-latest
@@ -334,3 +338,43 @@ jobs:
 
     - name: Check spelling
       uses: crate-ci/typos@master
+
+  black:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Check formatting
+      uses: psf/black@stable
+      with:
+        options: --check --verbose
+        src: ./stubs
+
+
+  pyright:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Run pyright
+      uses: jakebailey/pyright-action@v1
+      with:
+        working-directory: ./stubs
+
+  ruff:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run Ruff
+      uses: chartboost/ruff-action@v1
+      with:
+        src: ./stubs
