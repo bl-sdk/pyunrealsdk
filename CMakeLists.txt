@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.24)
 
-project(pyunrealsdk)
+project(pyunrealsdk VERSION 1.0.0)
 
 add_library(pyunrealsdk SHARED)
 
@@ -17,8 +17,15 @@ else()
     target_compile_options(pyunrealsdk PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-set(GIT_PRE_CONFIGURE_FILE "src/pyunrealsdk/version.cpp.in")
-set(GIT_POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+set(CONFIGURE_FILES_DIR "${CMAKE_CURRENT_BINARY_DIR}/configure")
+
+configure_file(
+    "src/pyunrealsdk/version.inl.in"
+    "${CONFIGURE_FILES_DIR}/pyunrealsdk/version.inl"
+)
+
+set(GIT_PRE_CONFIGURE_FILE "src/pyunrealsdk/git.inl.in")
+set(GIT_POST_CONFIGURE_FILE "${CONFIGURE_FILES_DIR}/pyunrealsdk/git.inl")
 include(common_cmake/git_watcher.cmake)
 
 set(PYBIND11_NOPYTHON True)
@@ -31,10 +38,13 @@ add_subdirectory(libs/unrealsdk EXCLUDE_FROM_ALL)
 add_subdirectory(common_cmake/explicit_python)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/pyunrealsdk/*.cpp" "src/pyunrealsdk/*.h")
-list(APPEND sources ${GIT_POST_CONFIGURE_FILE})
-target_sources(pyunrealsdk PUBLIC ${sources})
+target_sources(pyunrealsdk PUBLIC
+    ${sources}
+    ${GIT_POST_CONFIGURE_FILE}
+    "src/pyunrealsdk/versioninfo.rc"
+)
 
-target_include_directories(pyunrealsdk PUBLIC "src")
+target_include_directories(pyunrealsdk PUBLIC "src" ${CONFIGURE_FILES_DIR})
 target_link_libraries(pyunrealsdk PUBLIC
     explicit_python
     unrealsdk

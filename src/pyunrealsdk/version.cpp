@@ -3,19 +3,6 @@
 
 namespace pyunrealsdk {
 
-namespace {
-
-// We expect CMake to modify this file (adding info about git).
-// Note clang format likes to insert a space before the second '@' in each substitution, so we need
-//  to keep turning it off
-
-// clang-format off
-[[maybe_unused]] const std::string GIT_HASH = "@GIT_HEAD_SHA1@";
-[[maybe_unused]] const constexpr bool GIT_DIRTY = @GIT_IS_DIRTY@;
-// clang-format on
-
-}  // namespace
-
 PYUNREALSDK_CAPI([[nodiscard]] uint32_t, get_version);
 #ifdef PYUNREALSDK_INTERNAL
 PYUNREALSDK_CAPI([[nodiscard]] uint32_t, get_version) {
@@ -29,13 +16,17 @@ PYUNREALSDK_CAPI([[nodiscard]] uint32_t, get_version) {
 
 namespace {
 #ifdef PYUNREALSDK_INTERNAL
+
+#include "pyunrealsdk/git.inl"
+
 const constexpr auto GIT_HASH_CHARS = 8;
-const std::string VERSION_STR = unrealsdk::fmt::format("pyunrealsdk v{}.{}.{} ({}{})",
-                                                       VERSION_MAJOR,
-                                                       VERSION_MINOR,
-                                                       VERSION_PATCH,
-                                                       GIT_HASH.substr(0, GIT_HASH_CHARS),
-                                                       GIT_DIRTY ? ", dirty" : "");
+const std::string VERSION_STR =
+    unrealsdk::fmt::format("pyunrealsdk v{}.{}.{} ({}{})",
+                           VERSION_MAJOR,
+                           VERSION_MINOR,
+                           VERSION_PATCH,
+                           std::string(GIT_HEAD_SHA1).substr(0, GIT_HASH_CHARS),
+                           GIT_IS_DIRTY ? ", dirty" : "");
 #endif
 }  // namespace
 

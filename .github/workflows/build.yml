@@ -303,7 +303,7 @@ jobs:
           -j ${{ env.CLANG_TIDY_JOBS }}                                         `
           -p "out\build\${{ matrix.preset }}"                                   `
           -export-fixes clang-tidy-fixes.yml                                    `
-          $([Regex]::Escape("$pwd\src"))
+          $([Regex]::Escape("$pwd\src") + ".+\.(c|cpp|h|hpp)$")
 
     - name: Process clang-tidy warnings
       uses: asarium/clang-tidy-action@v1
@@ -327,7 +327,15 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run clang-format
-      run: clang-format -n -Werror $(Get-ChildItem src -File -Recurse | % FullName)
+      run: |
+        clang-format                                                            `
+          -n -Werror                                                            `
+          $(Get-ChildItem                                                       `
+              src                                                               `
+              -File                                                             `
+              -Recurse                                                          `
+              -Include ("*.c", "*.cpp", "*.h", "*.hpp")                         `
+            | % FullName)
 
   spelling:
     runs-on: ubuntu-latest
