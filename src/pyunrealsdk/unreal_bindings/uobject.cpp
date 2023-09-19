@@ -28,10 +28,9 @@ void register_uobject(py::module_& mod) {
              [](const py::args&, const py::kwargs&) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
              })
-        .def("__init__",
-             [](const py::args&, const py::kwargs&) {
-                 throw py::type_error("Cannot create new instances of unreal objects.");
-             })
+        .def(py::init([](const py::args&, const py::kwargs&) -> UObject* {
+            throw py::type_error("Cannot create new instances of unreal objects.");
+        }))
         .def(
             "__repr__",
             [](UObject* self) {

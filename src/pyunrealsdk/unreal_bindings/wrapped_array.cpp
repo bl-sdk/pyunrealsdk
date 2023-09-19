@@ -10,8 +10,8 @@ namespace pyunrealsdk::unreal {
 
 void register_wrapped_array(py::module_& mod) {
     auto cls = py::class_<WrappedArray>(mod, "WrappedArray");
-    cls.def("__new__", &impl::array_py_new_init)
-        .def("__init__", &impl::array_py_new_init)
+    cls.def("__new__", &impl::array_py_new)
+        .def(py::init(&impl::array_py_init))
         .def("__repr__", &impl::array_py_repr,
              "Gets a string representation of this array.\n"
              "\n"

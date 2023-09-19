@@ -145,8 +145,10 @@ struct ArrayIterator {
 // several source files, while the main source file is what registers them and has all the
 // documentation
 
-// __new__ + __init__
-void array_py_new_init(const py::args& args, const py::kwargs& kwargs);
+// __new__
+void array_py_new(const py::args& args, const py::kwargs& kwargs);
+// __init__
+WrappedArray* array_py_init(const py::args& args, const py::kwargs& kwargs);
 // __repr__
 std::string array_py_repr(const WrappedArray& self);
 // __getitem__
