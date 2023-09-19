@@ -9,7 +9,11 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal::impl {
 
-void array_py_new_init(const py::args& /*args*/, const py::kwargs& /*kwargs*/) {
+void array_py_new(const py::args& /*args*/, const py::kwargs& /*kwargs*/) {
+    throw py::type_error("Cannot create new instances of wrapped arrays.");
+}
+
+WrappedArray* array_py_init(const py::args& /*args*/, const py::kwargs& /*kwargs*/) {
     throw py::type_error("Cannot create new instances of wrapped arrays.");
 }
 
