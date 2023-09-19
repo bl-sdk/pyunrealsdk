@@ -15,6 +15,21 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
+namespace {
+
+// This needs to be a function to avoid an unreachable code warning in `pybind11/detail/init.h` in
+// `no_nullptr` when compiling with MSVC.
+// I assume this is something to do with inlining optimizations - since we don't actually return, it
+// can assume it's nullptr, somehow ignoring the throw here, but not the one later?
+// Not thrilled with this as a solution, but it works for now
+
+// __init__
+UObject* uobject_init(const py::args& /* args */, const py::kwargs& /* kwargs */) {
+    throw py::type_error("Cannot create new instances of unreal objects.");
+}
+
+}  // namespace
+
 void register_uobject(py::module_& mod) {
     PyUEClass<UObject>(
         mod, "UObject",
@@ -28,9 +43,7 @@ void register_uobject(py::module_& mod) {
              [](const py::args&, const py::kwargs&) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
              })
-        .def(py::init([](const py::args&, const py::kwargs&) -> UObject* {
-            throw py::type_error("Cannot create new instances of unreal objects.");
-        }))
+        .def(py::init(&uobject_init))
         .def(
             "__repr__",
             [](UObject* self) {
