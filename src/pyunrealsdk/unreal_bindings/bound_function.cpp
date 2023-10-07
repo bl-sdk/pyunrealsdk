@@ -124,7 +124,8 @@ py::object get_py_return(const WrappedStruct& params,
     if (return_param == nullptr) {
         ret[0] = py::ellipsis{};
     } else {
-        ret[0] = py_getattr(return_param, reinterpret_cast<uintptr_t>(params.base.get()));
+        ret[0] =
+            py_getattr(return_param, reinterpret_cast<uintptr_t>(params.base.get()), params.base);
     }
 
     auto idx = 1;
