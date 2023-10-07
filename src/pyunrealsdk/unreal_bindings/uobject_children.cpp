@@ -12,6 +12,7 @@
 #include "unrealsdk/unreal/classes/properties/ustrproperty.h"
 #include "unrealsdk/unreal/classes/properties/ustructproperty.h"
 #include "unrealsdk/unreal/classes/properties/utextproperty.h"
+#include "unrealsdk/unreal/classes/properties/uweakobjectproperty.h"
 #include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uconst.h"
@@ -203,6 +204,8 @@ void register_uobject_children(py::module_& mod) {
 
     PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty")
         .def_property_readonly("MetaClass", &UClassProperty::get_meta_class);
+
+    PyUEClass<UWeakObjectProperty, UObjectProperty>(mod, "UWeakObjectProperty");
 }
 
 }  // namespace pyunrealsdk::unreal
