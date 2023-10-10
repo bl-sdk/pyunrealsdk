@@ -55,7 +55,7 @@ std::vector<std::string> py_dir(const py::object& self, const unrealsdk::unreal:
  */
 py::object py_getattr(unrealsdk::unreal::UField* field,
                       uintptr_t base_addr,
-                      const unrealsdk::unreal::UnrealPointer<void>& parent = {nullptr},
+                      const unrealsdk::unreal::UnrealPointer<void>& parent,
                       unrealsdk::unreal::UObject* func_obj = nullptr);
 
 /**
