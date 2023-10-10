@@ -188,9 +188,7 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
         .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
 
-#ifdef UE4
     PyUEClass<UTextProperty, UProperty>(mod, "UTextProperty");
-#endif
 
     PyUEClass<UUInt16Property, UProperty>(mod, "UUInt16Property");
 
