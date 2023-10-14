@@ -3,6 +3,7 @@
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
+#include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
@@ -17,12 +18,21 @@ WrappedStruct make_struct(const UScriptStruct* type,
                           const py::kwargs& kwargs) {
     WrappedStruct new_struct{type};
 
+    // Convert the kwarg keys to FNames, to make them case insensitive
+    // This should also in theory speed up lookups, since hashing is simpler
+    std::unordered_map<FName, py::object> converted_kwargs{};
+    std::transform(kwargs.begin(), kwargs.end(),
+                   std::inserter(converted_kwargs, converted_kwargs.end()), [](const auto& pair) {
+                       return std::make_pair(py::cast<FName>(pair.first),
+                                             py::reinterpret_borrow<py::object>(pair.second));
+                   });
+
     size_t arg_idx = 0;
     for (auto prop : type->properties()) {
         if (arg_idx != args.size()) {
             py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()), args[arg_idx++]);
 
-            if (kwargs.contains(prop->Name)) {
+            if (converted_kwargs.contains(prop->Name)) {
                 throw py::type_error(unrealsdk::fmt::format(
                     "{}.__init__() got multiple values for argument '{}'", type->Name, prop->Name));
             }
@@ -31,19 +41,20 @@ WrappedStruct make_struct(const UScriptStruct* type,
         }
         // If we're on to just kwargs
 
-        if (kwargs.contains(prop->Name)) {
-            // Extract the value with pop, so we can check that kwargs are empty at the end
+        auto iter = converted_kwargs.find(prop->Name);
+        if (iter != converted_kwargs.end()) {
+            // Use extract to also remove the value from the map, so we can ensure it's empty later
             py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
-                       kwargs.attr("pop")(prop->Name));
+                       converted_kwargs.extract(iter).mapped());
             continue;
         }
     }
 
-    if (!kwargs.empty()) {
+    if (!converted_kwargs.empty()) {
         // Copying python, we only need to warn about one extra kwarg
-        std::string bad_kwarg = py::str(kwargs.begin()->first);
-        throw py::type_error(unrealsdk::fmt::format(
-            "{}.__init__() got an unexpected keyword argument '{}'", type->Name, bad_kwarg));
+        throw py::type_error(
+            unrealsdk::fmt::format("{}.__init__() got an unexpected keyword argument '{}'",
+                                   type->Name, converted_kwargs.begin()->first));
     }
 
     return new_struct;
