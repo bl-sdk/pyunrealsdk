@@ -99,13 +99,7 @@ jobs:
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
-      run: cmake --build out/build/${{ matrix.preset }} --target install
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.preset }}
-        path: out/install/${{ matrix.preset }}/
+      run: cmake --build out/build/${{ matrix.preset }}
 
   build-ubuntu:
     runs-on: ubuntu-latest
@@ -207,52 +201,7 @@ jobs:
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
-      run: cmake --build out/build/${{ matrix.preset }} --target install
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.preset }}
-        path: out/install/${{ matrix.preset }}/
-
-# ==============================================================================
-
-  archive-stubs:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' &&  github.repository == 'bl-sdk/pyunrealsdk'
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: stubs
-        path: stubs
-
-  upload-releases:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' &&  github.repository == 'bl-sdk/pyunrealsdk'
-    needs: [archive-stubs, build-windows, build-ubuntu]
-
-    steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-
-    - name: Zip releases
-      run: find . -mindepth 1 -maxdepth 1 -type d | xargs -i bash -c "cd {}; zip -r ../{}.zip ."
-
-    - name: Upload releases
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: "*.zip"
-        allowUpdates: true
-        omitBodyDuringUpdate: true
-        omitNameDuringUpdate: true
-        prerelease: true
-        tag: dev_ci
-        updateOnlyUnreleased: true
+      run: cmake --build out/build/${{ matrix.preset }}
 
 # ==============================================================================
 
