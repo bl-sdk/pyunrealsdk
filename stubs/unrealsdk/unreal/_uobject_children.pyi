@@ -11,10 +11,7 @@ class UField(UObject):
     Next: UField | None
 
 class UConst(UField):
-    @property
-    def Value(self) -> str: ...
-    @Value.setter
-    def Value(self, Value: str) -> None: ...
+    Value: str
 
 class UProperty(UField):
     ArrayDim: int
@@ -97,8 +94,9 @@ class UByteProperty(UProperty): ...
 
 class UClass(UStruct):
     ClassDefaultObject: UObject
-    Interfaces: list[UClass]
 
+    @property
+    def Interfaces(self) -> list[UClass]: ...
     def _implements(self, interface: UClass) -> bool:
         """
         Checks if this class implements a given interface.
