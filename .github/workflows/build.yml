@@ -244,12 +244,17 @@ jobs:
       run: |
         pip install pyyaml requests
 
-        python common_cmake/explicit_python/download.py                           `
-          ${{ env.PYTHON_VERSION }}                                               `
-          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
+        python common_cmake/explicit_python/download.py                         `
+          ${{ env.PYTHON_VERSION }}                                             `
+          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }} `
           --no-debug
 
         cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+
+        (Get-Content "out\build\${{ matrix.preset }}\compile_commands.json")    `
+          -replace "@CMakeFiles.+?\.modmap", ""                                 `
+        | Set-Content                                                           `
+          -Path "out\build\${{ matrix.preset }}\compile_commands.json"
 
     - name: Run clang-tidy
       working-directory: ${{ env.GITHUB_WORKSPACE }}
