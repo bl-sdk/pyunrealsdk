@@ -74,6 +74,26 @@ obj.MessagesOfTheDay[obj.MessageOfTheDayIdx].Body = "No MOTD today"
 op_string = obj.BuildOverpowerPromptString(1, 10)
 ```
 
+## Debugging
+After you start writing some more complicated scripts, you'll probably want to get a debugger
+working. To do this, the sdk has some integrations with [debugpy](https://github.com/microsoft/debugpy).
+
+To use it:
+1. Download and extract debugpy somewhere importable.
+
+2. At the start of your initialization script, add the following:
+   ```py
+   import debugpy
+   debugpy.listen(("localhost", 5678), in_process_debug_adapter=True)
+   ```
+
+3. Define the environment variable `PYUNREALSDK_DEBUGPY`.
+
+4. Attach using remote debugging with the debugger of your choice.
+
+Note that the sdk disables the integration if it's unable to import debugpy on first use, meaning
+you may not get away with manipulating `sys.path`. Instead, consider using [`._pth` files](https://docs.python.org/3/library/sys_path_init.html).
+
 # Installation
 1. Download the relevant [release](https://github.com/bl-sdk/pyunrealsdk/releases).
 
@@ -93,7 +113,7 @@ To build:
 
 1. Clone the repo (including submodules).
    ```sh
-   git clone --recursive https://github.com/bl-sdk/unrealsdk.git
+   git clone --recursive https://github.com/bl-sdk/pyunrealsdk.git
    ```
 
 2. Setup the python dev files. The simplest way is as follows:
@@ -104,7 +124,9 @@ To build:
    pip install requests
    python download.py 3.11.4 amd64
    ```
-   See the [readme](common_cmake/explicit_python/Readme.md) for more advanced details.
+
+   See the [readme](https://github.com/bl-sdk/common_cmake/blob/master/explicit_python/Readme.md)
+   for more advanced details.
 
 3. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
 

@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/debugging.h"
 #include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
@@ -119,6 +120,8 @@ void register_module(py::module_& mod) {
             add_hook(func, type, identifier, [callback](Details& hook) {
                 try {
                     const py::gil_scoped_acquire gil{};
+                    debug_this_thread();
+
                     return handle_py_hook(hook, callback);
 
                 } catch (const std::exception& ex) {

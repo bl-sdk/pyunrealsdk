@@ -12,12 +12,14 @@ using unrealsdk::env::get;
 using unrealsdk::env::get_numeric;
 
 const constexpr env_var_key INIT_SCRIPT = "PYUNREALSDK_INIT_SCRIPT";
+const constexpr env_var_key DEBUGPY = "PYUNREALSDK_DEBUGPY";
 
 namespace defaults {
 
 const constexpr auto INIT_SCRIPT = "__main__.py";
+// DEBUGPY - defaults to empty string (only used in defined checks)
 
-}
+}  // namespace defaults
 
 }  // namespace pyunrealsdk::env
 

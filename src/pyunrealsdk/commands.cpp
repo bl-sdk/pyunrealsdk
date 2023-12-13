@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/commands.h"
+#include "pyunrealsdk/debugging.h"
 #include "pyunrealsdk/logging.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/utils.h"
@@ -110,6 +111,7 @@ void register_module(py::module_& mod) {
                 cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
                     try {
                         const py::gil_scoped_acquire gil{};
+                        debug_this_thread();
 
                         const py::str py_line{
                             PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
