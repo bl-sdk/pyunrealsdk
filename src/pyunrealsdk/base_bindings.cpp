@@ -217,8 +217,24 @@ void register_base_bindings(py::module_& mod) {
         "    flags: Object flags to set.\n"
         "    template_obj: The template object to use.\n"
         "Returns:\n"
-        "    The constructed object.\n",
+        "    The constructed object.",
         "cls"_a, "outer"_a, "name"_a = FName{0, 0}, "flags"_a = 0, "template_obj"_a = nullptr);
+
+    mod.def(
+        "load_package",
+        [](const std::wstring& name, uint32_t flags) {
+            return unrealsdk::load_package(name, flags);
+        },
+        "Loads a package, and all it's contained objects.\n"
+        "\n"
+        "This function may block for several seconds while the package is loaded.\n"
+        "\n"
+        "Args:\n"
+        "    name: The package's name.\n"
+        "    flags: The loading flags to use.\n"
+        "Returns:\n"
+        "    The loaded `Package` object.",
+        "name"_a, "flags"_a = 0);
 }
 
 }  // namespace pyunrealsdk
