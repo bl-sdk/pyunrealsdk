@@ -98,6 +98,19 @@ def find_object(cls: UClass | str, name: str) -> UObject:
         The object, or None if not found.
     """
 
+def load_package(name: str, flags: int = 0) -> UObject:
+    """
+    Loads a package, and all it's contained objects.
+
+    This function may block for several seconds while the package is loaded.
+
+    Args:
+        name: The package's name.
+        flags: The loading flags to use.
+    Returns:
+        The loaded `Package` object.
+    """
+
 def make_struct(name: str, fully_qualified: None | bool = None, /, **kwargs: Any) -> WrappedStruct:
     """
     Finds and constructs a WrappedStruct by name.
