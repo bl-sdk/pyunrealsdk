@@ -51,10 +51,15 @@ void register_uobject(py::module_& mod) {
                     "{}'{}'", self->Class->Name,
                     unrealsdk::utils::narrow(unrealsdk::uobject_path_name(self)));
             },
-            "Gets this object's name.\n"
+            "Gets this object's full name.\n"
             "\n"
             "Returns:\n"
             "    This object's name.")
+        .def("_path_name", unrealsdk::uobject_path_name,
+             "Gets this object's path name, excluding the class.\n"
+             "\n"
+             "Returns:\n"
+             "    This object's name.")
         .def(
             "__dir__",
             [](const py::object& self) { return py_dir(self, py::cast<UObject*>(self)->Class); },
