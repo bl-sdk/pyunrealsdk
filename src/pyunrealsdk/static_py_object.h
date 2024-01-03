@@ -63,7 +63,8 @@ class StaticPyObject {
      *
      * @return A reference to contained pybind object.
      */
-    py::object& obj(void);
+    [[nodiscard]] py::object& obj(void);
+    [[nodiscard]] const py::object& obj(void) const;
 
     /**
      * @brief Converts this object to another pybind object, borrowing the reference.
@@ -72,7 +73,11 @@ class StaticPyObject {
      * @return The new pybind object.
      */
     template <typename T = py::object>
-    T borrow(void) {
+    [[nodiscard]] T borrow(void) {
+        return py::reinterpret_borrow<T>(this->inner_obj);
+    }
+    template <typename T = py::object>
+    [[nodiscard]] std::add_const<T> borrow(void) const {
         return py::reinterpret_borrow<T>(this->inner_obj);
     }
 

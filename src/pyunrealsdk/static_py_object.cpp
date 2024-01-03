@@ -52,6 +52,9 @@ StaticPyObject::operator py::object() const {
 py::object& StaticPyObject::obj(void) {
     return this->inner_obj;
 }
+const py::object& StaticPyObject::obj(void) const {
+    return this->inner_obj;
+}
 
 StaticPyObject::operator bool() const {
     return (bool)this->inner_obj;
