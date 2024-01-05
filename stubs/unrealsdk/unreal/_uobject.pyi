@@ -43,7 +43,7 @@ class UObject:
     def __new__(cls, *args: Any, **kwargs: Any) -> Never: ...
     def __repr__(self) -> str:
         """
-        Gets this object's name.
+        Gets this object's full name.
 
         Returns:
             This object's name.
@@ -78,6 +78,13 @@ class UObject:
             field: The field to get.
         Returns:
             The field's value.
+        """
+    def _path_name(self) -> str:
+        """
+        Gets this object's path name, excluding the class.
+
+        Returns:
+            This object's name.
         """
     def _set_field(self, field: UField, value: Any) -> None:
         """
