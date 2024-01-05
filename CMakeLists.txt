@@ -2,31 +2,34 @@
 
 project(pyunrealsdk VERSION 1.0.0)
 
-add_library(pyunrealsdk SHARED)
-
-target_compile_features(pyunrealsdk INTERFACE cxx_std_20)
-set_target_properties(pyunrealsdk PROPERTIES
-    COMPILE_WARNING_AS_ERROR True
-    INTERPROCEDURAL_OPTIMIZATION True
-    EXPORT_COMPILE_COMMANDS True
-    PREFIX ""
-)
-if(MINGW)
-    # Under MinGW, only enable LTO in release mode - it causes linking errors in debug
-    set_target_properties(pyunrealsdk PROPERTIES
-        INTERPROCEDURAL_OPTIMIZATION $<CONFIG:Release>
+function(_pyunrealsdk_add_base_target_args target_name)
+    target_compile_features(${target_name} PUBLIC cxx_std_20)
+    set_target_properties(${target_name} PROPERTIES
+        COMPILE_WARNING_AS_ERROR True
+        INTERPROCEDURAL_OPTIMIZATION True
+        EXPORT_COMPILE_COMMANDS True
+        PREFIX ""
     )
-endif()
+    if(MINGW)
+        # Under MinGW, only enable LTO in release mode - it causes linking errors in debug
+        set_target_properties(${target_name} PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION $<CONFIG:Release>
+        )
+    endif()
 
-if(MSVC)
-    target_compile_options(pyunrealsdk PRIVATE /W4)
-else()
-    target_compile_options(pyunrealsdk PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-# CMake doesn't understand warnings as errors for MinGW yet
-if(MINGW)
-    target_compile_options(pyunrealsdk INTERFACE -Werror)
-endif()
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    # CMake doesn't understand warnings as errors for MinGW yet
+    if(MINGW)
+        target_compile_options(${target_name} PRIVATE -Werror)
+    endif()
+endfunction()
+
+add_library(pyunrealsdk SHARED)
+_pyunrealsdk_add_base_target_args(pyunrealsdk)
 
 set(CONFIGURE_FILES_DIR "${CMAKE_CURRENT_BINARY_DIR}/configure")
 
@@ -105,19 +108,12 @@ install(
 
 function(pyunrealsdk_add_module target_name)
     add_library(${target_name} MODULE ${ARGN})
+    _pyunrealsdk_add_base_target_args(${target_name})
+
     set_target_properties(${target_name} PROPERTIES
-        COMPILE_WARNING_AS_ERROR True
-        INTERPROCEDURAL_OPTIMIZATION True
-        EXPORT_COMPILE_COMMANDS True
-        PREFIX ""
         DEBUG_POSTFIX "_d"
         SUFFIX ".pyd"
     )
-    if(MSVC)
-        target_compile_options(${target_name} PRIVATE /W4)
-    else()
-        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
-    endif()
 
     target_link_libraries(${target_name} PUBLIC pyunrealsdk)
 endfunction()
