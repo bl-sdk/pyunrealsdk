@@ -176,12 +176,22 @@ void register_base_bindings(py::module_& mod) {
             auto cls_ptr = evaluate_class_arg(cls_arg);
             auto gobjects = unrealsdk::gobjects();
 
+            /*
+            This looks stupid, but it works, and it's survived several attempts to replace it.
+
+            A generator could trivially fetch the first few values quicker, but we don't expect
+            early exits to be a common use case, we optimize for iterating through everything.
+
+            The total number of objects is orders of magnitudes above the number we return, so using
+            these optimized STL functions to iterate through everything has just outweighed the
+            benefits of every other attempt so far.
+            */
             std::vector<UObject*> results{};
             if (exact) {
-                std::copy_if(gobjects.begin(), gobjects.end(), std::back_inserter(results),
+                std::copy_if(gobjects.begin(), GObjects::end(), std::back_inserter(results),
                              [cls_ptr](UObject* obj) { return obj->Class == cls_ptr; });
             } else {
-                std::copy_if(gobjects.begin(), gobjects.end(), std::back_inserter(results),
+                std::copy_if(gobjects.begin(), GObjects::end(), std::back_inserter(results),
                              [cls_ptr](UObject* obj) { return obj->is_instance(cls_ptr); });
             }
 

@@ -11,10 +11,21 @@ set_target_properties(pyunrealsdk PROPERTIES
     EXPORT_COMPILE_COMMANDS True
     PREFIX ""
 )
+if(MINGW)
+    # Under MinGW, only enable LTO in release mode - it causes linking errors in debug
+    set_target_properties(pyunrealsdk PROPERTIES
+        INTERPROCEDURAL_OPTIMIZATION $<CONFIG:Release>
+    )
+endif()
+
 if(MSVC)
     target_compile_options(pyunrealsdk PRIVATE /W4)
 else()
     target_compile_options(pyunrealsdk PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+# CMake doesn't understand warnings as errors for MinGW yet
+if(MINGW)
+    target_compile_options(pyunrealsdk INTERFACE -Werror)
 endif()
 
 set(CONFIGURE_FILES_DIR "${CMAKE_CURRENT_BINARY_DIR}/configure")
