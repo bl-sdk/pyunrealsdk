@@ -74,6 +74,18 @@ void register_uobject_children(py::module_& mod) {
             "\n"
             "Returns:\n"
             "    An iterator over all properties in the struct.")
+        .def(
+            "_superfields",
+            [](UStruct* self) {
+                auto superfields = self->superfields();
+                return py::make_iterator(superfields.begin(), superfields.end());
+            },
+            "Iterates over this struct and it's superfields.\n"
+            "\n"
+            "Note this includes this struct itself.\n"
+            "\n"
+            "Returns:\n"
+            "    An iterator over all superfields in the struct.")
         .def("_inherits", &UStruct::inherits,
              "Checks if this structs inherits from another.\n"
              "\n"

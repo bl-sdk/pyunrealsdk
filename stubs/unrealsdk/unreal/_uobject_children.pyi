@@ -81,6 +81,15 @@ class UStruct(UField):
         Returns:
             An iterator over all properties in the struct.
         """
+    def _superfields(self) -> Iterator[UStruct]:
+        """
+        Iterates over this struct and it's superfields.
+
+        Note this includes this struct itself.
+
+        Returns:
+            An iterator over all superfields in the struct.
+        """
 
 class UArrayProperty(UProperty):
     @property
