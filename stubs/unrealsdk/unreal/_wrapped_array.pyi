@@ -1,3 +1,5 @@
+# ruff: noqa: D205
+
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Sequence
@@ -18,7 +20,7 @@ class WrappedArray(Generic[_T]):
 
         Args:
             values: The sequence of values to append.
-        """  # noqa: D205
+        """
     @classmethod
     def __class_getitem__(cls, *args: Any, **kwargs: Any) -> GenericAlias:
         """
@@ -111,7 +113,7 @@ class WrappedArray(Generic[_T]):
 
         Args:
             num: The number of times to repeat.
-        """  # noqa: D205
+        """
     def __new__(cls, *args: Any, **kwargs: Any) -> Never: ...
     def __radd__(self, values: Sequence[_T]) -> list[_T]:
         """
@@ -120,7 +122,7 @@ class WrappedArray(Generic[_T]):
 
         Args:
             values: The sequence of values to append.
-        """  # noqa: D205
+        """
     def __repr__(self) -> str:
         """
         Gets a string representation of this array.
@@ -142,7 +144,7 @@ class WrappedArray(Generic[_T]):
 
         Args:
             num: The number of times to repeat.
-        """  # noqa: D205
+        """
     @overload
     def __setitem__(self, idx: int, value: _T) -> None:
         """

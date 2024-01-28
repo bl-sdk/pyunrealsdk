@@ -1,3 +1,5 @@
+# ruff: noqa: D205
+
 from __future__ import annotations
 
 from typing import Any, ClassVar
@@ -87,7 +89,7 @@ def dev_warning(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """  # noqa: D205
+    """
 
 def error(*args: Any, **kwargs: Any) -> None:
     """
@@ -97,7 +99,7 @@ def error(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """  # noqa: D205
+    """
 
 def info(*args: Any, **kwargs: Any) -> None:
     """
@@ -107,7 +109,7 @@ def info(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """  # noqa: D205
+    """
 
 def is_console_ready() -> bool:
     """
@@ -127,7 +129,7 @@ def misc(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """  # noqa: D205
+    """
 
 def set_console_level(level: Level) -> bool:
     """
@@ -149,4 +151,4 @@ def warning(*args: Any, **kwargs: Any) -> None:
     Args:
         *args: Forwarded to print().
         **kwargs: Forwarded to print().
-    """  # noqa: D205
+    """
