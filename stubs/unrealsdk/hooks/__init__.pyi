@@ -1,3 +1,5 @@
+# ruff: noqa: D205, FIX004
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -22,7 +24,7 @@ class Block:
     """
     A sentinel used to indicate a hook should block execution of the unrealscript
     function.
-    """  # noqa: D205
+    """
 
 # HACK: Pybind enums are completely normal classes, they don't inherit from the standard library
 #       enums, which means we're not allowed to use them in Literal type hints.
@@ -67,7 +69,7 @@ class Unset:
     """
     A sentinel used to indicate a return value override is unset - i.e. the actual
     return value will be used.
-    """  # noqa: D205
+    """
 
 _HookBlockSignal: TypeAlias = None | EllipsisType | Block | type[Block]
 _PreHookCallback: TypeAlias = Callable[
@@ -170,7 +172,7 @@ def log_all_calls(should_log: bool) -> None:
 
     Args:
         should_log: True to turn on logging all calls, false to turn it off.
-    """  # noqa: D205
+    """
 
 def remove_hook(func: str, type: Type, identifier: str) -> bool:
     """
