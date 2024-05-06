@@ -4,16 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Sequence
 from types import GenericAlias
-from typing import Any, Generic, Never, Self, TypeVar, overload
+from typing import Any, Never, Self, overload
 
 from ._uobject_children import UProperty
 
-_T = TypeVar("_T")
-
-class WrappedArray(Generic[_T]):
+class WrappedArray[T]:
     _type: UProperty
 
-    def __add__(self, values: Sequence[_T]) -> list[_T]:
+    def __add__(self, values: Sequence[T]) -> list[T]:
         """
         Creates a list holding a copy of the array, and extends it with all the values
         in the given sequence.
@@ -32,7 +30,7 @@ class WrappedArray(Generic[_T]):
         Returns:
             The WrappedArray class.
         """
-    def __contains__(self, value: _T) -> bool:
+    def __contains__(self, value: T) -> bool:
         """
         Checks if a value exists in the array.
 
@@ -58,7 +56,7 @@ class WrappedArray(Generic[_T]):
             range: The range to delete.
         """
     @overload
-    def __getitem__(self, idx: int) -> _T:
+    def __getitem__(self, idx: int) -> T:
         """
         Gets an item from the array.
 
@@ -68,7 +66,7 @@ class WrappedArray(Generic[_T]):
             The item at the given index.
         """
     @overload
-    def __getitem__(self, range: slice) -> list[_T]:
+    def __getitem__(self, range: slice) -> list[T]:
         """
         Gets a range from the array.
 
@@ -77,7 +75,7 @@ class WrappedArray(Generic[_T]):
         Returns:
             The items in the given range.
         """
-    def __iadd__(self, values: Sequence[_T]) -> Self:
+    def __iadd__(self, values: Sequence[T]) -> Self:
         """
         Extends the array with all the values in the given sequence in place.
 
@@ -92,7 +90,7 @@ class WrappedArray(Generic[_T]):
             num: The number of times to repeat.
         """
     def __init__(self, *args: Any, **kwargs: Any) -> Never: ...
-    def __iter__(self) -> Iterator[_T]:
+    def __iter__(self) -> Iterator[T]:
         """
         Creates an iterator over the array.
 
@@ -106,7 +104,7 @@ class WrappedArray(Generic[_T]):
         Returns:
             The length of the array.
         """
-    def __mul__(self, num: int) -> list[_T]:
+    def __mul__(self, num: int) -> list[T]:
         """
         Creates a list holding a copy of the array, and repeats all values in it the
         given number of times.
@@ -115,7 +113,7 @@ class WrappedArray(Generic[_T]):
             num: The number of times to repeat.
         """
     def __new__(cls, *args: Any, **kwargs: Any) -> Never: ...
-    def __radd__(self, values: Sequence[_T]) -> list[_T]:
+    def __radd__(self, values: Sequence[T]) -> list[T]:
         """
         Creates a list holding a copy of the array, and extends it with all the values
         in the given sequence.
@@ -130,14 +128,14 @@ class WrappedArray(Generic[_T]):
         Returns:
             The string representation.
         """
-    def __reversed__(self) -> Iterator[_T]:
+    def __reversed__(self) -> Iterator[T]:
         """
         Creates a reverse iterator over the array.
 
         Returns:
             A reverse iterator over the array.
         """
-    def __rmul__(self, num: int) -> list[_T]:
+    def __rmul__(self, num: int) -> list[T]:
         """
         Creates a list holding a copy of the array, and repeats all values in it the
         given number of times.
@@ -146,7 +144,7 @@ class WrappedArray(Generic[_T]):
             num: The number of times to repeat.
         """
     @overload
-    def __setitem__(self, idx: int, value: _T) -> None:
+    def __setitem__(self, idx: int, value: T) -> None:
         """
         Sets an item in the array.
 
@@ -155,7 +153,7 @@ class WrappedArray(Generic[_T]):
             value: The value to set.
         """
     @overload
-    def __setitem__(self, range: slice, value: Sequence[_T]) -> None:
+    def __setitem__(self, range: slice, value: Sequence[T]) -> None:
         """
         Sets a range of items in the array.
 
@@ -163,7 +161,7 @@ class WrappedArray(Generic[_T]):
             range: The range to set.
             value: The values to set.
         """
-    def append(self, value: _T) -> None:
+    def append(self, value: T) -> None:
         """
         Appends a value to the end of the array.
 
@@ -172,9 +170,9 @@ class WrappedArray(Generic[_T]):
         """
     def clear(self) -> None:
         """Removes all items from the array."""
-    def copy(self) -> list[_T]:
+    def copy(self) -> list[T]:
         """Creates a list holding a copy of the array."""
-    def count(self, value: _T) -> int:
+    def count(self, value: T) -> int:
         """
         Counts how many of a given value exist in the array.
 
@@ -183,14 +181,14 @@ class WrappedArray(Generic[_T]):
         Returns:
             The number of times the value appears in the array.
         """
-    def extend(self, values: Sequence[_T]) -> None:
+    def extend(self, values: Sequence[T]) -> None:
         """
         Extends the array with all the values in the given sequence.
 
         Args:
             values: The sequence of values to append.
         """
-    def index(self, value: _T, start: int = 0, stop: int = -1) -> int:
+    def index(self, value: T, start: int = 0, stop: int = -1) -> int:
         """
         Finds the first index of the given value in the array.
 
@@ -203,7 +201,7 @@ class WrappedArray(Generic[_T]):
         Returns:
             The first index of the value in the array.
         """
-    def insert(self, idx: int, value: _T) -> None:
+    def insert(self, idx: int, value: T) -> None:
         """
         Inserts an item into the array before the given index.
 
@@ -211,14 +209,14 @@ class WrappedArray(Generic[_T]):
             idx: The index to insert before.
             value: The value to insert.
         """
-    def pop(self, idx: int = -1) -> _T:
+    def pop(self, idx: int = -1) -> T:
         """
         Removes an item from the array, and returns a copy of it.
 
         Args:
             idx: The index to remove the item from.
         """
-    def remove(self, value: _T) -> None:
+    def remove(self, value: T) -> None:
         """
         Finds the first instance of the given value in the array, and removes it.
 
@@ -229,7 +227,7 @@ class WrappedArray(Generic[_T]):
         """
     def reverse(self) -> None:
         """Reverses the array in place."""
-    def sort(self, *, key: None | Callable[[_T], Any] = None, reverse: bool = False) -> None:
+    def sort(self, *, key: None | Callable[[T], Any] = None, reverse: bool = False) -> None:
         """
         Sorts the array in place.
 

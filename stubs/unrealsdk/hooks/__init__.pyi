@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from enum import EnumMeta
 from types import EllipsisType
-from typing import Any, ClassVar, Literal, TypeAlias, overload
+from typing import Any, ClassVar, Literal, overload
 
 from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
 
@@ -71,15 +71,15 @@ class Unset:
     return value will be used.
     """
 
-_HookBlockSignal: TypeAlias = None | EllipsisType | Block | type[Block]
-_PreHookCallback: TypeAlias = Callable[
+type _HookBlockSignal = None | EllipsisType | Block | type[Block]
+type _PreHookCallback = Callable[
     [UObject, WrappedStruct, Any, BoundFunction],
     _HookBlockSignal | tuple[_HookBlockSignal, Any],
 ]
-_PostHookCallback: TypeAlias = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
+type _PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
 
-_PreHookType: TypeAlias = Literal[Type.PRE]
-_PostHookType: TypeAlias = Literal[Type.POST, Type.POST_UNCONDITIONAL]
+type _PreHookType = Literal[Type.PRE]
+type _PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
 
 @overload
 def add_hook(

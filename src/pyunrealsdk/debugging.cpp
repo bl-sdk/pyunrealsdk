@@ -13,7 +13,7 @@ PYUNREALSDK_CAPI(void, debug_this_thread);
 }
 
 void debug_this_thread(void) {
-    return PYUNREALSDK_MANGLE(debug_this_thread)();
+    PYUNREALSDK_MANGLE(debug_this_thread)();
 }
 
 #ifdef PYUNREALSDK_INTERNAL

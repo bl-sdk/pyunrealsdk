@@ -1,11 +1,11 @@
 [tool.pyright]
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
 include = ["stubs"]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 100
 select = [
     "F",
