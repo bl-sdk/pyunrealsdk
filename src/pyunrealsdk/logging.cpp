@@ -47,7 +47,7 @@ std::pair<std::string, int> get_python_location(PyFrameObject* frame = nullptr) 
  */
 class Logger {
    private:
-    std::stringstream stream{};
+    std::stringstream stream;
 
    public:
     /// The log level to log at.
@@ -172,8 +172,7 @@ void register_module(py::module_& mod) {
              "    The number of chars which were written (which is always equal to the length\n"
              "    of the string).",
              "text"_a)
-        .def(
-            "flush", [](Logger& self) { self.flush(); }, "Flushes the stream.");
+        .def("flush", [](Logger& self) { self.flush(); }, "Flushes the stream.");
 
     logging.def("set_console_level", &unrealsdk::logging::set_console_level,
                 "Sets the log level of the unreal console.\n"
