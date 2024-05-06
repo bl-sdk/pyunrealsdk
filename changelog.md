@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1
+- Updated CI and stubs to Python 3.12
+
+  [0d0cbce9](https://github.com/bl-sdk/pyunrealsdk/commit/0d0cbce9)
+
 ## v1.1.0
 
 Also see the unrealsdk v1.1.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v110).
