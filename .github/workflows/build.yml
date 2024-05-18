@@ -16,8 +16,6 @@ env:
   # xwin settings
   XWIN_VERSION: xwin-0.5.0-x86_64-unknown-linux-musl
   XWIN_DOWNLOAD: https://github.com/Jake-Shadle/xwin/releases/download/0.5.0/xwin-0.5.0-x86_64-unknown-linux-musl.tar.gz
-  # Python settings
-  PYTHON_VERSION: "3.12.3"
 
 jobs:
   cache-clang:
@@ -89,12 +87,7 @@ jobs:
       run: |
         pip install requests
 
-        python common_cmake/explicit_python/download.py                           `
-          ${{ env.PYTHON_VERSION }}                                               `
-          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   `
-          --no-debug
-
-        cmake . --preset ${{ matrix.preset }}
+        cmake . --preset ${{ matrix.preset }} -G Ninja
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
@@ -198,16 +191,11 @@ jobs:
       run: |
         pip install requests
 
-        python common_cmake/explicit_python/download.py                           \
-          ${{ env.PYTHON_VERSION }}                                               \
-          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }}   \
-          --no-debug
-
         cmake .                           \
         --preset ${{ matrix.preset }}     \
         -G Ninja                          \
         -DXWIN_DIR=$(readlink -f ~)/xwin
-      # The extra xwin dir arg won't do anything if we're not cross compiling
+      # The extra xwin dir arg will be ignored if we don't need it
 
     - name: Build
       working-directory: ${{ env.GITHUB_WORKSPACE }}
@@ -254,12 +242,10 @@ jobs:
       run: |
         pip install pyyaml requests
 
-        python common_cmake/explicit_python/download.py                         `
-          ${{ env.PYTHON_VERSION }}                                             `
-          ${{ fromJSON('["win32", "amd64"]')[contains(matrix.preset, 'x64')] }} `
-          --no-debug
-
-        cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+        cmake .                                   `
+        --preset ${{ matrix.preset }}             `
+        -G Ninja                                  `
+        -DCMAKE_DISABLE_PRECOMPILE_HEADERS=True
 
         (Get-Content "out\build\${{ matrix.preset }}\compile_commands.json")    `
           -replace "@CMakeFiles.+?\.modmap", ""                                 `

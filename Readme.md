@@ -116,17 +116,22 @@ To build:
    git clone --recursive https://github.com/bl-sdk/pyunrealsdk.git
    ```
 
-2. Setup the python dev files. The simplest way is as follows:
+2. Make sure you have Python with requests on your PATH. This doesn't need to be the same version
+   as what the SDK uses, it's just used by the script which downloads the correct one.
    ```sh
-   apt install msitools # Or equivalent for other package managers, not required on Windows
-
-   cd common_cmake/explicit_python
    pip install requests
-   python download.py 3.11.4 amd64
+   python -c 'import requests'
    ```
 
-   See the [readme](https://github.com/bl-sdk/common_cmake/blob/master/explicit_python/Readme.md)
-   for more advanced details.
+   If not running on Windows, make sure `msiextract` is also on your PATH. This is typically part
+   of an `msitools` package.
+   ```sh
+   apt install msitools # Or equivalent
+   msiextract --version 
+   ```
+
+   See the explicit python [readme](https://github.com/bl-sdk/common_cmake/blob/master/explicit_python/Readme.md)
+   for a few extra details.
 
 3. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
 
@@ -140,8 +145,8 @@ To build:
    want these:
    ```
    python3.dll
-   python311.dll
-   python311.zip
+   python3<version>.dll
+   python3<version>.zip
    ```
 
    A CMake install will copy these files, as well as several other useful libraries, to the install

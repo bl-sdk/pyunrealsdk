@@ -5,7 +5,10 @@
       "name": "_base",
       "hidden": true,
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}"
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "EXPLICIT_PYTHON_VERSION": "3.12.3"
+      }
     },
     {
       "name": "_clang_x86",
@@ -111,6 +114,7 @@
         "strategy": "external"
       },
       "cacheVariables": {
+        "EXPLICIT_PYTHON_ARCH": "win32",
         "UNREALSDK_ARCH": "x86"
       }
     },
@@ -122,6 +126,7 @@
         "strategy": "external"
       },
       "cacheVariables": {
+        "EXPLICIT_PYTHON_ARCH": "amd64",
         "UNREALSDK_ARCH": "x64"
       }
     },
