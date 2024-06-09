@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Cache Clang
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: cache-clang
       with:
         path: C:\Program Files\LLVM
@@ -55,7 +55,7 @@ jobs:
     steps:
     - name: Restore Clang Cache
       if: startswith(matrix.preset, 'clang')
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: C:\Program Files\LLVM
         key: ${{ runner.os }}-clang-${{ env.CLANG_VERSION }}
@@ -63,7 +63,7 @@ jobs:
 
     - name: Add MSVC to PATH
       if: startswith(matrix.preset, 'msvc')
-      uses: TheMrMilchmann/setup-msvc-dev@v2
+      uses: TheMrMilchmann/setup-msvc-dev@v3
       with:
         arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'x64')] }}
 
@@ -73,12 +73,12 @@ jobs:
     # We only actually need this python version to run the download script, we're not going to link
     # against it, so don't need to specify arch
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ">=3.10"
 
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -163,7 +163,7 @@ jobs:
     # xwin does take long enough that caching's worth it
     - name: Restore xwin cache
       if: contains(matrix.preset, 'cross')
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: cache-xwin
       with:
         path: ~/xwin
@@ -182,7 +182,7 @@ jobs:
           --output ~/xwin
 
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -217,7 +217,7 @@ jobs:
 
     steps:
     - name: Restore Clang Cache
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: C:\Program Files\LLVM
         key: ${{ runner.os }}-clang-${{ env.CLANG_VERSION }}
@@ -227,12 +227,12 @@ jobs:
       uses: lukka/get-cmake@latest
 
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ">=3.10"
 
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -278,14 +278,14 @@ jobs:
 
     steps:
     - name: Restore Clang Cache
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: C:\Program Files\LLVM
         key: ${{ runner.os }}-clang-${{ env.CLANG_VERSION }}
         fail-on-cache-miss: true
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Run clang-format
       run: |
@@ -303,7 +303,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Check spelling
       uses: crate-ci/typos@master
@@ -313,12 +313,12 @@ jobs:
 
     steps:
     - name: Checkout repository and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Run pyright
-      uses: jakebailey/pyright-action@v1
+      uses: jakebailey/pyright-action@v2
       with:
         working-directory: ./stubs
 
@@ -327,7 +327,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Run Ruff Linting
       uses: chartboost/ruff-action@v1
