@@ -58,36 +58,42 @@ def find_all(cls: UClass | str, exact: bool = True) -> Iterator[UObject]:
         exact: If true (the default), only finds exact class matches. If false, also
                matches subclasses.
     Returns:
-        A list of all instances of the class.
+        An iterator over all instances of the class.
     """
 
 def find_class(name: str, fully_qualified: None | bool = None) -> UClass:
     """
     Finds a class by name.
 
+    Throws a ValueError if not found.
+
     Args:
         name: The class name.
         fully_qualified: If the class name is fully qualified, or None (the default)
                          to autodetect.
     Returns:
-        The class, or None if not found.
+        The unreal class.
     """
 
 def find_enum(name: str, fully_qualified: None | bool = None) -> type[_GenericUnrealEnum]:
     """
     Finds an enum by name.
 
+    Throws a ValueError if not found.
+
     Args:
         name: The enum name.
         fully_qualified: If the enum name is fully qualified, or None (the default)
                          to autodetect.
     Returns:
-        The enum, or None if not found.
+        The unreal enum.
     """
 
 def find_object(cls: UClass | str, name: str) -> UObject:
     """
     Finds an object by name.
+
+    Throws a ValueError if not found.
 
     Args:
         cls: The object's class, or class name. If given as the name, always
@@ -95,7 +101,7 @@ def find_object(cls: UClass | str, name: str) -> UObject:
              to specify.
         name: The object's name.
     Returns:
-        The object, or None if not found.
+        The unreal object.
     """
 
 def load_package(name: str, flags: int = 0) -> UObject:
