@@ -124,7 +124,7 @@ py::object py_getattr(UField* field,
                                                      field->Name, field->Class->Name));
 }
 
-void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
+void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& value) {
     if (!field->is_instance(find_class<UProperty>())) {
         throw py::attribute_error(unrealsdk::fmt::format(
             "attribute '{}' is not a property, and thus cannot be set", field->Name));

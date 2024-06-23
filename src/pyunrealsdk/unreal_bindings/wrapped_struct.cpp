@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
@@ -30,7 +31,8 @@ WrappedStruct make_struct(const UScriptStruct* type,
     size_t arg_idx = 0;
     for (auto prop : type->properties()) {
         if (arg_idx != args.size()) {
-            py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()), args[arg_idx++]);
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
+                              args[arg_idx++]);
 
             if (converted_kwargs.contains(prop->Name)) {
                 throw py::type_error(unrealsdk::fmt::format(
@@ -44,8 +46,8 @@ WrappedStruct make_struct(const UScriptStruct* type,
         auto iter = converted_kwargs.find(prop->Name);
         if (iter != converted_kwargs.end()) {
             // Use extract to also remove the value from the map, so we can ensure it's empty later
-            py_setattr(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
-                       converted_kwargs.extract(iter).mapped());
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
+                              converted_kwargs.extract(iter).mapped());
             continue;
         }
     }
@@ -61,10 +63,7 @@ WrappedStruct make_struct(const UScriptStruct* type,
 }
 
 void register_wrapped_struct(py::module_& mod) {
-    py::class_<WrappedStruct>(
-        mod, "WrappedStruct",
-        // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
-        py::dynamic_attr())
+    py::class_<WrappedStruct>(mod, "WrappedStruct")
         .def(py::init(&make_struct),
              "Creates a new wrapped struct.\n"
              "\n"
@@ -152,9 +151,26 @@ void register_wrapped_struct(py::module_& mod) {
             "field"_a)
         .def(
             "__setattr__",
-            [](WrappedStruct& self, const FName& name, const py::object& value) {
-                py_setattr(py_find_field(name, self.type),
-                           reinterpret_cast<uintptr_t>(self.base.get()), value);
+            [](py::object& self, const py::str& name, const py::object& value) {
+                // See if the standard setattr would work first, in case we're being called on an
+                // existing field. Getattr is only called on failure, but setattr is always called.
+                static const StaticPyObject setattr =
+                    (py::object)py::module::import("builtins").attr("object").attr("__setattr__");
+
+                try {
+                    setattr(self, name, value);
+                    return;
+                } catch (py::error_already_set& e) {
+                    if (!e.matches(PyExc_AttributeError)) {
+                        throw;
+                    }
+                }
+
+                auto ue_self = py::cast<WrappedStruct&>(self);
+                auto ue_name = py::cast<FName>(name);
+
+                py_setattr_direct(py_find_field(ue_name, ue_self.type),
+                                  reinterpret_cast<uintptr_t>(ue_self.base.get()), value);
             },
             "Writes a value to an unreal field on the struct.\n"
             "\n"
@@ -170,7 +186,7 @@ void register_wrapped_struct(py::module_& mod) {
                 if (field == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
                 }
-                py_setattr(field, reinterpret_cast<uintptr_t>(self.base.get()), value);
+                py_setattr_direct(field, reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
             "Writes a value to an unreal field on the struct.\n"
             "\n"

@@ -53,7 +53,8 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
 
         // If we still have positional args left
         if (arg_idx != args.size()) {
-            py_setattr(prop, reinterpret_cast<uintptr_t>(params.base.get()), args[arg_idx++]);
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(params.base.get()),
+                              args[arg_idx++]);
 
             if (kwargs.contains(prop->Name)) {
                 throw py::type_error(unrealsdk::fmt::format(
@@ -67,8 +68,8 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
         if (kwargs.contains(prop->Name)) {
             // Extract the value with pop, so we can check that kwargs are empty at the
             // end
-            py_setattr(prop, reinterpret_cast<uintptr_t>(params.base.get()),
-                       kwargs.attr("pop")(prop->Name));
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(params.base.get()),
+                              kwargs.attr("pop")(prop->Name));
             continue;
         }
 
