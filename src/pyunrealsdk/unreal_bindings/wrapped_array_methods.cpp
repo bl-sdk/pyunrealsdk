@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
@@ -141,13 +142,13 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
     // Implement using the sorted builtin
     // It's just kind of awkward to do from C++, given half our types aren't even sortable to begin
     // with, and we need to be able to compare arbitrary keys anyway
-    py::sequence sorted =
-        py::module_::import("builtins").attr("sorted")(self, "key"_a = key, "reverse"_a = reverse);
+    static const StaticPyObject sorted = (py::object)py::module_::import("builtins").attr("sorted");
+    py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
 
-    cast(self.type, [&self, &sorted]<typename T>(const T* /*prop*/) {
+    cast(self.type, [&self, &sorted_array]<typename T>(const T* /*prop*/) {
         auto size = self.size();
         for (size_t i = 0; i < size; i++) {
-            auto val = py::cast<typename PropTraits<T>::Value>(sorted[i]);
+            auto val = py::cast<typename PropTraits<T>::Value>(sorted_array[i]);
             self.set_at<T>(i, val);
         }
     });

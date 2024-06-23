@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
@@ -53,8 +54,9 @@ void register_property_helpers(py::module_& mod) {
 
 std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     // Start by calling the base dir function
-    auto names = py::cast<std::vector<std::string>>(
-        py::module_::import("builtins").attr("object").attr("__dir__")(self));
+    static const StaticPyObject dir =
+        (py::object)py::module_::import("builtins").attr("object").attr("__dir__");
+    auto names = py::cast<std::vector<std::string>>(dir(self));
 
     if (dir_includes_unreal) {
         // Append our fields

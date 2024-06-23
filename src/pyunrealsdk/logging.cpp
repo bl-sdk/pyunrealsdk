@@ -123,6 +123,7 @@ void register_per_log_level_printer(py::module_& logging,
     logging.def(
         func_name,
         [level](const py::args& args, const py::kwargs& kwargs) {
+            // Not going to keep a static reference to this incase people try swap it out
             auto py_stdout = py::module_::import("sys").attr("stdout");
 
             auto old_level = py::cast<Level>(py_stdout.attr("level"));
