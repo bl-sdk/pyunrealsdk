@@ -5,7 +5,6 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
-#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/uconst.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
@@ -87,13 +86,22 @@ py::object py_getattr(UField* field,
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
                 auto val = get_property<T>(prop, i, base_addr, parent);
 
-                if constexpr (std::is_same_v<T, UEnumProperty>) {
-                    // If the value we're reading is an enum, convert it to a python enum
-                    ret[i] = enum_as_py_enum(prop->get_enum())(val);
-                } else {
-                    // Otherwise store as is
-                    ret[i] = std::move(val);
+                // Multiple property types expose a get enum method
+                constexpr bool is_enum = requires(const T* type) {
+                    { type->get_enum() } -> std::same_as<UEnum*>;
+                };
+
+                // If the value we're reading is an enum, convert it to a python enum
+                if constexpr (is_enum) {
+                    auto ue_enum = prop->get_enum();
+                    if (ue_enum != nullptr) {
+                        ret[i] = enum_as_py_enum(ue_enum)(val);
+                        continue;
+                    }
                 }
+                // Otherwise store as is
+
+                ret[i] = std::move(val);
             }
         });
         if (prop->ArrayDim == 1) {
