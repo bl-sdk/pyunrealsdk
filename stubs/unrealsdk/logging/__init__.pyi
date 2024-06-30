@@ -81,34 +81,49 @@ class Logger:
             of the string).
         """
 
-def dev_warning(*args: Any, **kwargs: Any) -> None:
+# These functions do actually just forward *args/**kwargs directly, but give them the same signature
+# as print for type hinting
+
+def dev_warning(  # noqa: D417
+    *objects: Any,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
     """
-    Wrapper around print(), which temporarily changes the log level of stdout to
-    dev warning.
+    Wrapper around print(), which uses a custom file at the dev warning log level.
 
     Args:
         *args: Forwarded to print().
-        **kwargs: Forwarded to print().
+        **kwargs: Except for 'file', forwarded to print().
     """
 
-def error(*args: Any, **kwargs: Any) -> None:
+def error(  # noqa: D417
+    *objects: Any,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
     """
-    Wrapper around print(), which temporarily changes the log level of stdout to
-    error.
-
-    Args:
-        *args: Forwarded to print().
-        **kwargs: Forwarded to print().
-    """
-
-def info(*args: Any, **kwargs: Any) -> None:
-    """
-    Wrapper around print(), which temporarily changes the log level of stdout to
-    info.
+    Wrapper around print(), which uses a custom file at the error log level.
 
     Args:
         *args: Forwarded to print().
-        **kwargs: Forwarded to print().
+        **kwargs: Except for 'file', forwarded to print().
+    """
+
+def info(  # noqa: D417
+    *objects: Any,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
+    """
+    Wrapper around print(), which uses a custom file at the info log level.
+
+    Args:
+        *args: Forwarded to print().
+        **kwargs: Except for 'file', forwarded to print().
     """
 
 def is_console_ready() -> bool:
@@ -121,14 +136,18 @@ def is_console_ready() -> bool:
         True if the console hook is ready, false otherwise.
     """
 
-def misc(*args: Any, **kwargs: Any) -> None:
+def misc(  # noqa: D417
+    *objects: Any,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
     """
-    Wrapper around print(), which temporarily changes the log level of stdout to
-    misc.
+    Wrapper around print(), which uses a custom file at the misc log level.
 
     Args:
         *args: Forwarded to print().
-        **kwargs: Forwarded to print().
+        **kwargs: Except for 'file', forwarded to print().
     """
 
 def set_console_level(level: Level) -> bool:
@@ -143,12 +162,16 @@ def set_console_level(level: Level) -> bool:
         True if console level changed, false if an invalid value was passed in.
     """
 
-def warning(*args: Any, **kwargs: Any) -> None:
+def warning(  # noqa: D417
+    *objects: Any,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
     """
-    Wrapper around print(), which temporarily changes the log level of stdout to
-    warning.
+    Wrapper around print(), which uses a custom file at the warning log level.
 
     Args:
         *args: Forwarded to print().
-        **kwargs: Forwarded to print().
+        **kwargs: Except for 'file', forwarded to print().
     """
