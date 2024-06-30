@@ -26,34 +26,26 @@ PYUNREALSDK_CAPI(void, debug_this_thread) {
         return;
     }
 
-    static StaticPyObject debugpy_debug_this_thread{};
+    const py::gil_scoped_acquire gil{};
 
-    // Since we initialize with a null object, this is only true on first run - we'll set disabled
-    // if we fail to find the object anyway
-    if (!(bool)debugpy_debug_this_thread) {
-        if (!env::defined(env::DEBUGPY)) {
-            disabled = true;
-            return;
-        }
-
-        {
-            const py::gil_scoped_acquire gil{};
-            try {
-                debugpy_debug_this_thread =
-                    py::module_::import("debugpy").attr("debug_this_thread");
-            } catch (const py::error_already_set&) {
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    auto& debugpy_debug_this_thread =
+        storage
+            .call_once_and_store_result([]() -> py::object {
+                if (env::defined(env::DEBUGPY)) {
+                    try {
+                        return py::module_::import("debugpy").attr("debug_this_thread");
+                    } catch (const py::error_already_set&) {}
+                }
                 disabled = true;
-                return;
-            }
-        }
+                return py::none{};
+            })
+            .get_stored();
 
-        if (!(bool)debugpy_debug_this_thread) {
-            disabled = true;
-            return;
-        }
+    if (disabled) {
+        return;
     }
 
-    const py::gil_scoped_acquire gil{};
     debugpy_debug_this_thread();
 }
 

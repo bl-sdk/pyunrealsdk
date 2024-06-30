@@ -142,7 +142,12 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
     // Implement using the sorted builtin
     // It's just kind of awkward to do from C++, given half our types aren't even sortable to begin
     // with, and we need to be able to compare arbitrary keys anyway
-    static const StaticPyObject sorted = (py::object)py::module_::import("builtins").attr("sorted");
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    auto& sorted = storage
+                       .call_once_and_store_result(
+                           []() { return py::module_::import("builtins").attr("sorted"); })
+                       .get_stored();
+
     py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
 
     cast(self.type, [&self, &sorted_array]<typename T>(const T* /*prop*/) {

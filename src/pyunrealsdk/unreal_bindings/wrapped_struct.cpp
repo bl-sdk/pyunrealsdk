@@ -154,8 +154,14 @@ void register_wrapped_struct(py::module_& mod) {
             [](py::object& self, const py::str& name, const py::object& value) {
                 // See if the standard setattr would work first, in case we're being called on an
                 // existing field. Getattr is only called on failure, but setattr is always called.
-                static const StaticPyObject setattr =
-                    (py::object)py::module::import("builtins").attr("object").attr("__setattr__");
+                PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+                auto& setattr = storage
+                                    .call_once_and_store_result([]() {
+                                        return py::module::import("builtins")
+                                            .attr("object")
+                                            .attr("__setattr__");
+                                    })
+                                    .get_stored();
 
                 try {
                     setattr(self, name, value);

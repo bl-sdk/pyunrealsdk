@@ -53,8 +53,13 @@ void register_property_helpers(py::module_& mod) {
 
 std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     // Start by calling the base dir function
-    static const StaticPyObject dir =
-        (py::object)py::module_::import("builtins").attr("object").attr("__dir__");
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    auto& dir = storage
+                    .call_once_and_store_result([]() {
+                        return py::module_::import("builtins").attr("object").attr("__dir__");
+                    })
+                    .get_stored();
+
     auto names = py::cast<std::vector<std::string>>(dir(self));
 
     if (dir_includes_unreal) {

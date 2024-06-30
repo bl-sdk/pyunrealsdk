@@ -18,10 +18,14 @@ namespace pyunrealsdk {
 /*
 A pybind object wrapper which can safely be stored statically.
 
-The issue with the standard class is it's destructor assumes Python is still running - but when
-stored in static memory, it may be called after finalization. Most obviously, this means we can't
-grab the GIL, so it will throw an exception during a destructor, and thus crash the game. While this
-only happens when you close the game anyway, we don't want the user to see us causing crashes.
+Pybind has an official type with a similar purpose, `py::gil_safe_call_once_and_store`. However,
+it's more suited to something which exists forever, it has a leaking destructor. This class is
+better for static objects which may keep getting replaced.
+
+The issue with py::object is it's destructor assumes Python is still running - but when stored in
+static memory, it may be called after finalization. Most obviously, this means we can't grab the
+GIL, so it will throw an exception during a destructor, and thus crash the game. While this only
+happens when you close the game anyway, we don't want the user to see us causing crashes.
 */
 
 class PY_OBJECT_VISIBILITY StaticPyObject {
