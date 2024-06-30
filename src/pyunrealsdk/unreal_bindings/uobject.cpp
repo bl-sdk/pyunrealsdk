@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/uobject.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/format.h"
@@ -36,9 +37,7 @@ void register_uobject(py::module_& mod) {
         "The base class of all unreal objects.\n"
         "\n"
         "Most objects you interact with will be this type in python, even if their unreal\n"
-        "class is something different.",
-        // Need dynamic attr to create a `__dict__`, so that we can handle `__dir__` properly
-        py::dynamic_attr())
+        "class is something different.")
         .def("__new__",
              [](const py::args&, const py::kwargs&) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
@@ -107,9 +106,32 @@ void register_uobject(py::module_& mod) {
             "field"_a)
         .def(
             "__setattr__",
-            [](UObject* self, const FName& name, const py::object& value) {
-                py_setattr(py_find_field(name, self->Class), reinterpret_cast<uintptr_t>(self),
-                           value);
+            [](py::object& self, const py::str& name, const py::object& value) {
+                // See if the standard setattr would work first, in case we're being called on an
+                // existing field. Getattr is only called on failure, but setattr is always called.
+                PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+                auto& setattr = storage
+                                    .call_once_and_store_result([]() {
+                                        return py::module::import("builtins")
+                                            .attr("object")
+                                            .attr("__setattr__");
+                                    })
+                                    .get_stored();
+
+                try {
+                    setattr(self, name, value);
+                    return;
+                } catch (py::error_already_set& e) {
+                    if (!e.matches(PyExc_AttributeError)) {
+                        throw;
+                    }
+                }
+
+                auto ue_self = py::cast<UObject*>(self);
+                auto ue_name = py::cast<FName>(name);
+
+                py_setattr_direct(py_find_field(ue_name, ue_self->Class),
+                                  reinterpret_cast<uintptr_t>(ue_self), value);
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"
@@ -125,7 +147,7 @@ void register_uobject(py::module_& mod) {
                 if (field == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
                 }
-                py_setattr(field, reinterpret_cast<uintptr_t>(self), value);
+                py_setattr_direct(field, reinterpret_cast<uintptr_t>(self), value);
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"

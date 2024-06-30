@@ -2,10 +2,13 @@
 #include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
+#include "unrealsdk/unreal/classes/properties/attribute_property.h"
 #include "unrealsdk/unreal/classes/properties/copyable_property.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/properties/uboolproperty.h"
+#include "unrealsdk/unreal/classes/properties/ubyteproperty.h"
 #include "unrealsdk/unreal/classes/properties/uclassproperty.h"
+#include "unrealsdk/unreal/classes/properties/ucomponentproperty.h"
 #include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/properties/uinterfaceproperty.h"
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
@@ -135,7 +138,8 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty")
         .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
 
-    PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty");
+    PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty")
+        .def_property_readonly("Enum", &UByteProperty::get_enum);
 
     PyUEClass<UClass, UStruct>(mod, "UClass")
         .def(
@@ -212,8 +216,28 @@ void register_uobject_children(py::module_& mod) {
 
     PyUEClass<UBlueprintGeneratedClass, UClass>(mod, "UBlueprintGeneratedClass");
 
+    PyUEClass<UByteAttributeProperty, UByteProperty>(mod, "UByteAttributeProperty")
+        .def_property_readonly("ModifierStackProperty",
+                               &UByteAttributeProperty::get_modifier_stack_prop)
+        .def_property_readonly("OtherAttributeProperty",
+                               &UByteAttributeProperty::get_other_attribute_property);
+
     PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty")
         .def_property_readonly("MetaClass", &UClassProperty::get_meta_class);
+
+    PyUEClass<UComponentProperty, UObjectProperty>(mod, "UComponentProperty");
+
+    PyUEClass<UFloatAttributeProperty, UFloatProperty>(mod, "UFloatAttributeProperty")
+        .def_property_readonly("ModifierStackProperty",
+                               &UFloatAttributeProperty::get_modifier_stack_prop)
+        .def_property_readonly("OtherAttributeProperty",
+                               &UFloatAttributeProperty::get_other_attribute_property);
+
+    PyUEClass<UIntAttributeProperty, UIntProperty>(mod, "UIntAttributeProperty")
+        .def_property_readonly("ModifierStackProperty",
+                               &UIntAttributeProperty::get_modifier_stack_prop)
+        .def_property_readonly("OtherAttributeProperty",
+                               &UIntAttributeProperty::get_other_attribute_property);
 
     PyUEClass<UWeakObjectProperty, UObjectProperty>(mod, "UWeakObjectProperty");
 }

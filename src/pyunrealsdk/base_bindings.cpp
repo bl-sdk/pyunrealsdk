@@ -98,12 +98,14 @@ void register_base_bindings(py::module_& mod) {
         },
         "Finds a class by name.\n"
         "\n"
+        "Throws a ValueError if not found.\n"
+        "\n"
         "Args:\n"
         "    name: The class name.\n"
         "    fully_qualified: If the class name is fully qualified, or None (the default)\n"
         "                     to autodetect.\n"
         "Returns:\n"
-        "    The class, or None if not found.",
+        "    The unreal class.",
         "name"_a, "fully_qualified"_a = std::nullopt);
 
     mod.def(
@@ -118,12 +120,14 @@ void register_base_bindings(py::module_& mod) {
         },
         "Finds an enum by name.\n"
         "\n"
+        "Throws a ValueError if not found.\n"
+        "\n"
         "Args:\n"
         "    name: The enum name.\n"
         "    fully_qualified: If the enum name is fully qualified, or None (the default)\n"
         "                     to autodetect.\n"
         "Returns:\n"
-        "    The enum, or None if not found.",
+        "    The unreal enum.",
         "name"_a, "fully_qualified"_a = std::nullopt);
 
     mod.def(
@@ -161,13 +165,15 @@ void register_base_bindings(py::module_& mod) {
         },
         "Finds an object by name.\n"
         "\n"
+        "Throws a ValueError if not found.\n"
+        "\n"
         "Args:\n"
         "    cls: The object's class, or class name. If given as the name, always\n"
         "         autodetects if fully qualified - call find_class() directly if you need\n"
         "         to specify.\n"
         "    name: The object's name.\n"
         "Returns:\n"
-        "    The object, or None if not found.",
+        "    The unreal object.",
         "cls"_a, "name"_a);
 
     mod.def(
@@ -206,7 +212,7 @@ void register_base_bindings(py::module_& mod) {
         "    exact: If true (the default), only finds exact class matches. If false, also\n"
         "           matches subclasses.\n"
         "Returns:\n"
-        "    A list of all instances of the class.",
+        "    An iterator over all instances of the class.",
         "cls"_a, "exact"_a = true);
 
     mod.def(

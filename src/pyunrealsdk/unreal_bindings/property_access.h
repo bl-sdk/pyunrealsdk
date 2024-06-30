@@ -59,13 +59,19 @@ py::object py_getattr(unrealsdk::unreal::UField* field,
                       unrealsdk::unreal::UObject* func_obj = nullptr);
 
 /**
- * @brief Implements `__setattr__`.
+ * @brief Sets an unreal field to a python object directly.
+ * @note This is not suitable as an implementation of `__setattr__`, as it bypasses any other Python
+ *       field setting logic (e.g. properties). Getattr is only called on failed gets, while
+ *       setattr is called on *all* sets. To make it symmetric, try call the super setattr first,
+ *       and only call this if it fails.
  *
  * @param field The field to get.
  * @param base_addr The base address of the object.
  * @param value The value to set.
  */
-void py_setattr(unrealsdk::unreal::UField* field, uintptr_t base_addr, const py::object& value);
+void py_setattr_direct(unrealsdk::unreal::UField* field,
+                       uintptr_t base_addr,
+                       const py::object& value);
 
 }  // namespace pyunrealsdk::unreal
 

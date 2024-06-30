@@ -86,7 +86,7 @@ class Logger {
 
         std::string str;
         for (size_t i = 0; i < lines_to_flush && std::getline(this->stream, str); i++) {
-            unrealsdk::logging::log(clamped_level, str, location.c_str(), line_num);
+            unrealsdk::logging::log(clamped_level, str, location, line_num);
         }
 
         // We need to clear the stream occasionally
@@ -103,34 +103,31 @@ class Logger {
 /**
  * @brief Registers a function which prints at a specific log level.
  *
+ * @tparam level The log level this printer is for.
  * @param logging The logging module to register within.
- * @param level The log level this printer is for.
  * @param func_name The name of the printing function.
  * @param docstring_name The name of the log level to include in the docstring.
  */
+template <Level level>
 void register_per_log_level_printer(py::module_& logging,
-                                    Level level,
                                     const char* func_name,
-                                    const char* docstring_name) {
-    auto docstring = unrealsdk::fmt::format(
-        "Wrapper around print(), which temporarily changes the log level of stdout to\n"
-        "{}.\n"
+                                    std::string_view docstring_name) {
+    const auto docstring = unrealsdk::fmt::format(
+        "Wrapper around print(), which uses a custom file at the {} log level.\n"
         "\n"
         "Args:\n"
         "    *args: Forwarded to print().\n"
-        "    **kwargs: Forwarded to print().",
+        "    **kwargs: Except for 'file', forwarded to print().",
         docstring_name);
+
+    // NOLINTNEXTLINE(misc-const-correctness)
+    static Logger logger{level};
+
     logging.def(
         func_name,
-        [level](const py::args& args, const py::kwargs& kwargs) {
-            auto py_stdout = py::module_::import("sys").attr("stdout");
-
-            auto old_level = py::cast<Level>(py_stdout.attr("level"));
-            py_stdout.attr("level") = level;
-
+        [](const py::args& args, const py::kwargs& kwargs) {
+            kwargs["file"] = logger;
             py::print(*args, **kwargs);
-
-            py_stdout.attr("level") = old_level;
         },
         docstring.c_str());
 }
@@ -193,11 +190,11 @@ void register_module(py::module_& mod) {
                 "Returns:\n"
                 "    True if the console hook is ready, false otherwise.");
 
-    register_per_log_level_printer(logging, Level::MISC, "misc", "misc");
-    register_per_log_level_printer(logging, Level::DEV_WARNING, "dev_warning", "dev warning");
-    register_per_log_level_printer(logging, Level::INFO, "info", "info");
-    register_per_log_level_printer(logging, Level::WARNING, "warning", "warning");
-    register_per_log_level_printer(logging, Level::ERROR, "error", "error");
+    register_per_log_level_printer<Level::MISC>(logging, "misc", "misc");
+    register_per_log_level_printer<Level::DEV_WARNING>(logging, "dev_warning", "dev warning");
+    register_per_log_level_printer<Level::INFO>(logging, "info", "info");
+    register_per_log_level_printer<Level::WARNING>(logging, "warning", "warning");
+    register_per_log_level_printer<Level::ERROR>(logging, "error", "error");
 }
 
 void py_init(void) {
@@ -230,8 +227,7 @@ void log_python_exception(const std::exception& exc) {
     std::istringstream stream{exc.what()};
     std::string msg_line;
     while (std::getline(stream, msg_line)) {
-        unrealsdk::logging::log(unrealsdk::logging::Level::ERROR, msg_line, location.c_str(),
-                                line_num);
+        unrealsdk::logging::log(unrealsdk::logging::Level::ERROR, msg_line, location, line_num);
     }
 }
 

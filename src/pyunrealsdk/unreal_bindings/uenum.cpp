@@ -26,30 +26,33 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     const py::gil_scoped_acquire gil{};
 
     // Use IntFlag, as it natively supports unknown values
-    static const StaticPyObject intflag = (py::object)py::module_::import("enum").attr("IntFlag");
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    auto& intflag = storage
+                        .call_once_and_store_result(
+                            []() { return py::module_::import("enum").attr("IntFlag"); })
+                        .get_stored();
+
     static std::unordered_map<const UEnum*, StaticPyObject> enum_cache{};
 
     if (!enum_cache.contains(enum_obj)) {
-        py::object py_enum;
+        std::unordered_map<FName, uint64_t> enum_names{};
 
 #ifdef UE4
         // UE4 enums include the enum name and a namespace separator before the name - strip them
-        std::unordered_map<std::string, uint64_t> stripped_enum_names{};
 
         for (const auto& [key, value] : enum_obj->get_names()) {
             const std::string str_key{key};
 
             auto after_colons = str_key.find_first_not_of(':', str_key.find_first_of(':'));
-            stripped_enum_names.emplace(
+            enum_names.emplace(
                 after_colons == std::string::npos ? str_key : str_key.substr(after_colons), value);
         }
-
-        py_enum = intflag(enum_obj->Name, stripped_enum_names);
 #else
         // UE3 enums are just the name, so we can use the dict directly
-        py_enum = intflag(enum_obj->Name, enum_obj->get_names());
+        enum_names = enum_obj->get_names();
 #endif
 
+        auto py_enum = intflag(enum_obj->Name, enum_names);
         py_enum.attr("_unreal") = enum_obj;
 
         enum_cache.emplace(enum_obj, py_enum);

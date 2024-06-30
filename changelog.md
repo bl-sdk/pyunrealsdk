@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.2.0 (Upcoming)
+
+Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v120).
+
+- Added bindings for the new classes introduced in unrealsdk v1.2.0 - `UByteAttributeProperty`,
+  `UComponentProperty`, `UFloatAttributeProperty`, `UIntAttributeProperty`, and
+  `UByteProperty::Enum`.
+
+  [ab211486](https://github.com/bl-sdk/pyunrealsdk/commit/ab211486)
+
+- Getting a byte property which has an associated enum will now return the appropriate Python enum,
+  in the same way as an enum property does. Byte properties without an enum still return an int.
+
+  [ab211486](https://github.com/bl-sdk/pyunrealsdk/commit/ab211486)
+
+- Fixed that it was impossible to set Python properties on unreal objects.
+
+  [8b75fbbf](https://github.com/bl-sdk/pyunrealsdk/commit/8b75fbbf)
+
+- Changed the log level specific printers, `unrealsdk.logging.error` et al., to each use their own,
+  logger objects rather than modifying `sys.stdout` in place.
+
+  [285e276a](https://github.com/bl-sdk/pyunrealsdk/commit/285e276a)
+
+- Updated various docstrings and type stubs to be more accurately.
+
+  [d66295ef](https://github.com/bl-sdk/pyunrealsdk/commit/d66295ef),
+  [0df05cea](https://github.com/bl-sdk/pyunrealsdk/commit/0df05cea),
+  [285e276a](https://github.com/bl-sdk/pyunrealsdk/commit/285e276a)
+
+- Restructured CMake to allow you to define the Python version to link against directly within it,
+  similarly to unrealsdk.
+
+  ```cmake
+  set(UNREALSDK_ARCH x64)
+  set(UNREALSDK_UE_VERSION UE4)
+  set(EXPLICIT_PYTHON_ARCH win64)
+  set(EXPLICIT_PYTHON_VERSION 3.12.3)
+
+  add_subdirectory(libs/pyunrealsdk)
+  ```
+  [abca72b3](https://github.com/bl-sdk/pyunrealsdk/commit/abca72b3)
+
+- Release the GIL during unreal function calls, to try avoid a deadlock when running with
+  `UNREALSDK_LOCKING_PROCESS_EVENT`.
+
+  [31fdb4ee](https://github.com/bl-sdk/pyunrealsdk/commit/31fdb4ee)
+
+- Upgraded pybind.
+
+  [b1335304](https://github.com/bl-sdk/pyunrealsdk/commit/b1335304)
+
 ## v1.1.1
 - Updated CI and stubs to Python 3.12
 

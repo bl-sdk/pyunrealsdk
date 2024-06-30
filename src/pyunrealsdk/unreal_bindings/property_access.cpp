@@ -1,10 +1,10 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
-#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/uconst.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
@@ -53,8 +53,14 @@ void register_property_helpers(py::module_& mod) {
 
 std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     // Start by calling the base dir function
-    auto names = py::cast<std::vector<std::string>>(
-        py::module_::import("builtins").attr("object").attr("__dir__")(self));
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    auto& dir = storage
+                    .call_once_and_store_result([]() {
+                        return py::module_::import("builtins").attr("object").attr("__dir__");
+                    })
+                    .get_stored();
+
+    auto names = py::cast<std::vector<std::string>>(dir(self));
 
     if (dir_includes_unreal) {
         // Append our fields
@@ -85,13 +91,22 @@ py::object py_getattr(UField* field,
             for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
                 auto val = get_property<T>(prop, i, base_addr, parent);
 
-                if constexpr (std::is_same_v<T, UEnumProperty>) {
-                    // If the value we're reading is an enum, convert it to a python enum
-                    ret[i] = enum_as_py_enum(prop->get_enum())(val);
-                } else {
-                    // Otherwise store as is
-                    ret[i] = std::move(val);
+                // Multiple property types expose a get enum method
+                constexpr bool is_enum = requires(const T* type) {
+                    { type->get_enum() } -> std::same_as<UEnum*>;
+                };
+
+                // If the value we're reading is an enum, convert it to a python enum
+                if constexpr (is_enum) {
+                    auto ue_enum = prop->get_enum();
+                    if (ue_enum != nullptr) {
+                        ret[i] = enum_as_py_enum(ue_enum)(val);
+                        continue;
+                    }
                 }
+                // Otherwise store as is
+
+                ret[i] = std::move(val);
             }
         });
         if (prop->ArrayDim == 1) {
@@ -124,7 +139,7 @@ py::object py_getattr(UField* field,
                                                      field->Name, field->Class->Name));
 }
 
-void py_setattr(UField* field, uintptr_t base_addr, const py::object& value) {
+void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& value) {
     if (!field->is_instance(find_class<UProperty>())) {
         throw py::attribute_error(unrealsdk::fmt::format(
             "attribute '{}' is not a property, and thus cannot be set", field->Name));
