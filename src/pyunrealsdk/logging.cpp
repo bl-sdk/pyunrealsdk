@@ -86,7 +86,7 @@ class Logger {
 
         std::string str;
         for (size_t i = 0; i < lines_to_flush && std::getline(this->stream, str); i++) {
-            unrealsdk::logging::log(clamped_level, str, location.c_str(), line_num);
+            unrealsdk::logging::log(clamped_level, str, location, line_num);
         }
 
         // We need to clear the stream occasionally
@@ -231,8 +231,7 @@ void log_python_exception(const std::exception& exc) {
     std::istringstream stream{exc.what()};
     std::string msg_line;
     while (std::getline(stream, msg_line)) {
-        unrealsdk::logging::log(unrealsdk::logging::Level::ERROR, msg_line, location.c_str(),
-                                line_num);
+        unrealsdk::logging::log(unrealsdk::logging::Level::ERROR, msg_line, location, line_num);
     }
 }
 

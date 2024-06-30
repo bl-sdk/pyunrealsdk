@@ -180,7 +180,16 @@ void register_bound_function(py::module_& mod) {
                 if (args.size() == 1 && kwargs.empty() && py::isinstance<WrappedStruct>(args[0])) {
                     auto args_struct = py::cast<WrappedStruct>(args[0]);
                     if (args_struct.type == self.func) {
-                        self.call<void>(args_struct);
+                        {
+                            // Release the GIL to avoid a deadlock if ProcessEvent is locking.
+                            // If a hook tries to call into Python, it will be holding the process
+                            // event lock, and it will try to acquire the GIL.
+                            // If at the same time python code on a different thread tries to call
+                            // an unreal function, it would be holding the GIL, and trying to
+                            // acquire the process event lock.
+                            const py::gil_scoped_release gil{};
+                            self.call<void>(args_struct);
+                        }
                         return get_py_return(args_struct);
                     }
                 }
@@ -188,7 +197,10 @@ void register_bound_function(py::module_& mod) {
                 WrappedStruct params{self.func};
                 auto [return_param, out_params] = fill_py_params(params, args, kwargs);
 
-                self.call<void>(params);
+                {
+                    const py::gil_scoped_release gil{};
+                    self.call<void>(params);
+                }
 
                 return get_py_return(params, return_param, out_params);
             },
