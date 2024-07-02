@@ -22,7 +22,13 @@ Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unreals
 - Changed the log level specific printers, `unrealsdk.logging.error` et al., to each use their own,
   logger objects rather than modifying `sys.stdout` in place.
 
-  [285e276a](https://github.com/bl-sdk/pyunrealsdk/commit/285e276a)
+  [285e276a](https://github.com/bl-sdk/pyunrealsdk/commit/285e276a),
+  [34e190b6](https://github.com/bl-sdk/pyunrealsdk/commit/34e190b6)
+
+- Added the `PYUNREALSDK_PYEXEC_ROOT` env var to let you customize where `pyexec` commands are run
+  relative to.
+
+  [fdbda407](https://github.com/bl-sdk/pyunrealsdk/commit/fdbda407)
 
 - Updated various docstrings and type stubs to be more accurately.
 
