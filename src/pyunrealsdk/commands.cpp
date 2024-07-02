@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/debugging.h"
+#include "pyunrealsdk/env.h"
 #include "pyunrealsdk/logging.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/utils.h"
@@ -12,16 +13,21 @@ namespace pyunrealsdk::commands {
 namespace {
 
 void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
+    static const std::filesystem::path root = env::get(env::PYEXEC_ROOT);
+
     auto file_start = std::find_if_not(line + cmd_len, line + size, &std::iswspace);
-    auto file_len = (line + size) - file_start;
+    const size_t file_len = (line + size) - file_start;
+
+    const auto path = (root / std::wstring_view{file_start, file_len}).wstring();
 
     try {
         const py::gil_scoped_acquire gil{};
-        const py::str file{PyUnicode_FromWideChar(file_start, static_cast<py::ssize_t>(file_len))};
+        const py::str py_path{
+            PyUnicode_FromWideChar(path.c_str(), static_cast<py::ssize_t>(path.size()))};
 
         // Use a custom globals so it's not contaminated from the init script/`py` commands
         // This also ensures `__file__` gets redefined properly
-        py::eval_file(file, py::dict{});
+        py::eval_file(py_path, py::dict{});
     } catch (const std::exception& ex) {
         logging::log_python_exception(ex);
     }
