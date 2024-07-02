@@ -126,8 +126,8 @@ void register_per_log_level_printer(py::module_& logging,
     logging.def(
         func_name,
         [](const py::args& args, const py::kwargs& kwargs) {
-            kwargs["file"] = logger;
-            py::print(*args, **kwargs);
+            py::print(*args, **kwargs,
+                      "file"_a = py::cast(logger, py::return_value_policy::reference));
         },
         docstring.c_str());
 }
