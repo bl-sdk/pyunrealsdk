@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0 (Upcoming)
+## v1.2.0
 
 Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v120).
 
