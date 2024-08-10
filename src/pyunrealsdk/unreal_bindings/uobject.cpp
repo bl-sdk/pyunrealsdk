@@ -106,7 +106,7 @@ void register_uobject(py::module_& mod) {
             "field"_a)
         .def(
             "__setattr__",
-            [](py::object& self, const py::str& name, const py::object& value) {
+            [](UObject* self, const py::str& name, const py::object& value) {
                 // See if the standard setattr would work first, in case we're being called on an
                 // existing field. Getattr is only called on failure, but setattr is always called.
                 PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
@@ -127,11 +127,8 @@ void register_uobject(py::module_& mod) {
                     }
                 }
 
-                auto ue_self = py::cast<UObject*>(self);
-                auto ue_name = py::cast<FName>(name);
-
-                py_setattr_direct(py_find_field(ue_name, ue_self->Class),
-                                  reinterpret_cast<uintptr_t>(ue_self), value);
+                py_setattr_direct(py_find_field(py::cast<FName>(name), self->Class),
+                                  reinterpret_cast<uintptr_t>(self), value);
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"

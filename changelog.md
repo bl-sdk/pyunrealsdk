@@ -17,7 +17,8 @@ Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unreals
 
 - Fixed that it was impossible to set Python properties on unreal objects.
 
-  [8b75fbbf](https://github.com/bl-sdk/pyunrealsdk/commit/8b75fbbf)
+  [8b75fbbf](https://github.com/bl-sdk/pyunrealsdk/commit/8b75fbbf),
+  [730a813f](https://github.com/bl-sdk/pyunrealsdk/commit/730a813f)
 
 - Changed the log level specific printers, `unrealsdk.logging.error` et al., to each use their own,
   logger objects rather than modifying `sys.stdout` in place.
@@ -29,6 +30,11 @@ Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unreals
   relative to.
 
   [fdbda407](https://github.com/bl-sdk/pyunrealsdk/commit/fdbda407)
+
+- Fixed that a fully qualified `unrealsdk.find_class` would not allow subclasses. This was most
+  notable with blueprint generated classes.
+
+  [unrealsdk@643fb46e](https://github.com/bl-sdk/unrealsdk/commit/643fb46e)
 
 - Updated various docstrings and type stubs to be more accurately.
 
