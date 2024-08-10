@@ -151,7 +151,7 @@ void register_wrapped_struct(py::module_& mod) {
             "field"_a)
         .def(
             "__setattr__",
-            [](py::object& self, const py::str& name, const py::object& value) {
+            [](WrappedStruct& self, const py::str& name, const py::object& value) {
                 // See if the standard setattr would work first, in case we're being called on an
                 // existing field. Getattr is only called on failure, but setattr is always called.
                 PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
@@ -172,11 +172,8 @@ void register_wrapped_struct(py::module_& mod) {
                     }
                 }
 
-                auto ue_self = py::cast<WrappedStruct&>(self);
-                auto ue_name = py::cast<FName>(name);
-
-                py_setattr_direct(py_find_field(ue_name, ue_self.type),
-                                  reinterpret_cast<uintptr_t>(ue_self.base.get()), value);
+                py_setattr_direct(py_find_field(py::cast<FName>(name), self.type),
+                                  reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
             "Writes a value to an unreal field on the struct.\n"
             "\n"
