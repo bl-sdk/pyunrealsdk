@@ -1,7 +1,5 @@
 #include "pyunrealsdk/pch.h"
-#include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
-#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/properties/attribute_property.h"
 #include "unrealsdk/unreal/classes/properties/copyable_property.h"
 #include "unrealsdk/unreal/classes/properties/persistent_object_ptr_property.h"
@@ -26,8 +24,6 @@
 #include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
-#include "unrealsdk/unreal/structs/tpersistentobjectptr.h"
-#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 #ifdef PYUNREALSDK_INTERNAL
 
@@ -241,137 +237,14 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("OtherAttributeProperty",
                                &UIntAttributeProperty::get_other_attribute_property);
 
-    PyUEClass<ULazyObjectProperty, UObjectProperty>(mod, "ULazyObjectProperty")
-        .def_static(
-            "_get_identifier_from",
-            [](const std::variant<const UObject*, const WrappedStruct*>& source,
-               const std::variant<FName, const ULazyObjectProperty*>& prop, size_t idx) {
-                // This monster ternary is just manually resolving the overloads
-                auto path =
-                    std::holds_alternative<const UObject*>(source)
-                        ? (std::holds_alternative<FName>(prop)
-                               ? (FLazyObjectPath::get_from(std::get<const UObject*>(source),
-                                                            std::get<FName>(prop), idx))
-                               : (FLazyObjectPath::get_from(
-                                     std::get<const UObject*>(source),
-                                     std::get<const ULazyObjectProperty*>(prop), idx)))
-                        : (std::holds_alternative<FName>(prop)
-                               ? (FLazyObjectPath::get_from(*std::get<const WrappedStruct*>(source),
-                                                            std::get<FName>(prop), idx))
-                               : (FLazyObjectPath::get_from(
-                                     *std::get<const WrappedStruct*>(source),
-                                     std::get<const ULazyObjectProperty*>(prop), idx)));
-
-                // Just return the raw guid bytes for now, since it's probably the most neutral way
-                // of doing it, and this isn't likely to be used much anyway
-
-                // Can't easily return a `Guid` struct since there are plenty of structs using that
-                // name, and the package of the core engine one we want changes between versions, so
-                // we can't really easily fully qualify it either
-
-                return py::bytes(reinterpret_cast<const char*>(path), sizeof(*path));
-            },
-            "Gets the Guid identifier associated with a given lazy object property.\n"
-            "\n"
-            "When using standard attribute access, lazy object properties resolve directly to\n"
-            "their contained object. This function can be used to get the identifier instead.\n"
-            "\n"
-            "Args:\n"
-            "    source: The object or struct holding the property to get.\n"
-            "    prop: The lazy object property, or name thereof, to get.\n"
-            "    idx: If this property is a fixed sized array, which index to get.\n"
-            "Returns:\n"
-            "    The raw 16 bytes composing the property's Guid.",
-            "source"_a, "prop"_a, "idx"_a = 0)
-        .def_static(
-            "_get_identifier_from_array",
-            [](const WrappedArray& source, size_t idx) {
-                auto path = FLazyObjectPath::get_from_array(source, idx);
-                return py::bytes(reinterpret_cast<const char*>(path), sizeof(*path));
-            },
-            "Gets the Guid identifier associated with a given lazy object property.\n"
-            "\n"
-            "When using standard attribute access, lazy object properties resolve directly to\n"
-            "their contained object. This function can be used to get the identifier instead.\n"
-            "\n"
-            "Args:\n"
-            "    source: The array holding the property to get.\n"
-            "    idx: The index into the array to get from.\n"
-            "Returns:\n"
-            "    The raw 16 bytes composing the property's Guid.",
-            "source"_a, "idx"_a);
-
-    PyUEClass<USoftObjectProperty, UObjectProperty>(mod, "USoftObjectProperty")
-        .def_static(
-            "_get_identifier_from",
-            [](const std::variant<const UObject*, const WrappedStruct*>& source,
-               const std::variant<FName, const USoftObjectProperty*>& prop, size_t idx) {
-                auto path =
-                    std::holds_alternative<const UObject*>(source)
-                        ? (std::holds_alternative<FName>(prop)
-                               ? (FSoftObjectPath::get_from(std::get<const UObject*>(source),
-                                                            std::get<FName>(prop), idx))
-                               : (FSoftObjectPath::get_from(
-                                     std::get<const UObject*>(source),
-                                     std::get<const USoftObjectProperty*>(prop), idx)))
-                        : (std::holds_alternative<FName>(prop)
-                               ? (FSoftObjectPath::get_from(*std::get<const WrappedStruct*>(source),
-                                                            std::get<FName>(prop), idx))
-                               : (FSoftObjectPath::get_from(
-                                     *std::get<const WrappedStruct*>(source),
-                                     std::get<const USoftObjectProperty*>(prop), idx)));
-
-                std::wstring name{path->asset_path_name};
-                if (path->subpath.size() > 0) {
-                    name.reserve(name.size() + path->subpath.size() + 1);
-                    name += L':';
-                    name += (std::wstring_view)path->subpath;
-                }
-                return name;
-            },
-            "Gets the path name identifier associated with a given soft object property.\n"
-            "\n"
-            "When using standard attribute access, soft object properties resolve directly to\n"
-            "their contained object. This function can be used to get the identifier instead.\n"
-            "\n"
-            "Args:\n"
-            "    source: The object or struct holding the property to get.\n"
-            "    prop: The soft object property, or name thereof, to get.\n"
-            "    idx: If this property is a fixed sized array, which index to get.\n"
-            "Returns:\n"
-            "    The path name of the object the given property is looking for.",
-            "source"_a, "prop"_a, "idx"_a = 0)
-        .def_static(
-            "_get_identifier_from_array",
-            [](const WrappedArray& source, size_t idx) {
-                auto path = FSoftObjectPath::get_from_array(source, idx);
-
-                std::wstring name{path->asset_path_name};
-                if (path->subpath.size() > 0) {
-                    name.reserve(name.size() + path->subpath.size() + 1);
-                    name += L':';
-                    name += (std::wstring_view)path->subpath;
-                }
-                return name;
-            },
-            "Gets the path name identifier associated with a given soft object property.\n"
-            "\n"
-            "When using standard attribute access, soft object properties resolve directly to\n"
-            "their contained object. This function can be used to get the identifier instead.\n"
-            "\n"
-            "Args:\n"
-            "    source: The array holding the property to get.\n"
-            "    idx: The index into the array to get from.\n"
-            "Returns:\n"
-            "    The path name of the object the given property is looking for.",
-            "source"_a, "idx"_a);
+    // ULazyObjectProperty - registered elsewhere
+    // USoftObjectProperty - registered elsewhere
 
     PyUEClass<UWeakObjectProperty, UObjectProperty>(mod, "UWeakObjectProperty");
 
     // ======== Fifth Layer Subclasses ========
 
-    PyUEClass<USoftClassProperty, USoftObjectProperty>(mod, "USoftClassProperty")
-        .def_property_readonly("MetaClass", &USoftClassProperty::get_meta_class);
+    // USoftClassProperty - registered elsewhere
 }
 
 }  // namespace pyunrealsdk::unreal
