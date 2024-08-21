@@ -4,11 +4,17 @@ from collections.abc import Iterator
 
 from ._uenum import UEnum
 from ._uobject import UObject
+from ._wrapped_array import WrappedArray
+from ._wrapped_struct import WrappedStruct
 
 # ruff: noqa: N802, N803
 
+# ======== First Layer Subclasses ========
+
 class UField(UObject):
     Next: UField | None
+
+# ======== Second Layer Subclasses ========
 
 class UConst(UField):
     Value: str
@@ -91,6 +97,8 @@ class UStruct(UField):
             An iterator over all superfields in the struct.
         """
 
+# ======== Third Layer Subclasses ========
+
 class UArrayProperty(UProperty):
     @property
     def Inner(self) -> UProperty: ...
@@ -170,6 +178,9 @@ class UTextProperty(UProperty): ...
 class UUInt16Property(UProperty): ...
 class UUInt32Property(UProperty): ...
 class UUInt64Property(UProperty): ...
+
+# ======== Fourth Layer Subclasses ========
+
 class UBlueprintGeneratedClass(UClass): ...
 
 class UByteAttributeProperty(UByteProperty):
@@ -196,4 +207,84 @@ class UIntAttributeProperty(UByteProperty):
     @property
     def OtherAttributeProperty(self) -> UByteAttributeProperty | None: ...
 
+class ULazyObjectProperty(UObjectProperty):
+    @staticmethod
+    def _get_identifier_from(
+        source: UObject | WrappedStruct,
+        prop: str | ULazyObjectProperty,
+        idx: int = 0,
+    ) -> bytes:
+        """
+        Gets the Guid identifier associated with a given lazy object property.
+
+        When using standard attribute access, lazy object properties resolve directly to
+        their contained object. This function can be used to get the identifier instead.
+
+        Args:
+            source: The object or struct holding the property to get.
+            prop: The lazy object property, or name thereof, to get.
+            idx: If this property is a fixed sized array, which index to get.
+        Returns:
+            The raw 16 bytes composing the property's Guid.
+        """
+    @staticmethod
+    def _get_identifier_from_array(
+        source: WrappedArray[UObject],
+        idx: int = 0,
+    ) -> bytes:
+        """
+        Gets the Guid identifier associated with a given lazy object property.
+
+        When using standard attribute access, lazy object properties resolve directly to
+        their contained object. This function can be used to get the identifier instead.
+
+        Args:
+            source: The array holding the property to get.
+            idx: The index into the array to get from.
+        Returns:
+            The raw 16 bytes composing the property's Guid.
+        """
+
+class USoftObjectProperty(UObjectProperty):
+    @staticmethod
+    def _get_identifier_from(
+        source: UObject | WrappedStruct,
+        prop: str | USoftObjectProperty,
+        idx: int = 0,
+    ) -> str:
+        """
+        Gets the path name identifier associated with a given soft object property.
+
+        When using standard attribute access, soft object properties resolve directly to
+        their contained object. This function can be used to get the identifier instead.
+
+        Args:
+            source: The object or struct holding the property to get.
+            prop: The soft object property, or name thereof, to get.
+            idx: If this property is a fixed sized array, which index to get.
+        Returns:
+            The path name of the object the given property is looking for.
+        """
+    @staticmethod
+    def _get_identifier_from_array(
+        source: WrappedArray[UObject],
+        idx: int = 0,
+    ) -> str:
+        """
+        Gets the path name identifier associated with a given soft object property.
+
+        When using standard attribute access, soft object properties resolve directly to
+        their contained object. This function can be used to get the identifier instead.
+
+        Args:
+            source: The array holding the property to get.
+            idx: The index into the array to get from.
+        Returns:
+            The path name of the object the given property is looking for.
+        """
+
 class UWeakObjectProperty(UObjectProperty): ...
+
+# ======== Fifth Layer Subclasses ========
+
+class USoftClassProperty(USoftObjectProperty): ...
