@@ -1,9 +1,8 @@
 #include "pyunrealsdk/pch.h"
-#include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
-#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/classes/properties/attribute_property.h"
 #include "unrealsdk/unreal/classes/properties/copyable_property.h"
+#include "unrealsdk/unreal/classes/properties/persistent_object_ptr_property.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
 #include "unrealsdk/unreal/classes/properties/uboolproperty.h"
 #include "unrealsdk/unreal/classes/properties/ubyteproperty.h"
@@ -25,7 +24,6 @@
 #include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
-#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 #ifdef PYUNREALSDK_INTERNAL
 
@@ -239,7 +237,14 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("OtherAttributeProperty",
                                &UIntAttributeProperty::get_other_attribute_property);
 
+    // ULazyObjectProperty - registered elsewhere
+    // USoftObjectProperty - registered elsewhere
+
     PyUEClass<UWeakObjectProperty, UObjectProperty>(mod, "UWeakObjectProperty");
+
+    // ======== Fifth Layer Subclasses ========
+
+    // USoftClassProperty - registered elsewhere
 }
 
 }  // namespace pyunrealsdk::unreal

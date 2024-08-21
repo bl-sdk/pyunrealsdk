@@ -47,4 +47,5 @@ module.parse()
 module.write()
 ```
 
-The output of both generators was manually combined to create these stubs.
+The output of both generators was manually combined to create the initial version of these stubs.
+Since then, they've been manually maintained as new features have been added.

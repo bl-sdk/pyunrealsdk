@@ -23,10 +23,13 @@ from ._uobject_children import (
     UInt64Property,
     UInterfaceProperty,
     UIntProperty,
+    ULazyObjectProperty,
     UNameProperty,
     UObjectProperty,
     UProperty,
     UScriptStruct,
+    USoftClassProperty,
+    USoftObjectProperty,
     UStrProperty,
     UStruct,
     UStructProperty,
@@ -35,6 +38,7 @@ from ._uobject_children import (
     UUInt32Property,
     UUInt64Property,
 )
+from ._weak_pointer import WeakPointer
 from ._wrapped_array import WrappedArray
 from ._wrapped_struct import WrappedStruct
 
@@ -58,11 +62,14 @@ __all__: tuple[str, ...] = (
     "UInt64Property",
     "UInterfaceProperty",
     "UIntProperty",
+    "ULazyObjectProperty",
     "UNameProperty",
     "UObject",
     "UObjectProperty",
     "UProperty",
     "UScriptStruct",
+    "USoftClassProperty",
+    "USoftObjectProperty",
     "UStrProperty",
     "UStruct",
     "UStructProperty",
@@ -70,6 +77,7 @@ __all__: tuple[str, ...] = (
     "UUInt16Property",
     "UUInt32Property",
     "UUInt64Property",
+    "WeakPointer",
     "WrappedArray",
     "WrappedStruct",
     "dir_includes_unreal",

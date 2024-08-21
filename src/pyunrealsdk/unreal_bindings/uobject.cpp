@@ -46,15 +46,14 @@ void register_uobject(py::module_& mod) {
         .def(
             "__repr__",
             [](UObject* self) {
-                return unrealsdk::fmt::format(
-                    "{}'{}'", self->Class->Name,
-                    unrealsdk::utils::narrow(unrealsdk::uobject_path_name(self)));
+                return unrealsdk::fmt::format("{}'{}'", self->Class->Name,
+                                              unrealsdk::utils::narrow(self->get_path_name()));
             },
             "Gets this object's full name.\n"
             "\n"
             "Returns:\n"
             "    This object's name.")
-        .def("_path_name", unrealsdk::uobject_path_name,
+        .def("_path_name", &UObject::get_path_name,
              "Gets this object's path name, excluding the class.\n"
              "\n"
              "Returns:\n"

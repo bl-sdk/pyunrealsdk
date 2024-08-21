@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.3.0
+
+Also see the unrealsdk v1.3.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v130).
+
+- Added bindings for the new classes introduced in unrealsdk v1.3.0 - `WeakPointer`,
+  `ULazyObjectProperty`, `USoftObjectProperty`, and `USoftClassProperty`
+
+  [18294df4](https://github.com/bl-sdk/pyunrealsdk/commit/18294df4),
+  [7e724f1e](https://github.com/bl-sdk/pyunrealsdk/commit/7e724f1e),
+  [6558e1cc](https://github.com/bl-sdk/pyunrealsdk/commit/6558e1cc)
+
+- Fixed that hooks could not always be removed after adding, or that they might not always fire.
+
+  [unrealsdk@227a93d2](https://github.com/bl-sdk/unrealsdk/commit/227a93d2)
+
 ## v1.2.0
 
 Also see the unrealsdk v1.2.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v120).

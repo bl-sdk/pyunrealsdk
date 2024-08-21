@@ -1,6 +1,6 @@
-﻿cmake_minimum_required(VERSION 3.24)
+﻿cmake_minimum_required(VERSION 3.25)
 
-project(pyunrealsdk VERSION 1.2.0)
+project(pyunrealsdk VERSION 1.3.0)
 
 function(_pyunrealsdk_add_base_target_args target_name)
     target_compile_features(${target_name} PUBLIC cxx_std_20)
@@ -10,7 +10,13 @@ function(_pyunrealsdk_add_base_target_args target_name)
         EXPORT_COMPILE_COMMANDS True
         PREFIX ""
     )
-    if(MINGW)
+    if(MSVC)
+        # Under MSVC, enable edit and continue in debug - which conflicts with LTO
+        set_target_properties(${target_name} PROPERTIES
+            MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug>:EditAndContinue>"
+            INTERPROCEDURAL_OPTIMIZATION $<CONFIG:Release>
+        )
+    elseif(MINGW)
         # Under MinGW, only enable LTO in release mode - it causes linking errors in debug
         set_target_properties(${target_name} PROPERTIES
             INTERPROCEDURAL_OPTIMIZATION $<CONFIG:Release>
