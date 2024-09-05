@@ -19,6 +19,35 @@ namespace pyunrealsdk::unreal {
 namespace {
 
 /**
+ * @brief Throws a type error for missing required positional arguments.
+ *
+ * @param func_name The name of the function which was called.
+ * @param missing_required_args The names of the missing required args,
+ */
+[[noreturn]] void throw_missing_required_args(FName func_name,
+                                              const std::vector<FName>& missing_required_args) {
+    auto num_missing = missing_required_args.size();
+
+    std::ostringstream stream{};
+    stream << func_name << "() missing " << num_missing << " required positional argument";
+    if (num_missing > 1) {
+        stream << 's';
+    }
+    stream << ": ";
+
+    for (size_t i = 0; i < num_missing - 1; i++) {
+        stream << '\'' << missing_required_args[i] << "', ";
+    }
+    if (num_missing > 1) {
+        stream << "and ";
+    }
+
+    stream << '\'' << missing_required_args.back() << '\'';
+
+    throw py::type_error(stream.str());
+}
+
+/**
  * @brief Fills the params struct for a function with args from python.
  * @note While this is similar to `make_struct`, we need to do some extra processing on the params,
  *       and we need to fail if an arg was missed.
@@ -86,16 +115,7 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
     }
 
     if (!missing_required_args.empty()) {
-        std::ostringstream stream{};
-        stream << params.type->Name << "() missing " << missing_required_args.size()
-               << " required positional arguments: ";
-
-        for (size_t i = 0; i < missing_required_args.size() - 1; i++) {
-            stream << '\'' << missing_required_args[i] << "', ";
-        }
-        stream << "and '" << missing_required_args.back() << '\'';
-
-        throw py::type_error(stream.str());
+        throw_missing_required_args(params.type->Name, missing_required_args);
     }
 
     if (!kwargs.empty()) {
