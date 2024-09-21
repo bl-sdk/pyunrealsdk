@@ -8,6 +8,7 @@
 #include "unrealsdk/unreal/classes/properties/ubyteproperty.h"
 #include "unrealsdk/unreal/classes/properties/uclassproperty.h"
 #include "unrealsdk/unreal/classes/properties/ucomponentproperty.h"
+#include "unrealsdk/unreal/classes/properties/udelegateproperty.h"
 #include "unrealsdk/unreal/classes/properties/uenumproperty.h"
 #include "unrealsdk/unreal/classes/properties/uinterfaceproperty.h"
 #include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
@@ -158,6 +159,9 @@ void register_uobject_children(py::module_& mod) {
             }
             return interfaces;
         });
+
+    PyUEClass<UDelegateProperty, UProperty>(mod, "UDelegateProperty")
+        .def_property_readonly("Signature", &UDelegateProperty::get_signature);
 
     PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
 

@@ -126,6 +126,10 @@ class UClass(UStruct):
             True if this class implements the interface, false otherwise.
         """
 
+class UDelegateProperty(UProperty):
+    @property
+    def Signature(self) -> UFunction: ...
+
 class UDoubleProperty(UProperty): ...
 
 class UEnumProperty(UProperty):
