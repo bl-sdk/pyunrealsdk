@@ -35,3 +35,10 @@ class BoundFunction:
             func: The function to bind.
             object: The object the function is bound to.
         """
+    def __repr__(self) -> str:
+        """
+        Gets a string representation of this function and the object it's bound to.
+
+        Returns:
+            The string representation.
+        """

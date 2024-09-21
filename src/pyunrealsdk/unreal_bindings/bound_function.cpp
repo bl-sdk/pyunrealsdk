@@ -189,6 +189,16 @@ void register_bound_function(py::module_& mod) {
              "    object: The object the function is bound to.",
              "func"_a, "object"_a)
         .def(
+            "__repr__",
+            [](BoundFunction& self) {
+                return unrealsdk::fmt::format("<bound function {} on {}>", self.func->Name,
+                                              self.object->get_path_name());
+            },
+            "Gets a string representation of this function and the object it's bound to.\n"
+            "\n"
+            "Returns:\n"
+            "    The string representation.")
+        .def(
             "__call__",
             [](BoundFunction& self, const py::args& args, const py::kwargs& kwargs) {
                 if (self.func->NumParams < args.size()) {
