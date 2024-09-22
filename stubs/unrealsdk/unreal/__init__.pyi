@@ -40,6 +40,7 @@ from ._uobject_children import (
 )
 from ._weak_pointer import WeakPointer
 from ._wrapped_array import WrappedArray
+from ._wrapped_multicast_delegate import WrappedMulticastDelegate
 from ._wrapped_struct import WrappedStruct
 
 __all__: tuple[str, ...] = (
@@ -79,6 +80,7 @@ __all__: tuple[str, ...] = (
     "UUInt64Property",
     "WeakPointer",
     "WrappedArray",
+    "WrappedMulticastDelegate",
     "WrappedStruct",
     "dir_includes_unreal",
 )
