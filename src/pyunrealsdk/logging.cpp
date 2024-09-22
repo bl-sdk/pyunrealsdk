@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
-#include "unrealsdk/logging.h"
+#include "pyunrealsdk/logging.h"
 #include "unrealsdk/format.h"
+#include "unrealsdk/logging.h"
 #include "unrealsdk/unrealsdk.h"
 
 using unrealsdk::logging::Level;

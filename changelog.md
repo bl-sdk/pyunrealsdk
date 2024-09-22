@@ -1,5 +1,20 @@
 # Changelog
 
+## Upcoming
+
+- Fixed weak pointer type hinting to allow for null pointers. This always worked at runtime.
+
+  [1cbded47](https://github.com/bl-sdk/pyunrealsdk/commit/1cbded47)
+  
+- Added support for Delegate and Multicast Delegate properties.
+
+  [04d47f92](https://github.com/bl-sdk/pyunrealsdk/commit/04d47f92),
+  [2876f098](https://github.com/bl-sdk/pyunrealsdk/commit/2876f098)
+
+- Added a repr to `BoundFunction`, as these are now returned by delegates.
+
+  [22082579](https://github.com/bl-sdk/pyunrealsdk/commit/22082579)
+
 ## v1.3.0
 
 Also see the unrealsdk v1.3.0 changelog [here](https://github.com/bl-sdk/unrealsdk/blob/master/changelog.md#v130).

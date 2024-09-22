@@ -52,42 +52,37 @@ namespace {
  * @note While this is similar to `make_struct`, we need to do some extra processing on the params,
  *       and we need to fail if an arg was missed.
  *
- * @param params The params struct to fill.
+ * @param info The call info to write to.
  * @param args The python args.
  * @param kwargs The python kwargs.
- * @return A pair of the return param (may be nullptr), and any out params (may be empty), to be
- *         passed to `get_py_return`.
  */
-std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& params,
-                                                              const py::args& args,
-                                                              const py::kwargs& kwargs) {
-    UProperty* return_param = nullptr;
-    std::vector<UProperty*> out_params{};
-
+void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwargs& kwargs) {
     size_t arg_idx = 0;
 
     std::vector<FName> missing_required_args{};
 
-    for (auto prop : params.type->properties()) {
+    for (auto prop : info.params.type->properties()) {
         if ((prop->PropertyFlags & UProperty::PROP_FLAG_PARAM) == 0) {
             continue;
         }
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0 && return_param == nullptr) {
-            return_param = prop;
+        if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0
+            && info.return_param == nullptr) {
+            info.return_param = prop;
             continue;
         }
         if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
-            out_params.push_back(prop);
+            info.out_params.push_back(prop);
         }
 
         // If we still have positional args left
         if (arg_idx != args.size()) {
-            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(params.base.get()),
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(info.params.base.get()),
                               args[arg_idx++]);
 
             if (kwargs.contains(prop->Name)) {
-                throw py::type_error(unrealsdk::fmt::format(
-                    "{}() got multiple values for argument '{}'", params.type->Name, prop->Name));
+                throw py::type_error(
+                    unrealsdk::fmt::format("{}() got multiple values for argument '{}'",
+                                           info.params.type->Name, prop->Name));
             }
 
             continue;
@@ -97,7 +92,7 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
         if (kwargs.contains(prop->Name)) {
             // Extract the value with pop, so we can check that kwargs are empty at the
             // end
-            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(params.base.get()),
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(info.params.base.get()),
                               kwargs.attr("pop")(prop->Name));
             continue;
         }
@@ -115,69 +110,81 @@ std::pair<UProperty*, std::vector<UProperty*>> fill_py_params(WrappedStruct& par
     }
 
     if (!missing_required_args.empty()) {
-        throw_missing_required_args(params.type->Name, missing_required_args);
+        throw_missing_required_args(info.params.type->Name, missing_required_args);
     }
 
     if (!kwargs.empty()) {
         // Copying python, we only need to warn about one extra kwarg
         std::string bad_kwarg = py::str(kwargs.begin()->first);
         throw py::type_error(unrealsdk::fmt::format("{}() got an unexpected keyword argument '{}'",
-                                                    params.type->Name, bad_kwarg));
+                                                    info.params.type->Name, bad_kwarg));
     }
-
-    return {return_param, out_params};
 }
 
-/**
- * @brief Get the python return value for a function call.
- *
- * @param params The params struct to read the value out of.
- * @param return_param The return param.
- * @param out_params A list of the out params.
- * @return The value to return to python.
- */
-py::object get_py_return(const WrappedStruct& params,
-                         UProperty* return_param,
-                         const std::vector<UProperty*>& out_params) {
-    // NOLINTNEXTLINE(misc-const-correctness)
-    py::list ret{1 + out_params.size()};
+}  // namespace
 
-    if (return_param == nullptr) {
+namespace impl {
+
+PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kwargs& kwargs)
+    // Start by initializing a null struct, to avoid allocations
+    : params(func, nullptr) {
+    if (func->NumParams < args.size()) {
+        throw py::type_error(
+            unrealsdk::fmt::format("{}() takes {} positional args, but {} were given", func->Name,
+                                   func->NumParams, args.size()));
+    }
+
+    // If we're given exactly one arg, and it's a wrapped struct of our function type, take it as
+    // the args directly
+    if (args.size() == 1 && kwargs.empty() && py::isinstance<WrappedStruct>(args[0])) {
+        auto args_struct = py::cast<WrappedStruct>(args[0]);
+        if (args_struct.type == func) {
+            this->params = std::move(args_struct);
+
+            // Manually gather the return value and out params
+            for (auto prop : func->properties()) {
+                if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0
+                    && return_param == nullptr) {
+                    this->return_param = prop;
+                    continue;
+                }
+                if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
+                    this->out_params.push_back(prop);
+                }
+            }
+            return;
+        }
+    }
+
+    // Otherwise, allocate a new params struct
+    this->params = WrappedStruct{func};
+    fill_py_params(*this, args, kwargs);
+}
+
+py::object PyCallInfo::get_py_return(void) const {
+    const py::list ret{1 + this->out_params.size()};
+
+    if (this->return_param == nullptr) {
         ret[0] = py::ellipsis{};
     } else {
         ret[0] =
-            py_getattr(return_param, reinterpret_cast<uintptr_t>(params.base.get()), params.base);
+            py_getattr(this->return_param, reinterpret_cast<uintptr_t>(this->params.base.get()),
+                       this->params.base);
     }
 
     auto idx = 1;
-    for (auto prop : out_params) {
-        ret[idx++] = py_getattr(prop, reinterpret_cast<uintptr_t>(params.base.get()), params.base);
+    for (auto prop : this->out_params) {
+        ret[idx++] = py_getattr(prop, reinterpret_cast<uintptr_t>(this->params.base.get()),
+                                this->params.base);
     }
 
-    if (out_params.empty()) {
+    if (this->out_params.empty()) {
         return ret[0];
     }
     return py::tuple(ret);
 }
-py::object get_py_return(const WrappedStruct& params) {
-    // If only called with the struct, re-gather the return + out params
-    UProperty* return_param = nullptr;
-    std::vector<UProperty*> out_params{};
 
-    for (auto prop : params.type->properties()) {
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0 && return_param == nullptr) {
-            return_param = prop;
-            continue;
-        }
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
-            out_params.push_back(prop);
-        }
-    }
-
-    return get_py_return(params, return_param, out_params);
-}
-
-}  // namespace
+}  // namespace impl
 
 void register_bound_function(py::module_& mod) {
     py::class_<BoundFunction>(mod, "BoundFunction")
@@ -189,40 +196,32 @@ void register_bound_function(py::module_& mod) {
              "    object: The object the function is bound to.",
              "func"_a, "object"_a)
         .def(
+            "__repr__",
+            [](BoundFunction& self) {
+                return unrealsdk::fmt::format(
+                    "<bound function {} on {}>", self.func->Name,
+                    unrealsdk::utils::narrow(self.object->get_path_name()));
+            },
+            "Gets a string representation of this function and the object it's bound to.\n"
+            "\n"
+            "Returns:\n"
+            "    The string representation.")
+        .def(
             "__call__",
             [](BoundFunction& self, const py::args& args, const py::kwargs& kwargs) {
-                if (self.func->NumParams < args.size()) {
-                    throw py::type_error(
-                        unrealsdk::fmt::format("{}() takes {} positional args, but {} were given",
-                                               self.func->Name, self.func->NumParams, args.size()));
-                }
+                impl::PyCallInfo info{self.func, args, kwargs};
 
-                if (args.size() == 1 && kwargs.empty() && py::isinstance<WrappedStruct>(args[0])) {
-                    auto args_struct = py::cast<WrappedStruct>(args[0]);
-                    if (args_struct.type == self.func) {
-                        {
-                            // Release the GIL to avoid a deadlock if ProcessEvent is locking.
-                            // If a hook tries to call into Python, it will be holding the process
-                            // event lock, and it will try to acquire the GIL.
-                            // If at the same time python code on a different thread tries to call
-                            // an unreal function, it would be holding the GIL, and trying to
-                            // acquire the process event lock.
-                            const py::gil_scoped_release gil{};
-                            self.call<void>(args_struct);
-                        }
-                        return get_py_return(args_struct);
-                    }
-                }
-
-                WrappedStruct params{self.func};
-                auto [return_param, out_params] = fill_py_params(params, args, kwargs);
-
+                // Release the GIL to avoid a deadlock if ProcessEvent is locking.
+                // If a hook tries to call into Python, it will be holding the process event lock,
+                // and it will try to acquire the GIL.
+                // If at the same time python code on a different thread tries to call an unreal
+                // function, it'd be holding the GIL, and trying to acquire the process event lock.
                 {
                     const py::gil_scoped_release gil{};
-                    self.call<void>(params);
+                    self.call<void>(info.params);
                 }
 
-                return get_py_return(params, return_param, out_params);
+                return info.get_py_return();
             },
             "Calls the function.\n"
             "\n"

@@ -24,7 +24,7 @@ void array_py_clear(WrappedArray& self) {
 
 size_t array_py_count(const WrappedArray& self, const py::object& value) {
     return std::count_if(ArrayIterator::begin(self), ArrayIterator::end(self),
-                         [&value](auto other) { return value.equal(other); });
+                         [&value](const auto& other) { return value.equal(other); });
 }
 
 py::list array_py_copy(WrappedArray& self) {
@@ -66,7 +66,7 @@ size_t array_py_index(const WrappedArray& self,
     auto end = ArrayIterator{self, convert_py_idx(self, stop)};
 
     auto location = std::find_if(ArrayIterator{self, convert_py_idx(self, start)}, end,
-                                 [&value](auto other) { return value.equal(other); });
+                                 [&value](const auto& other) { return value.equal(other); });
     if (location == end) {
         throw py::value_error(
             unrealsdk::fmt::format("{} is not in array", std::string(py::repr(value))));

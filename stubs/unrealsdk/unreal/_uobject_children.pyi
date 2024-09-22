@@ -126,6 +126,10 @@ class UClass(UStruct):
             True if this class implements the interface, false otherwise.
         """
 
+class UDelegateProperty(UProperty):
+    @property
+    def Signature(self) -> UFunction: ...
+
 class UDoubleProperty(UProperty): ...
 
 class UEnumProperty(UProperty):
@@ -159,6 +163,11 @@ class UInterfaceProperty(UProperty):
     def InterfaceClass(self) -> UClass: ...
 
 class UIntProperty(UProperty): ...
+
+class UMulticastDelegateProperty(UProperty):
+    @property
+    def Signature(self) -> UFunction: ...
+
 class UNameProperty(UProperty): ...
 
 class UObjectProperty(UProperty):
