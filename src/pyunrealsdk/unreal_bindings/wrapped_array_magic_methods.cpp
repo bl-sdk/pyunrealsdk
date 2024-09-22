@@ -162,7 +162,7 @@ py::iterator array_py_reversed(const WrappedArray& self) {
 
 bool array_py_contains(const WrappedArray& self, const py::object& value) {
     return std::find_if(ArrayIterator::begin(self), ArrayIterator::end(self),
-                        [&value](auto other) { return value.equal(other); })
+                        [&value](const auto& other) { return value.equal(other); })
            != ArrayIterator::end(self);
 }
 

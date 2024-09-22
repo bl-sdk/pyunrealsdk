@@ -126,7 +126,7 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
 namespace impl {
 
 PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kwargs& kwargs)
-    // Start by initalizing a null struct, to avoid allocations
+    // Start by initializing a null struct, to avoid allocations
     : params(func, nullptr) {
     if (func->NumParams < args.size()) {
         throw py::type_error(
@@ -157,12 +157,12 @@ PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kw
     }
 
     // Otherwise, allocate a new params struct
-    this->params = std::move(WrappedStruct{func});
+    this->params = WrappedStruct{func};
     fill_py_params(*this, args, kwargs);
 }
 
 py::object PyCallInfo::get_py_return(void) const {
-    py::list ret{1 + this->out_params.size()};
+    const py::list ret{1 + this->out_params.size()};
 
     if (this->return_param == nullptr) {
         ret[0] = py::ellipsis{};
@@ -198,8 +198,9 @@ void register_bound_function(py::module_& mod) {
         .def(
             "__repr__",
             [](BoundFunction& self) {
-                return unrealsdk::fmt::format("<bound function {} on {}>", self.func->Name,
-                                              self.object->get_path_name());
+                return unrealsdk::fmt::format(
+                    "<bound function {} on {}>", self.func->Name,
+                    unrealsdk::utils::narrow(self.object->get_path_name()));
             },
             "Gets a string representation of this function and the object it's bound to.\n"
             "\n"

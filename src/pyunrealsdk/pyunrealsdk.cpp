@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/pyunrealsdk.h"
 #include "pyunrealsdk/base_bindings.h"
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/env.h"

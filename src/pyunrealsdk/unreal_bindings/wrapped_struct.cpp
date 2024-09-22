@@ -22,11 +22,11 @@ WrappedStruct make_struct(const UScriptStruct* type,
     // Convert the kwarg keys to FNames, to make them case insensitive
     // This should also in theory speed up lookups, since hashing is simpler
     std::unordered_map<FName, py::object> converted_kwargs{};
-    std::transform(kwargs.begin(), kwargs.end(),
-                   std::inserter(converted_kwargs, converted_kwargs.end()), [](const auto& pair) {
-                       return std::make_pair(py::cast<FName>(pair.first),
-                                             py::reinterpret_borrow<py::object>(pair.second));
-                   });
+    std::ranges::transform(
+        kwargs, std::inserter(converted_kwargs, converted_kwargs.end()), [](const auto& pair) {
+            return std::make_pair(py::cast<FName>(pair.first),
+                                  py::reinterpret_borrow<py::object>(pair.second));
+        });
 
     size_t arg_idx = 0;
     for (auto prop : type->properties()) {

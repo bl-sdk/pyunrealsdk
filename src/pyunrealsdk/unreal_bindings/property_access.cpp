@@ -65,8 +65,8 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
     if (dir_includes_unreal) {
         // Append our fields
         auto fields = type->fields();
-        std::transform(fields.begin(), fields.end(), std::back_inserter(names),
-                       [](auto obj) { return obj->Name; });
+        std::ranges::transform(fields, std::back_inserter(names),
+                               [](auto obj) { return obj->Name; });
     }
 
     return names;
@@ -120,7 +120,8 @@ py::object py_getattr(UField* field,
                 unrealsdk::fmt::format("cannot bind function '{}' with null object", field->Name));
         }
 
-        return py::cast(BoundFunction{reinterpret_cast<UFunction*>(field), func_obj});
+        return py::cast(
+            BoundFunction{.func = reinterpret_cast<UFunction*>(field), .object = func_obj});
     }
 
     if (field->is_instance(find_class<UScriptStruct>())) {

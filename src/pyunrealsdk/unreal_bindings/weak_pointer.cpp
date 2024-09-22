@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
-#include "unrealsdk/unreal/wrappers/weak_pointer.h"
+#include "pyunrealsdk/unreal_bindings/weak_pointer.h"
 #include "unrealsdk/unreal/classes/uobject.h"
+#include "unrealsdk/unreal/wrappers/weak_pointer.h"
 
 #ifdef PYUNREALSDK_INTERNAL
 

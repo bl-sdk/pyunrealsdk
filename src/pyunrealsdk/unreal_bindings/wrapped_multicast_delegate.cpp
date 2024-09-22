@@ -55,10 +55,10 @@ struct DelegateIterator {
         if (delegate.base->size() == 0) {
             return end(delegate);
         }
-        return {delegate.base.get(), 0};
+        return {.arr = delegate.base.get(), .idx = 0};
     }
     static DelegateIterator end(const WrappedMulticastDelegate& /*delegate*/) {
-        return {nullptr, 0};
+        return {.arr = nullptr, .idx = 0};
     }
 };
 

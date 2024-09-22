@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "unrealsdk/unreal/classes/properties/attribute_property.h"
 #include "unrealsdk/unreal/classes/properties/copyable_property.h"
