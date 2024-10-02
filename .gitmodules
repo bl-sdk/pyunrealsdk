@@ -1,10 +1,10 @@
-[submodule "libs/unrealsdk"]
-	path = libs/unrealsdk
-	url = git@github.com:bl-sdk/unrealsdk.git
 [submodule "libs/pybind11"]
 	path = libs/pybind11
-	url = git@github.com:pybind/pybind11.git
+	url = https://github.com/pybind/pybind11.git
 	branch = stable
+[submodule "libs/unrealsdk"]
+	path = libs/unrealsdk
+	url = ../../bl-sdk/unrealsdk.git
 [submodule "common_cmake"]
 	path = common_cmake
-	url = git@github.com:bl-sdk/common_cmake.git
+	url = ../../bl-sdk/common_cmake.git
