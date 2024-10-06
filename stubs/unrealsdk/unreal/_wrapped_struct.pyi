@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ._uobject_children import UField, UScriptStruct, UStruct
+from ._uobject_children import UField, UFunction, UScriptStruct, UStruct
 
 class WrappedStruct:
     _type: UStruct
@@ -28,7 +28,7 @@ class WrappedStruct:
         Returns:
             The field's value.
         """
-    def __init__(self, type: UScriptStruct, /, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, type: UScriptStruct | UFunction, /, *args: Any, **kwargs: Any) -> None:
         """
         Creates a new wrapped struct.
 

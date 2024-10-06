@@ -7,6 +7,7 @@
 
 namespace unrealsdk::unreal {
 
+class UFunction;
 class UScriptStruct;
 class WrappedStruct;
 
@@ -29,9 +30,10 @@ void register_wrapped_struct(py::module_& mod);
  * @param kwargs The python kwargs.
  * @return The new wrapped struct.
  */
-unrealsdk::unreal::WrappedStruct make_struct(const unrealsdk::unreal::UScriptStruct* type,
-                                             const py::args& args,
-                                             const py::kwargs& kwargs);
+unrealsdk::unreal::WrappedStruct make_struct(
+    std::variant<const unrealsdk::unreal::UFunction*, const unrealsdk::unreal::UScriptStruct*> type,
+    const py::args& args,
+    const py::kwargs& kwargs);
 
 }  // namespace pyunrealsdk::unreal
 
