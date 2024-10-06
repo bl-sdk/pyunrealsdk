@@ -3,7 +3,9 @@
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
+#include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
+#include "unrealsdk/unreal/classes/ustruct.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/unreal_pointer.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
@@ -14,10 +16,17 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
-WrappedStruct make_struct(const UScriptStruct* type,
-                          const py::args& args,
-                          const py::kwargs& kwargs) {
-    WrappedStruct new_struct{type};
+WrappedStruct make_struct(
+    std::variant<const unrealsdk::unreal::UFunction*, const unrealsdk::unreal::UScriptStruct*> type,
+    const py::args& args,
+    const py::kwargs& kwargs) {
+    // This function will work for any UStruct, but we deliberately use a variant to only allow
+    // scriptstructs and functions, since classes won't necessarily be initialized right
+    // Extract the common type back out of it
+    const UStruct* struct_type = nullptr;
+    std::visit([&struct_type](auto&& val) { struct_type = val; }, type);
+
+    WrappedStruct new_struct{struct_type};
 
     // Convert the kwarg keys to FNames, to make them case insensitive
     // This should also in theory speed up lookups, since hashing is simpler
@@ -29,14 +38,15 @@ WrappedStruct make_struct(const UScriptStruct* type,
         });
 
     size_t arg_idx = 0;
-    for (auto prop : type->properties()) {
+    for (auto prop : struct_type->properties()) {
         if (arg_idx != args.size()) {
             py_setattr_direct(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
                               args[arg_idx++]);
 
             if (converted_kwargs.contains(prop->Name)) {
-                throw py::type_error(unrealsdk::fmt::format(
-                    "{}.__init__() got multiple values for argument '{}'", type->Name, prop->Name));
+                throw py::type_error(
+                    unrealsdk::fmt::format("{}.__init__() got multiple values for argument '{}'",
+                                           struct_type->Name, prop->Name));
             }
 
             continue;
@@ -56,7 +66,7 @@ WrappedStruct make_struct(const UScriptStruct* type,
         // Copying python, we only need to warn about one extra kwarg
         throw py::type_error(
             unrealsdk::fmt::format("{}.__init__() got an unexpected keyword argument '{}'",
-                                   type->Name, converted_kwargs.begin()->first));
+                                   struct_type->Name, converted_kwargs.begin()->first));
     }
 
     return new_struct;
