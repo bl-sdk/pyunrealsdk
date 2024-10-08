@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from enum import EnumMeta
-from types import EllipsisType
 from typing import Any, ClassVar, Literal, overload
 
 from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
@@ -71,7 +70,7 @@ class Unset:
     return value will be used.
     """
 
-type _HookBlockSignal = None | EllipsisType | Block | type[Block]
+type _HookBlockSignal = None | Block | type[Block]
 type _PreHookCallback = Callable[
     [UObject, WrappedStruct, Any, BoundFunction],
     _HookBlockSignal | tuple[_HookBlockSignal, Any],
@@ -122,9 +121,8 @@ def add_hook(
 
     To block execution, return the sentinel `Block` type, (or an instance thereof),
     either by itself or as the first element of a tuple. Any other value will allow
-    execution continue - suggest using Ellipsis when a value's required. If there
-    are multiple hooks on the same function, execution is blocked if any hook
-    requests it.
+    execution continue - though generally just use None. If there are multiple hooks
+    on the same function, execution is blocked if any hook requests it.
 
     To overwrite the return value, return it as the second element of a tuple. The
     the sentinel `Unset` type will prevent an override, while using Ellipsis will
