@@ -30,7 +30,6 @@
 
 ### unrealsdk v1.4.0
 For reference, the unrealsdk v1.4.0 changes this includes are:
-<div style="font-size: 0.9em">
 
 > - Fixed that UE3 `WeakPointer`s would always return null, due to an incorrect offset in the
 >   `UObject` header layout.
@@ -53,8 +52,6 @@ For reference, the unrealsdk v1.4.0 changes this includes are:
 > - Added the offline mode say crash fix for BL2+TPS as a base sdk hook.
 >
 >   [2d9a36c7](https://github.com/bl-sdk/unrealsdk/commit/270ef4bf)
-
-</div>
 
 ## v1.3.0
 
