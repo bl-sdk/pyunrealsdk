@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## v1.4.0
 
 - Fixed weak pointer type hinting to allow for null pointers. This always worked at runtime.
 
@@ -14,6 +14,44 @@
 - Added a repr to `BoundFunction`, as these are now returned by delegates.
 
   [22082579](https://github.com/bl-sdk/pyunrealsdk/commit/22082579)
+
+- The `WrappedStruct` constructor can now be used to construct function arg structs, like what's
+  passed to a hook. This *does not* also apply to `unrealsdk.make_struct`, since function names
+  conflict far more often.
+  
+  [5e2fd0df](https://github.com/bl-sdk/pyunrealsdk/commit/5e2fd0df)
+
+- Removed the suggestion to return `Ellipsis` in hooks when overwriting a return value but not
+  blocking execution. This still works at runtime, but is no longer present in the type hinting,
+  since it made `Ellipsis` be typed as a valid return in several places it shouldn't have been, and
+  it's an obscure use case to begin with.
+
+  [1711c1a8](https://github.com/bl-sdk/pyunrealsdk/commit/1711c1a8)
+
+### unrealsdk v1.4.0
+For reference, the unrealsdk v1.4.0 changes this includes are:
+
+> - Fixed that UE3 `WeakPointer`s would always return null, due to an incorrect offset in the
+>   `UObject` header layout.
+>
+>   [aca70889](https://github.com/bl-sdk/unrealsdk/commit/aca70889)
+>
+> - Added support for Delegate and Multicast Delegate properties.
+>
+>   [4e17d06d](https://github.com/bl-sdk/unrealsdk/commit/4e17d06d),
+>   [270ef4bf](https://github.com/bl-sdk/unrealsdk/commit/270ef4bf)
+>
+> - Changed `unrealsdk::hook_manager::log_all_calls` to write to a dedicated file.
+>
+>   [270ef4bf](https://github.com/bl-sdk/unrealsdk/commit/270ef4bf)
+> 
+> - Fixed missing all `CallFunction` based hooks in TPS - notably including the say bypass.
+>
+>   [011fd8a2](https://github.com/bl-sdk/unrealsdk/commit/270ef4bf)
+>
+> - Added the offline mode say crash fix for BL2+TPS as a base sdk hook.
+>
+>   [2d9a36c7](https://github.com/bl-sdk/unrealsdk/commit/270ef4bf)
 
 ## v1.3.0
 
