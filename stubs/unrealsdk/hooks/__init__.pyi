@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
+from contextlib import AbstractContextManager
 from enum import EnumMeta
 from typing import Any, ClassVar, Literal, overload
 
@@ -156,11 +158,17 @@ def has_hook(func: str, type: Type, identifier: str) -> bool:
         True if a hook with the given details exists.
     """
 
+@warnings.deprecated(
+    "inject_next_call is deprecated, use the prevent_hooking_direct_calls() context manager"
+    " instead.",
+)
 def inject_next_call() -> None:
     """
     Makes the next unreal function call completely ignore hooks.
 
     Typically used to avoid recursion when re-calling the hooked function.
+
+    Deprecated in favour of the prevent_hooking_direct_calls() context manager.
     """
 
 def log_all_calls(should_log: bool) -> None:
@@ -170,6 +178,19 @@ def log_all_calls(should_log: bool) -> None:
 
     Args:
         should_log: True to turn on logging all calls, false to turn it off.
+    """
+
+def prevent_hooking_direct_calls() -> AbstractContextManager[None]:
+    """
+    Context manager to prevent direct calls to unreal functions triggering hooks.
+
+    Typically used to avoid recursion when re-calling the hooked function.
+
+    Note this only affects direct calls to BoundFunction.__call__(). If the unreal
+    function itself calls other functions, those will still trigger hooks as normal.
+
+    Returns:
+        A new context manager.
     """
 
 def remove_hook(func: str, type: Type, identifier: str) -> bool:

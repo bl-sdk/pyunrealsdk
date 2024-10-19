@@ -1,7 +1,9 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
+#include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/format.h"
+#include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -210,6 +212,10 @@ void register_bound_function(py::module_& mod) {
             "__call__",
             [](BoundFunction& self, const py::args& args, const py::kwargs& kwargs) {
                 impl::PyCallInfo info{self.func, args, kwargs};
+
+                if (hooks::should_auto_inject_py_calls()) {
+                    unrealsdk::hook_manager::inject_next_call();
+                }
 
                 // Release the GIL to avoid a deadlock if ProcessEvent is locking.
                 // If a hook tries to call into Python, it will be holding the process event lock,

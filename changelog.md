@@ -1,5 +1,12 @@
 # Changelog
 
+## Upcoming
+
+- Deprecated `unrealsdk.hooks.inject_next_call` in favour of a new
+  `unrealsdk.hooks.prevent_hooking_direct_calls` context manager.
+
+  [59f474fe](https://github.com/bl-sdk/pyunrealsdk/commit/59f474fe)
+
 ## v1.4.0
 
 - Fixed weak pointer type hinting to allow for null pointers. This always worked at runtime.

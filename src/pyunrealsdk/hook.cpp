@@ -23,6 +23,19 @@ namespace {
 struct Block {};
 struct Unset {};
 
+// And we need an empty dummy class to create the context manager on.
+struct AutoInjectContextManager {};
+
+thread_local size_t auto_inject_count = 0;
+
+}  // namespace
+
+bool should_auto_inject_py_calls(void) {
+    return auto_inject_count > 0;
+}
+
+namespace {
+
 /**
  * @brief Handles calling a python hook.
  *
@@ -100,6 +113,16 @@ void register_module(py::module_& mod) {
         "return value will be used.")
         .def(py::init<>());
 
+    // Create under an empty handle to prevent this type being normally accessible
+    py::class_<AutoInjectContextManager>(py::handle(), "context_manager", pybind11::module_local())
+        .def("__enter__", [](const py::object& /*self*/) { auto_inject_count++; })
+        .def("__exit__", [](const py::object& /*self */, const py::object& /*exc_type*/,
+                            const py::object& /*exc_value*/, const py::object& /*traceback*/) {
+            if (auto_inject_count > 0) {
+                auto_inject_count--;
+            }
+        });
+
     hooks.def("log_all_calls", &log_all_calls,
               "Toggles logging all unreal function calls. Best used in short bursts for\n"
               "debugging.\n"
@@ -108,10 +131,35 @@ void register_module(py::module_& mod) {
               "    should_log: True to turn on logging all calls, false to turn it off.",
               "should_log"_a);
 
-    hooks.def("inject_next_call", &inject_next_call,
-              "Makes the next unreal function call completely ignore hooks.\n"
-              "\n"
-              "Typically used to avoid recursion when re-calling the hooked function.");
+    hooks.def(
+        "inject_next_call",
+        []() {
+            if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                             "inject_next_call is deprecated, use the"
+                             " prevent_hooking_direct_calls() context manager instead.",
+                             1)
+                == -1) {
+                throw pybind11::error_already_set();
+            }
+            inject_next_call();
+        },
+        "Makes the next unreal function call completely ignore hooks.\n"
+        "\n"
+        "Typically used to avoid recursion when re-calling the hooked function.\n"
+        "\n"
+        "Deprecated in favour of the prevent_hooking_direct_calls() context manager.");
+
+    hooks.def(
+        "prevent_hooking_direct_calls", []() { return AutoInjectContextManager{}; },
+        "Context manager to prevent direct calls to unreal functions triggering hooks.\n"
+        "\n"
+        "Typically used to avoid recursion when re-calling the hooked function.\n"
+        "\n"
+        "Note this only affects direct calls to BoundFunction.__call__(). If the unreal\n"
+        "function itself calls other functions, those will still trigger hooks as normal.\n"
+        "\n"
+        "Returns:\n"
+        "    A new context manager.");
 
     hooks.def(
         "add_hook",
