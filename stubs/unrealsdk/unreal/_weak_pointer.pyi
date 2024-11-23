@@ -4,7 +4,7 @@ from typing import Any
 from ._uobject import UObject
 
 class WeakPointer[T: UObject = UObject]:
-    def __init__(self, obj: T | None) -> None:
+    def __init__(self, obj: T | None = None) -> None:
         """
         Creates a weak reference to an unreal object.
 
