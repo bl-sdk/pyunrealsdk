@@ -1,7 +1,9 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/base_bindings.h"
+#include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
+#include "unrealsdk/config.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/uobject.h"
@@ -83,6 +85,87 @@ UClass* evaluate_class_arg(const std::variant<UClass*, std::wstring>& cls_arg) {
         [](const FName& name) { return unrealsdk::unreal::find_class(name); });
 
     return cls_ptr;
+}
+
+/**
+ * @brief Recursively merges two toml tables.
+ *
+ * @param base The base table. Modified in place.
+ * @param overrides The overrides tables.
+ */
+void recursive_merge_table(py::dict& base, const py::dict& overrides) {
+    for (auto [key, value] : overrides) {
+        if (py::isinstance<py::dict>(value)) {
+            if (base.contains(key)) {
+                auto base_value = base[key];
+                if (py::isinstance<py::dict>(base_value)) {
+                    auto base_dict = base_value.cast<py::dict>();
+                    auto overrides_dict = value.cast<py::dict>();
+                    recursive_merge_table(base_dict, overrides_dict);
+                    continue;
+                }
+            }
+        }
+        base[key] = value;
+    }
+}
+
+/**
+ * @brief Creates the config dict, and adds it to the given module.
+ *
+ * @param mod The module to add the config dict to.
+ */
+void create_and_add_config_dict(py::module_& mod) {
+    // We want to copy the full, merged, unrealsdk config into Python.
+    // Only a few basic accessors into the config dict are exposed, since we can't safely expose
+    // the toml objects across dlls.
+    // Properly converting toml from the C++ side into Python is also a bit awkward, with all the
+    // different types.
+
+    // Instead, to get everything in Python more easily, we'll just load the config files directly
+    // in Python to begin with.
+
+    auto load_config_file = [](const std::filesystem::path&& path) -> py::object {
+        try {
+            const py::dict globals{"path"_a = path};
+            py::exec(
+                "import tomllib\n"
+                "with path.open(\"rb\") as file:\n"
+                "    config = tomllib.load(file)\n",
+                globals);
+            return globals["config"];
+
+        } catch (const std::exception& ex) {
+            LOG(ERROR, "Failed to load {}", path.string());
+            logging::log_python_exception(ex);
+            return py::none{};
+        }
+    };
+
+    auto base_config = load_config_file(unrealsdk::config::get_base_config_file_path());
+    auto user_config = load_config_file(unrealsdk::config::get_user_config_file_path());
+
+    if (!py::isinstance<py::dict>(base_config)) {
+        if (py::isinstance<py::dict>(user_config)) {
+            // Only user config got loaded
+            mod.attr("config") = user_config;
+            return;
+        }
+        // No config files got loaded, just create a default dict
+        mod.attr("config") = py::dict{};
+        return;
+    }
+    if (!py::isinstance<py::dict>(user_config)) {
+        // Only base config got loaded
+        mod.attr("config") = base_config;
+        return;
+    }
+
+    // Both configs were loaded, we need to merge them
+    auto base_dict = base_config.cast<py::dict>();
+    auto user_dict = user_config.cast<py::dict>();
+    recursive_merge_table(base_dict, user_dict);
+    mod.attr("config") = base_dict;
 }
 
 }  // namespace
@@ -251,6 +334,8 @@ void register_base_bindings(py::module_& mod) {
         "Returns:\n"
         "    The loaded `Package` object.",
         "name"_a, "flags"_a = 0);
+
+    create_and_add_config_dict(mod);
 }
 
 }  // namespace pyunrealsdk

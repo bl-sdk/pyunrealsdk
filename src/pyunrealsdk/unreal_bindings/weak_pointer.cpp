@@ -21,7 +21,7 @@ void register_weak_pointer(py::module_& mod) {
             "\n"
             "Args:\n"
             "    obj: The object to create a weak reference to.",
-            "obj"_a)
+            "obj"_a = nullptr)
         .def(
             "__call__",
             // Take a mutable reference, since the mutable dereference can do some optimizations

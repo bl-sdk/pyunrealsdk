@@ -2,11 +2,11 @@
 #include "pyunrealsdk/pyunrealsdk.h"
 #include "pyunrealsdk/base_bindings.h"
 #include "pyunrealsdk/commands.h"
-#include "pyunrealsdk/env.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/version.h"
+#include "unrealsdk/config.h"
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/version.h"
 
@@ -73,7 +73,8 @@ void init(void) {
     try {
         // Use a custom globals to make sure we don't contaminate `py`/`pyexec` commands
         // This also ensures `__file__` gets redefined properly
-        py::eval_file(env::get(env::INIT_SCRIPT, env::defaults::INIT_SCRIPT), py::dict{});
+        py::eval_file(unrealsdk::config::get_str("pyunrealsdk.init_script").value_or("__main__.py"),
+                      py::dict{});
     } catch (const std::exception& ex) {
         LOG(ERROR, "Error running python initialization script:");
         logging::log_python_exception(ex);

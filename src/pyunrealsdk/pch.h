@@ -25,6 +25,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl/filesystem.h>
 
 // NOLINTNEXTLINE(misc-unused-alias-decls)
 namespace py = pybind11;
