@@ -35,9 +35,13 @@ accept arguments into `sys.argv`.
 
 ## Initialization Script
 If you want to make more permanent mods, you'll want to use the initialization script. By default
-this is `__main__.py` in the game's cwd, though you can overwrite this with the
-`PYUNREALSDK_INIT_SCRIPT` environment variable. The initialization script is automatically run after
-sdk initialization, so you can use it to import other files and generally perform all your setup.
+this is `__main__.py` in the game's cwd. The initialization script is automatically run after sdk
+initialization, so you can use it to import other files and generally perform all your setup.
+
+You can swap to a different initialization script by using setting `pyunrealsdk.init_script` in the
+[unrealsdk configuration file](https://github.com/bl-sdk/unrealsdk/#configuration). If you do this
+you may also want to set `pyunrealsdk.pyexec_root`, so that `pyexec` commands work from the same
+folder.
 
 ## Using SDK bindings
 Once you've got code running, you probably want to setup some hooks - the sdk can run callbacks
@@ -87,7 +91,7 @@ To use it:
    debugpy.listen(("localhost", 5678), in_process_debug_adapter=True)
    ```
 
-3. Define the environment variable `PYUNREALSDK_DEBUGPY`.
+3. Set `pyunrealsdk.debugpy = True` in the [unrealsdk configuration file](https://github.com/bl-sdk/unrealsdk/#configuration).
 
 4. Attach using remote debugging with the debugger of your choice.
 

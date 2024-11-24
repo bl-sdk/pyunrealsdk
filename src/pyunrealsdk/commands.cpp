@@ -1,9 +1,9 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/debugging.h"
-#include "pyunrealsdk/env.h"
 #include "pyunrealsdk/logging.h"
 #include "unrealsdk/commands.h"
+#include "unrealsdk/config.h"
 #include "unrealsdk/utils.h"
 
 #ifdef PYUNREALSDK_INTERNAL
@@ -13,7 +13,8 @@ namespace pyunrealsdk::commands {
 namespace {
 
 void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
-    static const std::filesystem::path root = env::get(env::PYEXEC_ROOT);
+    static const std::filesystem::path root =
+        unrealsdk::config::get_str("pyunrealsdk.pyexec_root").value_or("");
 
     auto file_start = std::find_if_not(line + cmd_len, line + size, &std::iswspace);
     const size_t file_len = (line + size) - file_start;

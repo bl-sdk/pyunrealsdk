@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from typing import Any
 
 from . import commands, hooks, logging, unreal
@@ -24,6 +24,9 @@ __all__: tuple[str, ...] = (
 
 __version__: str
 __version_info__: tuple[int, int, int]
+
+# The contents of the unrealsdk.toml config file, parsed and merged for you
+config: Mapping[str, Any]
 
 def construct_object(
     cls: UClass | str,

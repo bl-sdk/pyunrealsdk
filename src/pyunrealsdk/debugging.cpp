@@ -1,8 +1,8 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/debugging.h"
-#include "pyunrealsdk/env.h"
 #include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/static_py_object.h"
+#include "unrealsdk/config.h"
 
 namespace pyunrealsdk {
 
@@ -32,7 +32,7 @@ PYUNREALSDK_CAPI(void, debug_this_thread) {
     auto& debugpy_debug_this_thread =
         storage
             .call_once_and_store_result([]() -> py::object {
-                if (env::defined(env::DEBUGPY)) {
+                if (unrealsdk::config::get_bool("pyunrealsdk.debugpy").value_or(false)) {
                     try {
                         return py::module_::import("debugpy").attr("debug_this_thread");
                     } catch (const py::error_already_set&) {}
