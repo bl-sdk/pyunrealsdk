@@ -7,6 +7,17 @@
 
   [59f474fe](https://github.com/bl-sdk/pyunrealsdk/commit/59f474fe)
 
+- The `WeakPointer` constructor can now be called with no args, to create a null pointer.
+
+  [59f474fe](https://github.com/bl-sdk/pyunrealsdk/commit/59f474fe)
+
+- As with unrealsdk, reworked the configuration system to no longer rely on environment variables.
+  All sdk configuration is now also done through the `unrealsdk.toml`.
+
+  The full contents of the unrealsdk config are parsed and exposed to Python in `unrealsdk.config`.
+
+  [ecde0a83](https://github.com/bl-sdk/pyunrealsdk/commit/ecde0a83)
+
 ## v1.4.0
 
 - Fixed weak pointer type hinting to allow for null pointers. This always worked at runtime.
