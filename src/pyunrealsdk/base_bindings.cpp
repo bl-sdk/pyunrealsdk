@@ -126,6 +126,10 @@ void create_and_add_config_dict(py::module_& mod) {
     // in Python to begin with.
 
     auto load_config_file = [](const std::filesystem::path&& path) -> py::object {
+        if (!std::filesystem::exists(path)) {
+            return py::none{};
+        }
+
         try {
             const py::dict globals{"path"_a = path};
             py::exec(
