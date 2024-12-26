@@ -7,7 +7,7 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
-        "EXPLICIT_PYTHON_VERSION": "3.13.0"
+        "EXPLICIT_PYTHON_VERSION": "3.13.1"
       }
     },
     {
