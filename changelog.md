@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## v1.5.0
 
 - Deprecated `unrealsdk.hooks.inject_next_call` in favour of a new
   `unrealsdk.hooks.prevent_hooking_direct_calls` context manager.
@@ -17,6 +17,45 @@
   The full contents of the unrealsdk config are parsed and exposed to Python in `unrealsdk.config`.
 
   [ecde0a83](https://github.com/bl-sdk/pyunrealsdk/commit/ecde0a83)
+
+### unrealsdk v1.5.0
+For reference, the unrealsdk v1.5.0 changes this includes are:
+
+> - Completely reworked the configuration system.
+> 
+>   Environment variables and the `unrealsdk.env` are no longer used, due to issues with them not fully
+>   propagating within the same process. The new configuration now uses an `unrealsdk.toml` instead.
+>   
+>   Also added support for a user specific override file - `unrealsdk.user.toml`. This allows projects
+>   to ship their own `unrealsdk.toml`, without overwriting user's settings on update.
+> 
+>   [4daecbde](https://github.com/bl-sdk/unrealsdk/commit/4daecbde)
+> 
+> - `unrealsdk::hook_manager::inject_next_call` is now thread local.
+> 
+>   [427c8734](https://github.com/bl-sdk/unrealsdk/commit/427c8734)
+> 
+> - Fixed that `unrealsdk::commands::has_command` and `unrealsdk::commands::remove_command` were case
+>   sensitive, while `unrealsdk::commands::add_command` and the callbacks were not. Commands should be
+>   now be case insensitive everywhere.
+> 
+>   [b641706d](https://github.com/bl-sdk/unrealsdk/commit/b641706d)
+> 
+> - Fixed that the executed command message of custom sdk commands would not appear in console if you
+>   increased the minimum log level, and that they may have appeared out of order with respects to
+>   native engine messages.
+> 
+>   [b652da13](https://github.com/bl-sdk/unrealsdk/commit/b652da13)
+> 
+> - Added an additional console command hook in BL2, to cover commands not run directly via console.
+> 
+>   [1200fca4](https://github.com/bl-sdk/unrealsdk/commit/1200fca4)
+> 
+> - Renamed the `unrealsdk.locking_process_event` (previously `UNREALSDK_LOCKING_PROCESS_EVENT`)
+>   setting to `unrealsdk.locking_function_calls`, and expanded it's scope to cover all function
+>   calls. This fixes a few more possibilities for lockups.
+> 
+>   [bebaeab4](https://github.com/bl-sdk/unrealsdk/commit/bebaeab4)
 
 ## v1.4.0
 
