@@ -56,6 +56,15 @@ For reference, the unrealsdk v1.5.0 changes this includes are:
 >   calls. This fixes a few more possibilities for lockups.
 > 
 >   [bebaeab4](https://github.com/bl-sdk/unrealsdk/commit/bebaeab4)
+> 
+> - Trying to set a struct, array, or multicast delegate to itself is now a no-op, and prints a
+>   warning.
+> 
+>   [8a98db1f](https://github.com/bl-sdk/unrealsdk/commit/8a98db1f)
+> 
+> - The console key will now also be overwritten if it was previously set to `Undefine`.
+> 
+>   [631fa41e](https://github.com/bl-sdk/unrealsdk/commit/631fa41e)
 
 ## v1.4.0
 
