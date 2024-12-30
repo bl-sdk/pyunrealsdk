@@ -306,8 +306,15 @@ void register_base_bindings(py::module_& mod) {
         "construct_object",
         [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
            decltype(UObject::ObjectFlags) flags, UObject* template_obj) {
-            return unrealsdk::construct_object(evaluate_class_arg(cls_arg), outer, name, flags,
-                                               template_obj);
+            auto cls = evaluate_class_arg(cls_arg);
+            auto val = unrealsdk::construct_object(cls, outer, name, flags, template_obj);
+
+            if (val == nullptr) {
+                throw std::runtime_error(unrealsdk::fmt::format(
+                    "Failed to construct object! cls: {}, outer: {}, name: {}", cls->Name,
+                    unrealsdk::utils::narrow(outer->get_path_name()), name));
+            }
+            return val;
         },
         "Constructs a new object.\n"
         "\n"
