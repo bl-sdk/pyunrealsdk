@@ -18,6 +18,11 @@
 
   [ecde0a83](https://github.com/bl-sdk/pyunrealsdk/commit/ecde0a83)
 
+- `unrealsdk.construct_object` now throws a `RuntimeError` instead of silently returning `None` when
+  constructing the object fails. This is how the type hints already assumed it worked.
+
+  [264634e2](https://github.com/bl-sdk/pyunrealsdk/commit/264634e2)
+
 ### unrealsdk v1.5.0
 For reference, the unrealsdk v1.5.0 changes this includes are:
 
