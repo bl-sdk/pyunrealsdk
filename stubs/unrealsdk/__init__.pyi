@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from . import commands, hooks, logging, unreal
@@ -50,7 +50,7 @@ def construct_object(
         The constructed object.
     """
 
-def find_all(cls: UClass | str, exact: bool = True) -> Iterator[UObject]:
+def find_all(cls: UClass | str, exact: bool = True) -> Iterable[UObject]:
     """
     Finds all instances of a class.
 
