@@ -153,10 +153,12 @@ void register_uobject_children(py::module_& mod) {
             "Returns:\n"
             "    True if this class implements the interface, false otherwise.",
             "interface"_a)
-        .def_readwrite("ClassDefaultObject", &UClass::ClassDefaultObject)
+        .def_property(
+            "ClassDefaultObject", [](const UClass* self) { return self->ClassDefaultObject(); },
+            [](UClass* self, UObject* value) { self->ClassDefaultObject() = value; })
         .def_property_readonly("Interfaces", [](const UClass* self) {
             std::vector<UClass*> interfaces{};
-            for (const auto& iface : self->Interfaces) {
+            for (const auto& iface : self->Interfaces()) {
                 interfaces.push_back(iface.Class);
             }
             return interfaces;
@@ -179,10 +181,18 @@ void register_uobject_children(py::module_& mod) {
              "\n"
              "Returns:\n"
              "    The return param, or None if it doesn't exist.")
-        .def_readwrite("FunctionFlags", &UFunction::FunctionFlags)
-        .def_readwrite("NumParams", &UFunction::NumParams)
-        .def_readwrite("ParamsSize", &UFunction::ParamsSize)
-        .def_readwrite("ReturnValueOffset", &UFunction::ReturnValueOffset);
+        .def_property(
+            "FunctionFlags", [](const UFunction* self) { return self->FunctionFlags(); },
+            [](UFunction* self, uint32_t value) { self->FunctionFlags() = value; })
+        .def_property(
+            "NumParams", [](const UFunction* self) { return self->NumParams(); },
+            [](UFunction* self, uint8_t value) { self->NumParams() = value; })
+        .def_property(
+            "ParamsSize", [](const UFunction* self) { return self->ParamsSize(); },
+            [](UFunction* self, uint16_t value) { self->ParamsSize() = value; })
+        .def_property(
+            "ReturnValueOffset", [](const UFunction* self) { return self->ReturnValueOffset(); },
+            [](UFunction* self, uint16_t value) { self->ReturnValueOffset() = value; });
 
     PyUEClass<UInt8Property, UProperty>(mod, "UInt8Property");
 
@@ -204,7 +214,9 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
-        .def_readwrite("StructFlags", &UScriptStruct::StructFlags);
+        .def_property(
+            "StructFlags", [](const UScriptStruct* self) { return self->StructFlags(); },
+            [](UScriptStruct* self, uint32_t value) { self->StructFlags() = value; });
 
     PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");
 

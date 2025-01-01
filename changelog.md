@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.5.1
+- Changed type hinting of `unrealsdk.find_all` to return an `Iterable[UObject]`, instead of
+  `Iterator[UObject]`. This mirrors what was actually happening at runtime.
+
+  [fbe877ef](https://github.com/bl-sdk/pyunrealsdk/commit/fbe877ef)
+
+### unrealsdk v1.6.0
+For reference, the unrealsdk v1.6.0 changes this includes are:
+
+> - Handled `UStruct` differing in size between BL2 and TPS.
+> 
+>   This affects all members on it's subclasses - `UClass::ClassDefaultObject`, `UClass::Interfaces`,
+>   `UFunction::FunctionFlags`, `UFunction::NumParams`, `UFunction::ParamsSize`,
+>   `UFunction::ReturnValueOffset`, and `UScriptStruct::StructFlags` have all now changed to methods
+>   which return a reference.
+> 
+>   [72579c18](https://github.com/bl-sdk/unrealsdk/commit/72579c18)
+> 
+> - Fixed all BL3 console output being treated as console commands instead.
+> 
+>   [1432408f](https://github.com/bl-sdk/unrealsdk/commit/1432408f)
+
 ## v1.5.0
 
 - Deprecated `unrealsdk.hooks.inject_next_call` in favour of a new
