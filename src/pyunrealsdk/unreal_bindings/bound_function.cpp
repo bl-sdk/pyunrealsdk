@@ -130,10 +130,10 @@ namespace impl {
 PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kwargs& kwargs)
     // Start by initializing a null struct, to avoid allocations
     : params(func, nullptr) {
-    if (func->NumParams < args.size()) {
+    if (func->NumParams() < args.size()) {
         throw py::type_error(
             unrealsdk::fmt::format("{}() takes {} positional args, but {} were given", func->Name,
-                                   func->NumParams, args.size()));
+                                   func->NumParams(), args.size()));
     }
 
     // If we're given exactly one arg, and it's a wrapped struct of our function type, take it as
