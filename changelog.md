@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.5.2
+
+### unrealsdk v1.6.1
+For reference, the unrealsdk v1.6.1 changes this includes are:
+
+> - Handled `UClass::Interfaces` also having a different offset between BL2 and TPS.
+
 ## v1.5.1
 - Changed type hinting of `unrealsdk.find_all` to return an `Iterable[UObject]`, instead of
   `Iterator[UObject]`. This mirrors what was actually happening at runtime.
