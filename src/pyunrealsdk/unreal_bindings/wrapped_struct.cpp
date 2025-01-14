@@ -212,6 +212,22 @@ void register_wrapped_struct(py::module_& mod) {
             "    field: The field to set.\n"
             "    value: The value to write.",
             "field"_a, "value"_a)
+        .def(
+            "__copy__", [](const WrappedStruct& self) { return WrappedStruct(self); },
+            "Creates a copy of this struct. Don't call this directly, use copy.copy().\n"
+            "\n"
+            "Returns:\n"
+            "    A new, python-owned copy of this struct.")
+        .def(
+            "__deepcopy__",
+            [](const WrappedStruct& self, const py::dict& /*memo*/) { return WrappedStruct(self); },
+            "Creates a copy of this struct. Don't call this directly, use copy.deepcopy().\n"
+            "\n"
+            "Args:\n"
+            "    memo: Opaque dict used by deepcopy internals."
+            "Returns:\n"
+            "    A new, python-owned copy of this struct.",
+            "memo"_a)
         .def_readwrite("_type", &WrappedStruct::type);
 }
 
