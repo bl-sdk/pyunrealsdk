@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+- `WrappedStruct` now supports being copied via the `copy` module.
+
+  [2ce96e52](https://github.com/bl-sdk/pyunrealsdk/commit/2ce96e52)
+
 ## v1.5.2
 
 ### unrealsdk v1.6.1
