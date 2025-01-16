@@ -6,6 +6,11 @@
 
   [2ce96e52](https://github.com/bl-sdk/pyunrealsdk/commit/2ce96e52)
 
+- Fixed that `WrappedArray.index` would not check the last item in the array. It also now accepts
+  start/stop indexes beyond the array bounds, like `list.index` does.
+
+  [10bdc130](https://github.com/bl-sdk/pyunrealsdk/commit/10bdc130)
+
 ## v1.5.2
 
 ### unrealsdk v1.6.1
