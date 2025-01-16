@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Iterator, Sequence
 from types import GenericAlias
 from typing import Any, Never, Self, overload
@@ -188,7 +189,7 @@ class WrappedArray[T]:
         Args:
             values: The sequence of values to append.
         """
-    def index(self, value: T, start: int = 0, stop: int = -1) -> int:
+    def index(self, value: T, start: int = 0, stop: int = sys.maxsize) -> int:
         """
         Finds the first index of the given value in the array.
 

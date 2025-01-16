@@ -63,15 +63,38 @@ size_t array_py_index(const WrappedArray& self,
                       py::ssize_t stop) {
     array_validate_value(self, value);
 
-    auto end = ArrayIterator{self, convert_py_idx(self, stop)};
+    // `list.index` method handles indexes a little differently to most methods. Essentially, any
+    // index is allowed, and it's just implicitly clamped to the size of the array. You're allowed
+    // to do some stupid things like `["a"].index("a", -100, -200)`, it just gives a not in list
+    // error.
 
-    auto location = std::find_if(ArrayIterator{self, convert_py_idx(self, start)}, end,
-                                 [&value](const auto& other) { return value.equal(other); });
-    if (location == end) {
-        throw py::value_error(
-            unrealsdk::fmt::format("{} is not in array", std::string(py::repr(value))));
+    // Firstly, wrap negative indexes
+    auto size = static_cast<py::ssize_t>(self.size());
+    if (start < 0) {
+        start += size;
     }
-    return location.idx;
+    if (stop < 0) {
+        stop += size;
+    }
+
+    // Clamp to the start of the array
+    start = std::max(start, py::ssize_t{0});
+    stop = std::max(stop, py::ssize_t{0});
+
+    // Make sure the start is actually before the stop
+    if (start < stop) {
+        // If the stop index is beyond the end, this automatically becomes an end of array iterator
+        auto end = ArrayIterator{self, static_cast<size_t>(stop)};
+
+        auto location = std::find_if(ArrayIterator{self, static_cast<size_t>(start)}, end,
+                                     [&value](const auto& other) { return value.equal(other); });
+        if (location != end) {
+            return location.idx;
+        }
+    }
+
+    throw py::value_error(
+        unrealsdk::fmt::format("{} is not in array", std::string(py::repr(value))));
 }
 
 void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
