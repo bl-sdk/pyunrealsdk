@@ -159,7 +159,7 @@ void register_wrapped_array(py::module_& mod) {
              "    stop: The index to stop searching before. Defaults to the end of the array.\n"
              "Returns:\n"
              "    The first index of the value in the array.",
-             "value"_a, "start"_a = 0, "stop"_a = -1)
+             "value"_a, "start"_a = 0, "stop"_a = std::numeric_limits<py::ssize_t>::max())
         .def("insert", &impl::array_py_insert,
              "Inserts an item into the array before the given index.\n"
              "\n"

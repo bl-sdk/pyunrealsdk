@@ -88,7 +88,7 @@ struct ArrayIterator {
      * @brief Construct a new iterator.
      *
      * @param arr The array to iterate over.
-     * @param idx The idnex to start iterating at.
+     * @param idx The index to start iterating at.
      */
     ArrayIterator(const WrappedArray& arr, size_t idx);
 
