@@ -11,6 +11,10 @@
 
   [10bdc130](https://github.com/bl-sdk/pyunrealsdk/commit/10bdc130)
 
+- Added a `_get_address` method to `WrappedArray`, `WrappedMulticastDelegate`, and `WrappedStruct`.
+
+  [1b3e9686](https://github.com/bl-sdk/pyunrealsdk/commit/1b3e9686)
+
 ## v1.5.2
 
 ### unrealsdk v1.6.1
