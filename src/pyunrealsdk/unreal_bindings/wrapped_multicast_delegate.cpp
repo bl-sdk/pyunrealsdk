@@ -262,6 +262,15 @@ void register_wrapped_multicast_delegate(py::module_& mod) {
             "Args:\n"
             "    value: The function to remove.",
             "value"_a)
+        .def(
+            "_get_address",
+            [](const WrappedMulticastDelegate& self) {
+                return reinterpret_cast<uintptr_t>(self.base.get());
+            },
+            "Gets the address of this delegate, for debugging.\n"
+            "\n"
+            "Returns:\n"
+            "    This delegate's address.")
         .def_readwrite("_signature", &WrappedMulticastDelegate::signature);
 }
 

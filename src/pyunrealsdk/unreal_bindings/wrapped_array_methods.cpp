@@ -182,6 +182,10 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
     });
 }
 
+uintptr_t array_py_getaddress(const WrappedArray& self) {
+    return reinterpret_cast<uintptr_t>(self.base.get());
+}
+
 }  // namespace pyunrealsdk::unreal::impl
 
 #endif

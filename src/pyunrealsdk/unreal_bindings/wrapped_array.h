@@ -207,6 +207,8 @@ void array_py_remove(WrappedArray& self, const py::object& value);
 void array_py_reverse(WrappedArray& self);
 // sort
 void array_py_sort(WrappedArray& self, const py::object& key, bool reverse);
+// _get_address
+uintptr_t array_py_getaddress(const WrappedArray& self);
 
 }  // namespace impl
 

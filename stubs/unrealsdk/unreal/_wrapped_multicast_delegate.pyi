@@ -52,6 +52,14 @@ class WrappedMulticastDelegate:
             The string representation.
         """
 
+    def _get_address(self) -> int:
+        """
+        Gets the address of this delegate, for debugging.
+
+        Returns:
+            This delegate's address.
+        """
+
     def add(self, value: BoundFunction) -> None:
         """
         Binds a new function to this delegate.
