@@ -3,6 +3,7 @@
 #include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/prop_traits.h"
@@ -46,8 +47,9 @@ namespace {
 bool handle_py_hook(Details& hook, const py::object& callback) {
     py::object ret_arg;
     if (hook.ret.has_value()) {
-        cast(hook.ret.prop, [&hook, &ret_arg]<typename T>(const T* /*prop*/) {
-            ret_arg = py::cast(hook.ret.get<T>());
+        cast(hook.ret.prop, [&hook, &ret_arg]<typename T>(T* prop) {
+            ret_arg = pyunrealsdk::unreal::py_getattr(
+                prop, reinterpret_cast<uintptr_t>(hook.ret.ptr.get()), hook.ret.ptr);
         });
     } else {
         ret_arg = py::type::of<Unset>();
@@ -76,9 +78,15 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
             if (py::type::of<Unset>().is(ret_override) || py::isinstance<Unset>(ret_override)) {
                 hook.ret.destroy();
             } else if (!py::ellipsis{}.equal(ret_override)) {
-                cast(hook.ret.prop, [&hook, &ret_override]<typename T>(const T* /*prop*/) {
-                    auto value = py::cast<typename PropTraits<T>::Value>(ret_override);
-                    hook.ret.set<T>(value);
+                cast(hook.ret.prop, [&hook, &ret_override]<typename T>(T* prop) {
+                    // Need to replicate PropertyProxy::set ourselves a bit, since we want to use
+                    // our custom python setter
+                    if (hook.ret.ptr.get() == nullptr) {
+                        hook.ret.ptr = UnrealPointer<void>(hook.ret.prop);
+                    }
+
+                    pyunrealsdk::unreal::py_setattr_direct(
+                        prop, reinterpret_cast<uintptr_t>(hook.ret.ptr.get()), ret_override);
                 });
             }
         }

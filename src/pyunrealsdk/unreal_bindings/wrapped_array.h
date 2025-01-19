@@ -53,16 +53,6 @@ py::object array_get(const WrappedArray& arr, size_t idx);
 void array_set(WrappedArray& arr, size_t idx, const py::object& value);
 
 /**
- * @brief Ensures a value is compatible with the given array.
- * @note Intended to be used when there's extra, non-reversible, work to do before it's possible to
- *       call array_set.
- *
- * @param arr The array to check against.
- * @param value The value to check.
- */
-void array_validate_value(const WrappedArray& arr, const py::object& value);
-
-/**
  * @brief Deletes a range of entries of arbitrary type in an array.
  *
  * @param arr The array to modify.

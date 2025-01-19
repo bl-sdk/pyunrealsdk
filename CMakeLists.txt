@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.25)
 
-project(pyunrealsdk VERSION 1.5.2)
+project(pyunrealsdk VERSION 1.6.0)
 
 function(_pyunrealsdk_add_base_target_args target_name)
     target_compile_features(${target_name} PUBLIC cxx_std_20)

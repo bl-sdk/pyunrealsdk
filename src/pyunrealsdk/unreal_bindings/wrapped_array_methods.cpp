@@ -11,11 +11,14 @@ using namespace unrealsdk::unreal;
 namespace pyunrealsdk::unreal::impl {
 
 void array_py_append(WrappedArray& self, const py::object& value) {
-    array_validate_value(self, value);
-
     auto size = self.size();
     self.resize(size + 1);
-    array_set(self, size, value);
+    try {
+        array_set(self, size, value);
+    } catch (...) {
+        self.resize(size);
+        throw;
+    }
 }
 
 void array_py_clear(WrappedArray& self) {
@@ -61,8 +64,6 @@ size_t array_py_index(const WrappedArray& self,
                       const py::object& value,
                       py::ssize_t start,
                       py::ssize_t stop) {
-    array_validate_value(self, value);
-
     // `list.index` method handles indexes a little differently to most methods. Essentially, any
     // index is allowed, and it's just implicitly clamped to the size of the array. You're allowed
     // to do some stupid things like `["a"].index("a", -100, -200)`, it just gives a not in list
@@ -98,45 +99,41 @@ size_t array_py_index(const WrappedArray& self,
 }
 
 void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
-    array_validate_value(self, value);
-
     auto size = self.size();
 
-    // Allow specifying one past the end, to insert at the end
-    // insert(-1) should insert before the last element, so goes through the normal conversion
-    auto idx = static_cast<size_t>(py_idx) == size ? py_idx : convert_py_idx(self, py_idx);
+    if (static_cast<size_t>(py_idx) == size) {
+        // We're just appending
+        array_py_append(self, value);
+        return;
+    }
+
+    auto idx = convert_py_idx(self, py_idx);
 
     self.resize(size + 1);
 
-    // Don't move if appending
-    if (idx != size) {
-        auto data = reinterpret_cast<uintptr_t>(self.base->data);
-        auto element_size = self.type->ElementSize;
+    auto data = reinterpret_cast<uintptr_t>(self.base->data);
+    auto element_size = self.type->ElementSize;
 
-        auto src = data + (idx * element_size);
-        auto remaining_size = (size - idx) * element_size;
-        memmove(reinterpret_cast<void*>(src + element_size), reinterpret_cast<void*>(src),
+    auto src = data + (idx * element_size);
+    auto remaining_size = (size - idx) * element_size;
+    memmove(reinterpret_cast<void*>(src + element_size), reinterpret_cast<void*>(src),
+            remaining_size);
+
+    try {
+        array_set(self, idx, value);
+    } catch (...) {
+        // Move it all back
+        memmove(reinterpret_cast<void*>(src), reinterpret_cast<void*>(src + element_size),
                 remaining_size);
+        self.resize(size);
+        throw;
     }
-
-    array_set(self, idx, value);
 }
 
 py::object array_py_pop(WrappedArray& self, py::ssize_t py_idx) {
     auto idx = convert_py_idx(self, py_idx);
 
-    py::object ret{};
-    cast(self.type, [&self, &ret, idx]<typename T>(const T* /*prop*/) {
-        auto val = self.get_at<T>(idx);
-
-        // Explicitly make a copy
-        // Some types (structs) are a reference by default, which will break once we
-        // remove them otherwise
-        // NOLINTNEXTLINE(misc-const-correctness)
-        typename PropTraits<T>::Value val_copy = val;
-
-        ret = py::cast(val_copy);
-    });
+    py::object ret = array_get(self, idx);
 
     array_delete_range(self, idx, idx + 1);
 
@@ -171,15 +168,11 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
                            []() { return py::module_::import("builtins").attr("sorted"); })
                        .get_stored();
 
-    py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
-
-    cast(self.type, [&self, &sorted_array]<typename T>(const T* /*prop*/) {
-        auto size = self.size();
-        for (size_t i = 0; i < size; i++) {
-            auto val = py::cast<typename PropTraits<T>::Value>(sorted_array[i]);
-            self.set_at<T>(i, val);
-        }
-    });
+    const py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
+    auto size = self.size();
+    for (size_t i = 0; i < size; i++) {
+        array_set(self, i, sorted_array[i]);
+    }
 }
 
 uintptr_t array_py_getaddress(const WrappedArray& self) {
