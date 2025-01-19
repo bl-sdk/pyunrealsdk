@@ -168,7 +168,7 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
                            []() { return py::module_::import("builtins").attr("sorted"); })
                        .get_stored();
 
-    py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
+    const py::sequence sorted_array = sorted(self, "key"_a = key, "reverse"_a = reverse);
     auto size = self.size();
     for (size_t i = 0; i < size; i++) {
         array_set(self, i, sorted_array[i]);
