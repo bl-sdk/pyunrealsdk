@@ -1,6 +1,8 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
+#include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 #ifdef PYUNREALSDK_INTERNAL
@@ -21,21 +23,35 @@ size_t convert_py_idx(const WrappedArray& arr, py::ssize_t idx) {
 }
 
 py::object array_get(const WrappedArray& arr, size_t idx) {
-    py::object ret{};
-    cast(arr.type, [&]<typename T>(const T* /*prop*/) { ret = py::cast(arr.get_at<T>(idx)); });
+    if (arr.type->Offset_Internal != 0) {
+        throw std::runtime_error(
+            "array inner property has non-zero offset, unsure how to handle, aborting!");
+    }
+    if (arr.type->ArrayDim != 1) {
+        throw std::runtime_error(
+            "array inner property is fixed array, unsure how to handle, aborting!");
+    }
 
-    return ret;
+    // Const cast is slightly naughty, but we know the internals aren't going to modify properties
+    return py_getattr(
+        const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize * idx),
+        arr.base);
 }
 
 void array_set(WrappedArray& arr, size_t idx, const py::object& value) {
-    cast(arr.type, [&]<typename T>(const T* /*prop*/) {
-        arr.set_at<T>(idx, py::cast<typename PropTraits<T>::Value>(value));
-    });
-}
+    if (arr.type->Offset_Internal != 0) {
+        throw std::runtime_error(
+            "array inner property has non-zero offset, unsure how to handle, aborting!");
+    }
+    if (arr.type->ArrayDim != 1) {
+        throw std::runtime_error(
+            "array inner property is fixed array, unsure how to handle, aborting!");
+    }
 
-void array_validate_value(const WrappedArray& arr, const py::object& value) {
-    cast(arr.type,
-         [&]<typename T>(const T* /*prop*/) { py::cast<typename PropTraits<T>::Value>(value); });
+    py_setattr_direct(
+        const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize * idx), value);
 }
 
 void array_delete_range(WrappedArray& arr, size_t start, size_t stop) {
