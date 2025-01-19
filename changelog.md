@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## v1.6.0
 
 - `WrappedStruct` now supports being copied via the `copy` module.
 
@@ -11,9 +11,36 @@
 
   [10bdc130](https://github.com/bl-sdk/pyunrealsdk/commit/10bdc130)
 
+- Hook return values and array access now have the same semantics as normal property accesses. In
+  practice this means:
+
+  - Getting an enum property will convert it to a python `IntFlag` enum (rather than an int).
+  - Setting an array property will accept any sequence (rather than just wrapped arrays).
+  
+  All other property types had the same semantics already, so this is backwards compatible.
+
+  [c52a807e](https://github.com/bl-sdk/pyunrealsdk/commit/c52a807e),
+  [16ac1711](https://github.com/bl-sdk/pyunrealsdk/commit/16ac1711)
+
 - Added a `_get_address` method to `WrappedArray`, `WrappedMulticastDelegate`, and `WrappedStruct`.
 
   [1b3e9686](https://github.com/bl-sdk/pyunrealsdk/commit/1b3e9686)
+
+
+### unrealsdk v1.7.0
+For reference, the unrealsdk v1.7.0 changes this includes are:
+
+> - `unrealsdk::unreal::cast` now copies the const-ness of its input object to its callbacks.
+> 
+>   [779d75ea](https://github.com/bl-sdk/unrealsdk/commit/779d75ea)
+> 
+> - Reworked `PropertyProxy` to be based on `UnrealPointer` (and reworked it too). This fixes some
+>   issues with ownership and possible use after frees.
+>   
+>   *This breaks binary compatibility*, though existing code should work pretty much as is after a
+>   recompile.
+>   
+>   [49bff4a4](https://github.com/bl-sdk/unrealsdk/commit/49bff4a4)
 
 ## v1.5.2
 
