@@ -228,6 +228,13 @@ void register_wrapped_struct(py::module_& mod) {
             "Returns:\n"
             "    A new, python-owned copy of this struct.",
             "memo"_a)
+        .def(
+            "_get_address",
+            [](const WrappedStruct& self) { return reinterpret_cast<uintptr_t>(self.base.get()); },
+            "Gets the address of this struct, for debugging.\n"
+            "\n"
+            "Returns:\n"
+            "    This struct's address.")
         .def_readwrite("_type", &WrappedStruct::type);
 }
 

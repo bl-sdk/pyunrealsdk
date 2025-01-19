@@ -162,6 +162,13 @@ class WrappedArray[T]:
             range: The range to set.
             value: The values to set.
         """
+    def _get_address(self) -> int:
+        """
+        Gets the address of this array, for debugging.
+
+        Returns:
+            This array's address.
+        """
     def append(self, value: T) -> None:
         """
         Appends a value to the end of the array.

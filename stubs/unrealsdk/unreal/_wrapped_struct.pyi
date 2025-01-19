@@ -72,6 +72,13 @@ class WrappedStruct:
             name: The name of the field to set.
             value: The value to write.
         """
+    def _get_address(self) -> int:
+        """
+        Gets the address of this struct, for debugging.
+
+        Returns:
+            This struct's address.
+        """
     def _get_field(self, field: UField) -> Any:
         """
         Reads an unreal field off of the struct.
