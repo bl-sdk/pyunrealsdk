@@ -90,17 +90,10 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     try {
         const py::gil_scoped_acquire gil{};
 
-        // Make sure unrealsdk is already in globals, for convenience
-        // The init script and `pyexec` commands both use a local dict, so this won't affect them
-        auto globals = py::globals();
-        if (!globals.contains("unrealsdk")) {
-            globals["unrealsdk"] = py::module_::import("unrealsdk");
-        }
-
         const py::str code_block{
             PyUnicode_FromWideChar(str.c_str(), static_cast<py::ssize_t>(str.size()))};
 
-        py::exec(code_block, globals);
+        py::exec(code_block);
     } catch (const std::exception& ex) {
         logging::log_python_exception(ex);
     }
@@ -178,6 +171,13 @@ void register_module(py::module_& mod) {
 }
 
 void register_commands(void) {
+    // Make sure unrealsdk is already in globals, for convenience
+    // The init script and `pyexec` commands both use a local dict, so this won't affect them
+    auto globals = py::globals();
+    if (!globals.contains("unrealsdk")) {
+        globals["unrealsdk"] = py::module_::import("unrealsdk");
+    }
+
     unrealsdk::commands::add_command(L"pyexec", &pyexec_cmd_handler);
     unrealsdk::commands::add_command(L"py", &py_cmd_handler);
 }
