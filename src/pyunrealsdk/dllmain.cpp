@@ -1,4 +1,5 @@
 #include "pyunrealsdk/pch.h"
+#include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/pyunrealsdk.h"
 
 #ifdef PYUNREALSDK_INTERNAL
@@ -16,6 +17,7 @@ DWORD WINAPI startup_thread(LPVOID /*unused*/) {
         pyunrealsdk::init();
     } catch (std::exception& ex) {
         LOG(ERROR, "Exception occurred while initializing the python sdk: {}", ex.what());
+        pyunrealsdk::logging::log_python_exception(ex);
     }
 
     return 1;

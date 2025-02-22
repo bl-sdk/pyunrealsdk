@@ -4,6 +4,11 @@ from typing import Any
 
 from ._uobject_children import UField, UFunction, UScriptStruct, UStruct
 
+# A sentinel value which can be assigned to any struct property, but which does nothing.
+# This is most useful when a function has a required struct arg, but you want to use the default,
+# zero-init, value.
+IGNORE_STRUCT: object
+
 class WrappedStruct:
     _type: UStruct
 

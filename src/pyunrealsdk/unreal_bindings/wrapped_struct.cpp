@@ -16,6 +16,23 @@ using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
 
+namespace {
+
+/**
+ * @brief Gets the ignore struct sentinel.
+ *
+ * @return The ignore struct sentinel.
+ */
+py::object get_ignore_struct_sentinel(void) {
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    return storage
+        .call_once_and_store_result(
+            []() { return py::module_::import("builtins").attr("object")(); })
+        .get_stored();
+}
+
+}  // namespace
+
 WrappedStruct make_struct(
     std::variant<const unrealsdk::unreal::UFunction*, const unrealsdk::unreal::UScriptStruct*> type,
     const py::args& args,
@@ -244,6 +261,12 @@ void register_wrapped_struct(py::module_& mod) {
             "Returns:\n"
             "    This struct's address.")
         .def_readwrite("_type", &WrappedStruct::type);
+
+    mod.attr("IGNORE_STRUCT") = get_ignore_struct_sentinel();
+}
+
+bool is_ignore_struct_sentinel(const py::object& obj) {
+    return obj.is(get_ignore_struct_sentinel());
 }
 
 }  // namespace pyunrealsdk::unreal

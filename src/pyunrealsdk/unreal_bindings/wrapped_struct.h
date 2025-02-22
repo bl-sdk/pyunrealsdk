@@ -39,6 +39,14 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
                  const py::args& args,
                  const py::kwargs& kwargs);
 
+/**
+ * @brief Checks if a python object is the ignore struct sentinel.
+ *
+ * @param obj The object to check.
+ * @return True if the object is the ignore struct sentinel.
+ */
+bool is_ignore_struct_sentinel(const py::object& obj);
+
 }  // namespace pyunrealsdk::unreal
 
 #endif
