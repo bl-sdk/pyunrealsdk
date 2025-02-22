@@ -189,6 +189,20 @@ class WrappedArray[T]:
         Returns:
             The number of times the value appears in the array.
         """
+    def emplace_struct(self, idx: int = sys.maxsize, /, *args: Any, **kwargs: Any) -> None:
+        """
+        If this is an array of structs, inserts a new struct in place.
+
+        This avoids the extra allocations caused by calling unrealsdk.make_struct().
+
+        Throws a TypeError if this is another type of array.
+
+        Args:
+            idx: The index to insert before. Defaults to the end of the array.
+            *args: Fields on the struct to initialize. Note you must explicitly specify
+                   idx to use these.
+            **kwargs: Fields on the struct to initialize.
+        """
     def extend(self, values: Sequence[T]) -> None:
         """
         Extends the array with all the values in the given sequence.

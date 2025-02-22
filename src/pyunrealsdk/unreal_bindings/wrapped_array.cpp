@@ -194,6 +194,19 @@ void register_wrapped_array(py::module_& mod) {
              "\n"
              "Returns:\n"
              "    This array's address.")
+        .def("emplace_struct", &impl::array_py_emplace_struct,
+             "If this is an array of structs, inserts a new struct in place.\n"
+             "\n"
+             "This avoids the extra allocations caused by calling unrealsdk.make_struct().\n"
+             "\n"
+             "Throws a TypeError if this is another type of array.\n"
+             "\n"
+             "Args:\n"
+             "    idx: The index to insert before. Defaults to the end of the array.\n"
+             "    *args: Fields on the struct to initialize. Note you must explicitly specify\n"
+             "           idx to use these.\n"
+             "    **kwargs: Fields on the struct to initialize.",
+             "idx"_a = std::numeric_limits<py::ssize_t>::max(), py::pos_only{})
         .def_readwrite("_type", &WrappedArray::type);
 
     // Create as a class method, see pybind11#1693

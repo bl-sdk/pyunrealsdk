@@ -27,7 +27,14 @@ WrappedStruct make_struct(
     std::visit([&struct_type](auto&& val) { struct_type = val; }, type);
 
     WrappedStruct new_struct{struct_type};
+    make_struct(new_struct, args, kwargs);
 
+    return new_struct;
+}
+
+void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
+                 const py::args& args,
+                 const py::kwargs& kwargs) {
     // Convert the kwarg keys to FNames, to make them case insensitive
     // This should also in theory speed up lookups, since hashing is simpler
     std::unordered_map<FName, py::object> converted_kwargs{};
@@ -38,15 +45,15 @@ WrappedStruct make_struct(
         });
 
     size_t arg_idx = 0;
-    for (auto prop : struct_type->properties()) {
+    for (auto prop : out_struct.type->properties()) {
         if (arg_idx != args.size()) {
-            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(out_struct.base.get()),
                               args[arg_idx++]);
 
             if (converted_kwargs.contains(prop->Name)) {
                 throw py::type_error(
                     unrealsdk::fmt::format("{}.__init__() got multiple values for argument '{}'",
-                                           struct_type->Name, prop->Name));
+                                           out_struct.type->Name, prop->Name));
             }
 
             continue;
@@ -56,7 +63,7 @@ WrappedStruct make_struct(
         auto iter = converted_kwargs.find(prop->Name);
         if (iter != converted_kwargs.end()) {
             // Use extract to also remove the value from the map, so we can ensure it's empty later
-            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(new_struct.base.get()),
+            py_setattr_direct(prop, reinterpret_cast<uintptr_t>(out_struct.base.get()),
                               converted_kwargs.extract(iter).mapped());
             continue;
         }
@@ -66,15 +73,16 @@ WrappedStruct make_struct(
         // Copying python, we only need to warn about one extra kwarg
         throw py::type_error(
             unrealsdk::fmt::format("{}.__init__() got an unexpected keyword argument '{}'",
-                                   struct_type->Name, converted_kwargs.begin()->first));
+                                   out_struct.type->Name, converted_kwargs.begin()->first));
     }
-
-    return new_struct;
 }
 
 void register_wrapped_struct(py::module_& mod) {
     py::class_<WrappedStruct>(mod, "WrappedStruct")
-        .def(py::init(&make_struct),
+        .def(py::init([](std::variant<const unrealsdk::unreal::UFunction*,
+                                      const unrealsdk::unreal::UScriptStruct*> type,
+                         const py::args& args,
+                         const py::kwargs& kwargs) { return make_struct(type, args, kwargs); }),
              "Creates a new wrapped struct.\n"
              "\n"
              "Args:\n"

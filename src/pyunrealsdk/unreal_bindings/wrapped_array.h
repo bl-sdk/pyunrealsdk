@@ -199,6 +199,11 @@ void array_py_reverse(WrappedArray& self);
 void array_py_sort(WrappedArray& self, const py::object& key, bool reverse);
 // _get_address
 uintptr_t array_py_getaddress(const WrappedArray& self);
+// emplace_struct
+void array_py_emplace_struct(WrappedArray& self,
+                             py::ssize_t py_idx,
+                             const py::args& args,
+                             const py::kwargs& kwargs);
 
 }  // namespace impl
 

@@ -26,6 +26,7 @@ void register_wrapped_struct(py::module_& mod);
  * @brief Creates a new wrapped struct using python args.
  *
  * @param type The type of struct to make.
+ * @param out_struct The existing struct to write into.
  * @param args The python args.
  * @param kwargs The python kwargs.
  * @return The new wrapped struct.
@@ -34,6 +35,9 @@ unrealsdk::unreal::WrappedStruct make_struct(
     std::variant<const unrealsdk::unreal::UFunction*, const unrealsdk::unreal::UScriptStruct*> type,
     const py::args& args,
     const py::kwargs& kwargs);
+void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
+                 const py::args& args,
+                 const py::kwargs& kwargs);
 
 }  // namespace pyunrealsdk::unreal
 
