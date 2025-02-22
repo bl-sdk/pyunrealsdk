@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.7.0
+
+- Added support for sending property changed events. This is typically best done via the
+  `unrealsdk.unreal.notify_changes` context manager.
+
+  [97e3e0c2](https://github.com/bl-sdk/unrealsdk/commit/97e3e0c2)
+
+- Fixed that it was possible for the `unrealsdk` module in the global namespace to get replaced, if
+  something during the init script messed with `sys.modules`. It is now imported during
+  initialization.
+
+  [91cfee4b](https://github.com/bl-sdk/unrealsdk/commit/91cfee4b)
+
+### unrealsdk v1.8.0
+For reference, the unrealsdk v1.8.0 changes this includes are:
+
+> - Added support for sending property changed events, via `UObject::post_edit_change_property` and
+>   `UObject::post_edit_change_chain_property`.
+>   
+>   [a6040da4](https://github.com/bl-sdk/unrealsdk/commit/a6040da4)
+> 
+> - Made the error message when assigning incompatible array types more clear.
+> 
+>   See also https://github.com/bl-sdk/unrealsdk/issues/60 .
+> 
+>   [6222756c](https://github.com/bl-sdk/unrealsdk/commit/6222756c)
+
 ## v1.6.0
 
 - `WrappedStruct` now supports being copied via the `copy` module.
