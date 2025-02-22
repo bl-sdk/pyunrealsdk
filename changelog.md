@@ -2,6 +2,16 @@
 
 ## v1.7.0
 
+- Added `WrappedArray.emplace_struct`, to construct structs in place. This is more efficient than
+  calling `arr.insert(pos, unrealsdk.make_struct(...))`.
+
+  [dc515cdc](https://github.com/bl-sdk/unrealsdk/commit/dc515cdc)
+
+- Added `unrealsdk.unreal.IGNORE_STRUCT`, a sentinel value which can be assigned to any struct, but
+  which does nothing. This is most useful when a function has a required struct arg.
+
+  [6c0b58ee](https://github.com/bl-sdk/unrealsdk/commit/6c0b58ee)
+  
 - Added support for sending property changed events. This is typically best done via the
   `unrealsdk.unreal.notify_changes` context manager.
 
