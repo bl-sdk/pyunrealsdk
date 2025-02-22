@@ -3,8 +3,10 @@
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/cast.h"
 #include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
+#include "unrealsdk/unreal/classes/properties/ustructproperty.h"
 #include "unrealsdk/unreal/classes/uconst.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
@@ -140,6 +142,9 @@ py::object py_getattr(UField* field,
                                                      field->Name, field->Class->Name));
 }
 
+// The templated lambda and all the if constexprs make everything have a really high penalty
+// Yes it's probably a bit complex, but it's also a bit awkward trying to split it up
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& value) {
     if (!field->is_instance(find_class<UProperty>())) {
         throw py::attribute_error(unrealsdk::fmt::format(
@@ -204,6 +209,13 @@ void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& val
         }
 
         for (size_t i = 0; i < seq_size; i++) {
+            // If we're setting a struct property, we might be being told to ignore it
+            if constexpr (std::is_base_of_v<UStructProperty, T>) {
+                if (is_ignore_struct_sentinel(value_seq[i])) {
+                    continue;
+                }
+            }
+
             set_property<T>(prop, i, base_addr, py::cast<value_type>(value_seq[i]));
         }
     });

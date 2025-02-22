@@ -1,8 +1,12 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
+#include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/cast.h"
+#include "unrealsdk/unreal/classes/properties/ustructproperty.h"
+#include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
+#include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 #ifdef PYUNREALSDK_INTERNAL
 
@@ -177,6 +181,60 @@ void array_py_sort(WrappedArray& self, const py::object& key, bool reverse) {
 
 uintptr_t array_py_getaddress(const WrappedArray& self) {
     return reinterpret_cast<uintptr_t>(self.base.get());
+}
+
+void array_py_emplace_struct(WrappedArray& self,
+                             py::ssize_t py_idx,
+                             const py::args& args,
+                             const py::kwargs& kwargs) {
+    if (!self.type->is_instance(find_class<UStructProperty>())) {
+        throw py::type_error("tried to emplace_struct into an array not made of structs");
+    }
+
+    auto size = self.size();
+
+    if (static_cast<size_t>(py_idx) >= size) {
+        // We're just appending
+        self.resize(size + 1);
+        try {
+            auto new_struct = self.get_at<UStructProperty>(size);
+            // May need to zero if there's still leftovers from when this array was bigger
+            memset(new_struct.base.get(), 0, new_struct.type->get_struct_size());
+            make_struct(new_struct, args, kwargs);
+        } catch (...) {
+            self.resize(size);
+            throw;
+        }
+        return;
+    }
+
+    // Copied from insert, shift all elements to make space for the one we're inserting
+    auto idx = convert_py_idx(self, py_idx);
+
+    self.resize(size + 1);
+
+    auto data = reinterpret_cast<uintptr_t>(self.base->data);
+    auto element_size = self.type->ElementSize;
+
+    auto src = data + (idx * element_size);
+    auto remaining_size = (size - idx) * element_size;
+    memmove(reinterpret_cast<void*>(src + element_size), reinterpret_cast<void*>(src),
+            remaining_size);
+
+    try {
+        auto new_struct = self.get_at<UStructProperty>(idx);
+        // At this point the struct still has all it's old contents. We don't need to properly
+        // destroy them since we've just moved it to the next slot, we're not leaking anything.
+        // Definitely need to zero it though.
+        memset(new_struct.base.get(), 0, new_struct.type->get_struct_size());
+        make_struct(new_struct, args, kwargs);
+    } catch (...) {
+        // Move it all back
+        memmove(reinterpret_cast<void*>(src), reinterpret_cast<void*>(src + element_size),
+                remaining_size);
+        self.resize(size);
+        throw;
+    }
 }
 
 }  // namespace pyunrealsdk::unreal::impl
