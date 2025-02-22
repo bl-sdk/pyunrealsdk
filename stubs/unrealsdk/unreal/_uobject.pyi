@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from contextlib import AbstractContextManager
 from typing import Any, Never
 
-from ._uobject_children import UClass, UField
+from ._uobject_children import UClass, UField, UProperty
 
 class UObject:
     """
@@ -86,6 +87,27 @@ class UObject:
         Returns:
             This object's name.
         """
+    def _post_edit_change_property(self, prop: str | UProperty) -> None:
+        """
+        Notifies the engine that we've made an external change to a property.
+
+        This only works on top level properties, those directly on the object.
+
+        Also see the notify_changes() context manager, which calls this automatically.
+
+        Args:
+            prop: The property, or the name of the property, which was changed.
+        """
+    def _post_edit_change_chain_property(self, prop: UProperty, *chain: UProperty) -> None:
+        """
+        Notifies the engine that we've made an external change to a chain of properties.
+
+        This version allows notifying about changes inside (nested) structs.
+
+        Args:
+            prop: The property which was changed.
+            *chain: The chain of properties to follow.
+        """
     def _set_field(self, field: UField, value: Any) -> None:
         """
         Writes a value to an unreal field on the object.
@@ -99,3 +121,18 @@ class UObject:
             field: The field to set.
             value: The value to write.
         """
+
+def notify_changes() -> AbstractContextManager[None]:
+    """
+    Context manager to automatically notify the engine when you edit an object.
+
+    This essentially just automatically calls obj._post_edit_change_property() after
+    every setattr.
+
+    Note that this only tracks top-level changes, it cannot track changes to inner
+    struct fields, You will have to manually call obj._post_edit_chain_property()
+    for them.
+
+    Returns:
+        A new context manager.
+    """

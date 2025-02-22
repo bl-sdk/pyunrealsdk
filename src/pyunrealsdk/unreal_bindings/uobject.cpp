@@ -6,6 +6,8 @@
 #include "unrealsdk/format.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uobject.h"
+#include "unrealsdk/unreal/classes/uproperty.h"
+#include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/utils.h"
@@ -28,6 +30,11 @@ namespace {
 UObject* uobject_init(const py::args& /* args */, const py::kwargs& /* kwargs */) {
     throw py::type_error("Cannot create new instances of unreal objects.");
 }
+
+// Dummy class to make the context manager on
+struct ContextManager {};
+
+size_t should_notify_counter = 0;
 
 }  // namespace
 
@@ -126,8 +133,12 @@ void register_uobject(py::module_& mod) {
                     }
                 }
 
-                py_setattr_direct(py_find_field(py::cast<FName>(name), self->Class),
-                                  reinterpret_cast<uintptr_t>(self), value);
+                auto field = py_find_field(py::cast<FName>(name), self->Class);
+                py_setattr_direct(field, reinterpret_cast<uintptr_t>(self), value);
+
+                if (should_notify_counter > 0 && field->is_instance(find_class<UProperty>())) {
+                    self->post_edit_change_property(reinterpret_cast<UProperty*>(field));
+                }
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"
@@ -144,6 +155,10 @@ void register_uobject(py::module_& mod) {
                     throw py::attribute_error("cannot access null attribute");
                 }
                 py_setattr_direct(field, reinterpret_cast<uintptr_t>(self), value);
+
+                if (should_notify_counter > 0 && field->is_instance(find_class<UProperty>())) {
+                    self->post_edit_change_property(reinterpret_cast<UProperty*>(field));
+                }
             },
             "Writes a value to an unreal field on the object.\n"
             "\n"
@@ -162,11 +177,68 @@ void register_uobject(py::module_& mod) {
             "\n"
             "Returns:\n"
             "    This object's address.")
+        .def(
+            "_post_edit_change_property",
+            [](UObject* self, std::variant<FName, UProperty*> prop) {
+                std::visit([self](auto&& val) { self->post_edit_change_property(val); }, prop);
+            },
+            "Notifies the engine that we've made an external change to a property.\n"
+            "\n"
+            "This only works on top level properties, those directly on the object.\n"
+            "\n"
+            "Also see the notify_changes() context manager, which calls this automatically.\n"
+            "\n"
+            "Args:\n"
+            "    prop: The property, or the name of the property, which was changed.",
+            "args"_a)
+        .def(
+            "_post_edit_change_chain_property",
+            [](UObject* self, UProperty* prop, const py::args& args) {
+                std::vector<UProperty*> chain;
+                chain.reserve(args.size());
+
+                for (const auto& val : args) {
+                    chain.push_back(py::cast<UProperty*>(val));
+                }
+                self->post_edit_change_chain_property(prop, chain);
+            },
+            "Notifies the engine that we've made an external change to a chain of properties.\n"
+            "\n"
+            "This version allows notifying about changes inside (nested) structs.\n"
+            "\n"
+            "Args:\n"
+            "    prop: The property which was changed.\n"
+            "    *chain: The chain of properties to follow.",
+            "prop"_a)
         .def_readwrite("ObjectFlags", &UObject::ObjectFlags)
         .def_readwrite("InternalIndex", &UObject::InternalIndex)
         .def_readwrite("Class", &UObject::Class)
         .def_readwrite("Name", &UObject::Name)
         .def_readwrite("Outer", &UObject::Outer);
+
+    // Create under an empty handle to prevent this type being normally accessible
+    py::class_<ContextManager>(py::handle(), "context_manager", pybind11::module_local())
+        .def("__enter__", [](const py::object& /*self*/) { should_notify_counter++; })
+        .def("__exit__", [](const py::object& /*self */, const py::object& /*exc_type*/,
+                            const py::object& /*exc_value*/, const py::object& /*traceback*/) {
+            if (should_notify_counter > 0) {
+                should_notify_counter--;
+            }
+        });
+
+    mod.def(
+        "notify_changes", []() { return ContextManager{}; },
+        "Context manager to automatically notify the engine when you edit an object.\n"
+        "\n"
+        "This essentially just automatically calls obj._post_edit_change_property() after\n"
+        "every setattr.\n"
+        "\n"
+        "Note that this only tracks top-level changes, it cannot track changes to inner\n"
+        "struct fields, You will have to manually call obj._post_edit_chain_property()\n"
+        "for them.\n"
+        "\n"
+        "Returns:\n"
+        "    A new context manager.");
 }
 
 }  // namespace pyunrealsdk::unreal

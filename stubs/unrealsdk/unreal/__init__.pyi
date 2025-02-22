@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ._bound_function import BoundFunction
 from ._uenum import UEnum
-from ._uobject import UObject
+from ._uobject import UObject, notify_changes
 from ._uobject_children import (
     UArrayProperty,
     UBlueprintGeneratedClass,
@@ -97,6 +97,7 @@ __all__: tuple[str, ...] = (
     "WrappedMulticastDelegate",
     "WrappedStruct",
     "dir_includes_unreal",
+    "notify_changes",
 )
 
 def dir_includes_unreal(should_include: bool) -> None:
