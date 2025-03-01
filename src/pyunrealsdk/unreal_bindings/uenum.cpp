@@ -52,7 +52,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
         enum_names = enum_obj->get_names();
 #endif
 
-        auto py_enum = intflag(enum_obj->Name, enum_names);
+        auto py_enum = intflag(enum_obj->Name(), enum_names);
         py_enum.attr("_unreal") = enum_obj;
 
         enum_cache.emplace(enum_obj, py_enum);

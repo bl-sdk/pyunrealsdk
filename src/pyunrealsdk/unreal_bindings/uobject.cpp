@@ -3,7 +3,6 @@
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
-#include "unrealsdk/format.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uobject.h"
 #include "unrealsdk/unreal/classes/uproperty.h"
@@ -45,6 +44,11 @@ void register_uobject(py::module_& mod) {
         "\n"
         "Most objects you interact with will be this type in python, even if their unreal\n"
         "class is something different.")
+        .def_member_prop("ObjectFlags", &UObject::ObjectFlags<UObject>)
+        .def_member_prop("InternalIndex", &UObject::InternalIndex<UObject>)
+        .def_member_prop("Class", &UObject::Class<UObject>)
+        .def_member_prop("Name", &UObject::Name<UObject>)
+        .def_member_prop("Outer", &UObject::Outer<UObject>)
         .def("__new__",
              [](const py::args&, const py::kwargs&) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
@@ -53,8 +57,8 @@ void register_uobject(py::module_& mod) {
         .def(
             "__repr__",
             [](UObject* self) {
-                return unrealsdk::fmt::format("{}'{}'", self->Class->Name,
-                                              unrealsdk::utils::narrow(self->get_path_name()));
+                return std::format("{}'{}'", self->Class()->Name(),
+                                   unrealsdk::utils::narrow(self->get_path_name()));
             },
             "Gets this object's full name.\n"
             "\n"
@@ -67,7 +71,7 @@ void register_uobject(py::module_& mod) {
              "    This object's name.")
         .def(
             "__dir__",
-            [](const py::object& self) { return py_dir(self, py::cast<UObject*>(self)->Class); },
+            [](const py::object& self) { return py_dir(self, py::cast<UObject*>(self)->Class()); },
             "Gets the attributes which exist on this object.\n"
             "\n"
             "Includes both python attributes and unreal fields. This can be changed to only\n"
@@ -78,7 +82,7 @@ void register_uobject(py::module_& mod) {
         .def(
             "__getattr__",
             [](UObject* self, const FName& name) {
-                return py_getattr(py_find_field(name, self->Class),
+                return py_getattr(py_find_field(name, self->Class()),
                                   reinterpret_cast<uintptr_t>(self), nullptr, self);
             },
             "Reads an unreal field off of the object.\n"
@@ -133,7 +137,7 @@ void register_uobject(py::module_& mod) {
                     }
                 }
 
-                auto field = py_find_field(py::cast<FName>(name), self->Class);
+                auto field = py_find_field(py::cast<FName>(name), self->Class());
                 py_setattr_direct(field, reinterpret_cast<uintptr_t>(self), value);
 
                 if (should_notify_counter > 0 && field->is_instance(find_class<UProperty>())) {
@@ -209,12 +213,7 @@ void register_uobject(py::module_& mod) {
             "Args:\n"
             "    prop: The property which was changed.\n"
             "    *chain: The chain of properties to follow.",
-            "prop"_a)
-        .def_readwrite("ObjectFlags", &UObject::ObjectFlags)
-        .def_readwrite("InternalIndex", &UObject::InternalIndex)
-        .def_readwrite("Class", &UObject::Class)
-        .def_readwrite("Name", &UObject::Name)
-        .def_readwrite("Outer", &UObject::Outer);
+            "prop"_a);
 
     // Create under an empty handle to prevent this type being normally accessible
     py::class_<ContextManager>(py::handle(), "context_manager", pybind11::module_local())

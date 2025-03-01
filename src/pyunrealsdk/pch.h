@@ -31,6 +31,15 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+// By default, pybind tries to compile with visibility hidden. This macro copies it, to avoid
+// warnings when we have a type holding/inheriting from python objects, due to our types having
+// greater visibility.
+#if defined(__MINGW32__)
+#define PY_OBJECT_VISIBILITY __attribute__((visibility("hidden")))
+#else
+#define PY_OBJECT_VISIBILITY
+#endif
+
 #include <variant>
 
 // Type casters need to be defined the same way in every file, so best to put here

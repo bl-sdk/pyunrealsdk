@@ -3,7 +3,7 @@
 project(pyunrealsdk VERSION 1.7.0)
 
 function(_pyunrealsdk_add_base_target_args target_name)
-    target_compile_features(${target_name} PUBLIC cxx_std_20)
+    target_compile_features(${target_name} PUBLIC cxx_std_23)
     set_target_properties(${target_name} PROPERTIES
         COMPILE_WARNING_AS_ERROR True
         INTERPROCEDURAL_OPTIMIZATION True

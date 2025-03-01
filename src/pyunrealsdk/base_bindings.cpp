@@ -54,8 +54,8 @@ CachedType find_cached_potentially_qualified(const std::wstring& name,
     auto val = fully_qualified.value() ? str_getter(name) : fname_getter(FName{name});
 
     if (val == nullptr) {
-        throw std::invalid_argument(unrealsdk::fmt::format("Couldn't find {} '{}'", error_type_name,
-                                                           unrealsdk::utils::narrow(name)));
+        throw std::invalid_argument(
+            std::format("Couldn't find {} '{}'", error_type_name, unrealsdk::utils::narrow(name)));
     }
 
     return val;
@@ -245,8 +245,8 @@ void register_base_bindings(py::module_& mod) {
         [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
             auto val = unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
             if (val == nullptr) {
-                throw std::invalid_argument(unrealsdk::fmt::format("Couldn't find object '{}'",
-                                                                   unrealsdk::utils::narrow(name)));
+                throw std::invalid_argument(
+                    std::format("Couldn't find object '{}'", unrealsdk::utils::narrow(name)));
             }
             return val;
         },
@@ -282,7 +282,7 @@ void register_base_bindings(py::module_& mod) {
             std::vector<UObject*> results{};
             if (exact) {
                 std::copy_if(gobjects.begin(), GObjects::end(), std::back_inserter(results),
-                             [cls_ptr](UObject* obj) { return obj->Class == cls_ptr; });
+                             [cls_ptr](UObject* obj) { return obj->Class() == cls_ptr; });
             } else {
                 std::copy_if(gobjects.begin(), GObjects::end(), std::back_inserter(results),
                              [cls_ptr](UObject* obj) { return obj->is_instance(cls_ptr); });
@@ -305,13 +305,13 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         "construct_object",
         [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
-           decltype(UObject::ObjectFlags) flags, UObject* template_obj) {
+           uint64_t flags, UObject* template_obj) {
             auto cls = evaluate_class_arg(cls_arg);
             auto val = unrealsdk::construct_object(cls, outer, name, flags, template_obj);
 
             if (val == nullptr) {
-                throw std::runtime_error(unrealsdk::fmt::format(
-                    "Failed to construct object! cls: {}, outer: {}, name: {}", cls->Name,
+                throw std::runtime_error(std::format(
+                    "Failed to construct object! cls: {}, outer: {}, name: {}", cls->Name(),
                     unrealsdk::utils::narrow(outer->get_path_name()), name));
             }
             return val;

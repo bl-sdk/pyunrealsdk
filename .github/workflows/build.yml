@@ -137,7 +137,6 @@ jobs:
         submodules: recursive
 
     - name: Configure CMake
-      working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
 
     - name: Remove `.modmap`s from compile commands
@@ -148,7 +147,6 @@ jobs:
           -Path "out\build\${{ matrix.preset }}\compile_commands.json"
 
     - name: Run clang-tidy
-      working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: |
         python (Get-Command run-clang-tidy).Source                              `
           -p "out\build\${{ matrix.preset }}"                                   `
@@ -165,7 +163,6 @@ jobs:
 
     steps:
     - name: Setup Clang
-      if: startswith(matrix.preset, 'clang')
       uses: egor-tensin/setup-clang@v1
 
     - name: Checkout repository

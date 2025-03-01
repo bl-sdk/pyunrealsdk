@@ -37,23 +37,27 @@ namespace pyunrealsdk::unreal {
 void register_uobject_children(py::module_& mod) {
     // ======== First Layer Subclasses ========
 
-    PyUEClass<UField, UObject>(mod, "UField").def_readwrite("Next", &UField::Next);
+    PyUEClass<UField, UObject>(mod, "UField").def_member_prop("Next", &UField::Next<UField>);
 
     // ======== Second Layer Subclasses ========
 
     PyUEClass<UConst, UField>(mod, "UConst")
+        // Deliberately not using def_member_prop, since we need to do extra string conversions
         .def_property(
-            "Value", [](const UConst* self) { return (std::string)self->Value; },
-            [](UConst* self, const std::string& new_value) { self->Value = new_value; });
+            "Value", [](const UConst* self) { return (std::string)self->Value(); },
+            [](UConst* self, const std::string& new_value) { self->Value() = new_value; });
 
     PyUEClass<UProperty, UField>(mod, "UProperty")
-        .def_readwrite("ArrayDim", &UProperty::ArrayDim)
-        .def_readwrite("ElementSize", &UProperty::ElementSize)
-        .def_readwrite("PropertyFlags", &UProperty::PropertyFlags)
-        .def_readwrite("Offset_Internal", &UProperty::Offset_Internal)
-        .def_readwrite("PropertyLinkNext", &UProperty::PropertyLinkNext);
+        .def_member_prop("ArrayDim", &UProperty::ArrayDim<UProperty>)
+        .def_member_prop("ElementSize", &UProperty::ElementSize<UProperty>)
+        .def_member_prop("PropertyFlags", &UProperty::PropertyFlags<UProperty>)
+        .def_member_prop("Offset_Internal", &UProperty::Offset_Internal<UProperty>)
+        .def_member_prop("PropertyLinkNext", &UProperty::PropertyLinkNext<UProperty>);
 
     PyUEClass<UStruct, UField>(mod, "UStruct")
+        .def_member_prop("SuperField", &UStruct::SuperField<UStruct>)
+        .def_member_prop("Children", &UStruct::Children<UStruct>)
+        .def_member_prop("PropertyLink", &UStruct::PropertyLink<UStruct>)
         .def(
             "_fields",
             [](UStruct* self) {
@@ -126,10 +130,7 @@ void register_uobject_children(py::module_& mod) {
              "    name: The name of the child property.\n"
              "Returns:\n"
              "    The found child property.",
-             "name"_a)
-        .def_readwrite("SuperField", &UStruct::SuperField)
-        .def_readwrite("Children", &UStruct::Children)
-        .def_readwrite("PropertyLink", &UStruct::PropertyLink);
+             "name"_a);
 
     // ======== Third Layer Subclasses ========
 
@@ -143,6 +144,7 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("Enum", &UByteProperty::get_enum);
 
     PyUEClass<UClass, UStruct>(mod, "UClass")
+        .def_member_prop("ClassDefaultObject", &UClass::ClassDefaultObject<UClass>)
         .def(
             "_implements",
             [](UClass* self, UClass* interface) { return self->implements(interface, nullptr); },
@@ -153,9 +155,6 @@ void register_uobject_children(py::module_& mod) {
             "Returns:\n"
             "    True if this class implements the interface, false otherwise.",
             "interface"_a)
-        .def_property(
-            "ClassDefaultObject", [](const UClass* self) { return self->ClassDefaultObject(); },
-            [](UClass* self, UObject* value) { self->ClassDefaultObject() = value; })
         .def_property_readonly("Interfaces", [](const UClass* self) {
             std::vector<UClass*> interfaces{};
             for (const auto& iface : self->Interfaces()) {
@@ -176,23 +175,15 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UFloatProperty, UProperty>(mod, "UFloatProperty");
 
     PyUEClass<UFunction, UStruct>(mod, "UFunction")
+        .def_member_prop("FunctionFlags", &UFunction::FunctionFlags<UFunction>)
+        .def_member_prop("NumParams", &UFunction::NumParams<UFunction>)
+        .def_member_prop("ParamsSize", &UFunction::ParamsSize<UFunction>)
+        .def_member_prop("ReturnValueOffset", &UFunction::ReturnValueOffset<UFunction>)
         .def("_find_return_param", &UFunction::find_return_param,
              "Finds the return param for this function (if it exists).\n"
              "\n"
              "Returns:\n"
-             "    The return param, or None if it doesn't exist.")
-        .def_property(
-            "FunctionFlags", [](const UFunction* self) { return self->FunctionFlags(); },
-            [](UFunction* self, uint32_t value) { self->FunctionFlags() = value; })
-        .def_property(
-            "NumParams", [](const UFunction* self) { return self->NumParams(); },
-            [](UFunction* self, uint8_t value) { self->NumParams() = value; })
-        .def_property(
-            "ParamsSize", [](const UFunction* self) { return self->ParamsSize(); },
-            [](UFunction* self, uint16_t value) { self->ParamsSize() = value; })
-        .def_property(
-            "ReturnValueOffset", [](const UFunction* self) { return self->ReturnValueOffset(); },
-            [](UFunction* self, uint16_t value) { self->ReturnValueOffset() = value; });
+             "    The return param, or None if it doesn't exist.");
 
     PyUEClass<UInt8Property, UProperty>(mod, "UInt8Property");
 
@@ -214,9 +205,7 @@ void register_uobject_children(py::module_& mod) {
         .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
-        .def_property(
-            "StructFlags", [](const UScriptStruct* self) { return self->StructFlags(); },
-            [](UScriptStruct* self, uint32_t value) { self->StructFlags() = value; });
+        .def_member_prop("StructFlags", &UScriptStruct::StructFlags<UScriptStruct>);
 
     PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");
 
