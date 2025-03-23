@@ -98,54 +98,54 @@ To use it:
 Note that the sdk disables the integration if it's unable to import debugpy on first use, meaning
 you may not get away with manipulating `sys.path`. Instead, consider using [`._pth` files](https://docs.python.org/3/library/sys_path_init.html).
 
-# Installation
-1. Download the relevant [release](https://github.com/bl-sdk/pyunrealsdk/releases).
-
-   If you don't know which compiler's version to get, we recommend MSVC (so functions log messages
-   include namespaces).
-
-2. Install some game specific plugin loader. The released dlls are not set up to alias any system
-   dlls, you can't just call it `d3d9.dll` and assume your game will load fine.
-
-   If you know a specific dll name is fine to use without aliasing, rename `pyunrealsdk.dll`.
-
-3. Extract all files to somewhere in your game's dll search path. Your plugin loader's plugins
-   folder may work, otherwise you can fall back to the same directory as the executable.
-
 # Development
-To build:
+The sdk can be built with one of five different toolchains, each of which have a few different
+configurations:
+
+- MSVC
+- Clang (Windows)
+- Clang (Cross Compile) <sup>*</sup>
+- MinGW <sup>*</sup>
+- LLVM MinGW <sup>*</sup>
+
+The toolchains with an asterix are all cross compiling toolchains. These all also have an associated
+dev container, which is the recommended way of building them. The `clang-cross-*` presets in
+particular hardcode a path assuming they're running in the container.
+
+The sdk is always built as a Windows dll. To allow the cross compiling toolchains to link against a
+Windows copy of Python, rather than using CMake's normal `FindPython` helpers, when configuring we
+download a copy from Python's site. When integrating the sdk into your own projects, exactly which
+version can be specified using the `EXPLICIT_PYTHON_ARCH` and `EXPLICIT_PYTHON_VERSION` variables.
+The CMake presets already have these set if building locally.
+
+To download the relevant python version, you need a copy of Python with requests on your path. When
+cross compiling you also need `msiextract`, which is typically part of an `msitools` package. The
+dev containers already have these set up.
+```sh
+pip install requests
+python -c 'import requests'
+
+# Linux only
+apt install msitools # Or equivalent
+msiextract --version 
+```
+
+Once you've got this all set up, to build the sdk:
 
 1. Clone the repo (including submodules).
    ```sh
    git clone --recursive https://github.com/bl-sdk/pyunrealsdk.git
    ```
 
-2. Make sure you have Python with requests on your PATH. This doesn't need to be the same version
-   as what the SDK uses, it's just used by the script which downloads the correct one.
-   ```sh
-   pip install requests
-   python -c 'import requests'
-   ```
+2. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
 
-   If not running on Windows, make sure `msiextract` is also on your PATH. This is typically part
-   of an `msitools` package.
-   ```sh
-   apt install msitools # Or equivalent
-   msiextract --version 
-   ```
-
-   See the explicit python [readme](https://github.com/bl-sdk/common_cmake/blob/master/explicit_python/Readme.md)
-   for a few extra details.
-
-3. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
-
-4. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
+3. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
    ```
    cmake . --preset msvc-ue4-x64-debug
    cmake --build out/build/msvc-ue4-x64-debug
    ```
 
-5. (OPTIONAL) Copy the python runtime files to the game's directory. At a minimum, you probably
+4. (OPTIONAL) Copy the python runtime files to the game's directory. At a minimum, you probably
    want these:
    ```
    python3.dll
@@ -159,10 +159,10 @@ To build:
    cmake --build out/build/msvc-ue4-x64-debug --target install
    ```
 
-   As an alternative to this and step 3, you could point the CMake install dir directly at your
+   As an alternative to this and step 2, you could point the CMake install dir directly at your
    game, so everything's automatically copied. This however will only work with one game at a time.
 
-6. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
+5. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
    executable, containing the game's Steam App Id.
 
    Normally, games compiled with Steamworks will call
