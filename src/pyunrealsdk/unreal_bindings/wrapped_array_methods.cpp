@@ -105,7 +105,7 @@ size_t array_py_index(const WrappedArray& self,
 void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
     auto size = self.size();
 
-    if (static_cast<size_t>(py_idx) == size) {
+    if (std::cmp_equal(py_idx, size)) {
         // We're just appending
         array_py_append(self, value);
         return;
@@ -193,7 +193,7 @@ void array_py_emplace_struct(WrappedArray& self,
 
     auto size = self.size();
 
-    if (static_cast<size_t>(py_idx) >= size) {
+    if (std::cmp_greater_equal(py_idx, size)) {
         // We're just appending
         self.resize(size + 1);
         try {
