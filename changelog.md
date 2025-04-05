@@ -36,6 +36,11 @@ For reference, the unrealsdk v1.8.0 changes this includes are:
 >   See also https://github.com/bl-sdk/unrealsdk/issues/60 .
 > 
 >   [6222756c](https://github.com/bl-sdk/unrealsdk/commit/6222756c)
+>
+> - Fixed checking the setting `exe_override` rather than the full `unrealsdk.exe_override`, like
+>   how it was documented / originally intended.
+>
+>   [3010f486](https://github.com/bl-sdk/unrealsdk/commit/3010f486)
 
 ## v1.6.0
 
