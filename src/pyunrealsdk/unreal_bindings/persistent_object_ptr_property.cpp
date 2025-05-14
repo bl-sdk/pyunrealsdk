@@ -179,7 +179,7 @@ void register_persistent_object_properties(py::module_& mod) {
             "source"_a, "idx"_a);
 
     PyUEClass<USoftClassProperty, USoftObjectProperty>(mod, "USoftClassProperty")
-        .def_property_readonly("MetaClass", &USoftClassProperty::get_meta_class);
+        .def_member_prop("MetaClass", &USoftClassProperty::MetaClass<USoftClassProperty>);
 }
 
 }  // namespace pyunrealsdk::unreal

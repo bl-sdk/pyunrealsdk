@@ -100,12 +100,10 @@ class UStruct(UField):
 # ======== Third Layer Subclasses ========
 
 class UArrayProperty(UProperty):
-    @property
-    def Inner(self) -> UProperty: ...
+    Inner: UProperty
 
 class UBoolProperty(UProperty):
-    @property
-    def FieldMask(self) -> int: ...
+    FieldMask: int
 
 class UByteProperty(UProperty):
     @property
@@ -127,16 +125,13 @@ class UClass(UStruct):
         """
 
 class UDelegateProperty(UProperty):
-    @property
-    def Signature(self) -> UFunction: ...
+    Signature: UFunction
 
 class UDoubleProperty(UProperty): ...
 
 class UEnumProperty(UProperty):
-    @property
-    def Enum(self) -> UEnum: ...
-    @property
-    def UnderlyingProp(self) -> UProperty: ...
+    Enum: UEnum
+    UnderlyingProp: UProperty
 
 class UFloatProperty(UProperty): ...
 
@@ -159,20 +154,17 @@ class UInt16Property(UProperty): ...
 class UInt64Property(UProperty): ...
 
 class UInterfaceProperty(UProperty):
-    @property
-    def InterfaceClass(self) -> UClass: ...
+    InterfaceClass: UClass
 
 class UIntProperty(UProperty): ...
 
 class UMulticastDelegateProperty(UProperty):
-    @property
-    def Signature(self) -> UFunction: ...
+    Signature: UFunction
 
 class UNameProperty(UProperty): ...
 
 class UObjectProperty(UProperty):
-    @property
-    def PropertyClass(self) -> UClass: ...
+    PropertyClass: UClass
 
 class UScriptStruct(UStruct):
     StructFlags: int
@@ -180,8 +172,7 @@ class UScriptStruct(UStruct):
 class UStrProperty(UProperty): ...
 
 class UStructProperty(UProperty):
-    @property
-    def Struct(self) -> UScriptStruct: ...
+    Struct: UScriptStruct
 
 class UTextProperty(UProperty): ...
 class UUInt16Property(UProperty): ...
@@ -193,28 +184,21 @@ class UUInt64Property(UProperty): ...
 class UBlueprintGeneratedClass(UClass): ...
 
 class UByteAttributeProperty(UByteProperty):
-    @property
-    def ModifierStackProperty(self) -> UArrayProperty | None: ...
-    @property
-    def OtherAttributeProperty(self) -> UByteAttributeProperty | None: ...
+    ModifierStackProperty: UArrayProperty
+    OtherAttributeProperty: UByteAttributeProperty
 
 class UClassProperty(UObjectProperty):
-    @property
-    def MetaClass(self) -> UClass: ...
+    MetaClass: UClass
 
 class UComponentProperty(UObjectProperty): ...
 
 class UFloatAttributeProperty(UByteProperty):
-    @property
-    def ModifierStackProperty(self) -> UArrayProperty | None: ...
-    @property
-    def OtherAttributeProperty(self) -> UByteAttributeProperty | None: ...
+    ModifierStackProperty: UArrayProperty
+    OtherAttributeProperty: UByteAttributeProperty
 
 class UIntAttributeProperty(UByteProperty):
-    @property
-    def ModifierStackProperty(self) -> UArrayProperty | None: ...
-    @property
-    def OtherAttributeProperty(self) -> UByteAttributeProperty | None: ...
+    ModifierStackProperty: UArrayProperty
+    OtherAttributeProperty: UByteAttributeProperty
 
 class ULazyObjectProperty(UObjectProperty):
     @staticmethod

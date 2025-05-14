@@ -135,13 +135,13 @@ void register_uobject_children(py::module_& mod) {
     // ======== Third Layer Subclasses ========
 
     PyUEClass<UArrayProperty, UProperty>(mod, "UArrayProperty")
-        .def_property_readonly("Inner", &UArrayProperty::get_inner);
+        .def_member_prop("Inner", &UArrayProperty::Inner<UArrayProperty>);
 
     PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty")
-        .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
+        .def_member_prop("FieldMask", &UBoolProperty::FieldMask<UBoolProperty>);
 
     PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty")
-        .def_property_readonly("Enum", &UByteProperty::get_enum);
+        .def_member_prop("Enum", &UByteProperty::Enum<UByteProperty>);
 
     PyUEClass<UClass, UStruct>(mod, "UClass")
         .def_member_prop("ClassDefaultObject", &UClass::ClassDefaultObject<UClass>)
@@ -164,13 +164,13 @@ void register_uobject_children(py::module_& mod) {
         });
 
     PyUEClass<UDelegateProperty, UProperty>(mod, "UDelegateProperty")
-        .def_property_readonly("Signature", &UDelegateProperty::get_signature);
+        .def_member_prop("Signature", &UDelegateProperty::Signature<UDelegateProperty>);
 
     PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
 
     PyUEClass<UEnumProperty, UProperty>(mod, "UEnumProperty")
-        .def_property_readonly("UnderlyingProp", &UEnumProperty::get_underlying_prop)
-        .def_property_readonly("Enum", &UEnumProperty::get_enum);
+        .def_member_prop("UnderlyingProp", &UEnumProperty::UnderlyingProp<UEnumProperty>)
+        .def_member_prop("Enum", &UEnumProperty::Enum<UEnumProperty>);
 
     PyUEClass<UFloatProperty, UProperty>(mod, "UFloatProperty");
 
@@ -192,17 +192,18 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UInt64Property, UProperty>(mod, "UInt64Property");
 
     PyUEClass<UInterfaceProperty, UProperty>(mod, "UInterfaceProperty")
-        .def_property_readonly("InterfaceClass", &UInterfaceProperty::get_interface_class);
+        .def_member_prop("InterfaceClass", &UInterfaceProperty::InterfaceClass<UInterfaceProperty>);
 
     PyUEClass<UIntProperty, UProperty>(mod, "UIntProperty");
 
     PyUEClass<UMulticastDelegateProperty, UProperty>(mod, "UMulticastDelegateProperty")
-        .def_property_readonly("Signature", &UMulticastDelegateProperty::get_signature);
+        .def_member_prop("Signature",
+                         &UMulticastDelegateProperty::Signature<UMulticastDelegateProperty>);
 
     PyUEClass<UNameProperty, UProperty>(mod, "UNameProperty");
 
     PyUEClass<UObjectProperty, UProperty>(mod, "UObjectProperty")
-        .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
+        .def_member_prop("PropertyClass", &UObjectProperty::PropertyClass<UObjectProperty>);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
         .def_member_prop("StructFlags", &UScriptStruct::StructFlags<UScriptStruct>);
@@ -210,7 +211,7 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");
 
     PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
-        .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
+        .def_member_prop("Struct", &UStructProperty::Struct<UStructProperty>);
 
     PyUEClass<UTextProperty, UProperty>(mod, "UTextProperty");
 
@@ -225,27 +226,27 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UBlueprintGeneratedClass, UClass>(mod, "UBlueprintGeneratedClass");
 
     PyUEClass<UByteAttributeProperty, UByteProperty>(mod, "UByteAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UByteAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UByteAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty",
+                         &UByteAttributeProperty::ModifierStackProperty<UByteAttributeProperty>)
+        .def_member_prop("OtherAttributeProperty",
+                         &UByteAttributeProperty::OtherAttributeProperty<UByteAttributeProperty>);
 
     PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty")
-        .def_property_readonly("MetaClass", &UClassProperty::get_meta_class);
+        .def_member_prop("MetaClass", &UClassProperty::MetaClass<UClassProperty>);
 
     PyUEClass<UComponentProperty, UObjectProperty>(mod, "UComponentProperty");
 
     PyUEClass<UFloatAttributeProperty, UFloatProperty>(mod, "UFloatAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UFloatAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UFloatAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty",
+                         &UFloatAttributeProperty::ModifierStackProperty<UFloatAttributeProperty>)
+        .def_member_prop("OtherAttributeProperty",
+                         &UFloatAttributeProperty::OtherAttributeProperty<UFloatAttributeProperty>);
 
     PyUEClass<UIntAttributeProperty, UIntProperty>(mod, "UIntAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UIntAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UIntAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty",
+                         &UIntAttributeProperty::ModifierStackProperty<UIntAttributeProperty>)
+        .def_member_prop("OtherAttributeProperty",
+                         &UIntAttributeProperty::OtherAttributeProperty<UIntAttributeProperty>);
 
     // ULazyObjectProperty - registered elsewhere
     // USoftObjectProperty - registered elsewhere

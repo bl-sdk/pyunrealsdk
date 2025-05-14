@@ -99,7 +99,7 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
 
         // NOLINTNEXTLINE(misc-const-correctness)
         bool optional = false;
-#ifdef UE3
+#if UNREALSDK_FLAVOUR == UNREALSDK_FLAVOUR_WILLOW
         optional = (prop->PropertyFlags() & UProperty::PROP_FLAG_OPTIONAL) != 0;
 #endif
 
@@ -231,7 +231,7 @@ void register_bound_function(py::module_& mod) {
             "    The unreal function's args. Out params will be used to initialized the\n"
             "    unreal value, but the python value is not modified in place. Kwargs are\n"
             "    supported.\n"
-#ifdef UE3
+#if UNREALSDK_FLAVOUR == UNREALSDK_FLAVOUR_WILLOW
             "    Optional params should also be optional.\n"
 #endif
             "    Alternatively, may call with a single positional WrappedStruct which matches\n"
