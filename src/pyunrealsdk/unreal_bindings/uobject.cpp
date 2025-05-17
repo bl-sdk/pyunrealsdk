@@ -44,11 +44,11 @@ void register_uobject(py::module_& mod) {
         "\n"
         "Most objects you interact with will be this type in python, even if their unreal\n"
         "class is something different.")
-        .def_member_prop("ObjectFlags", &UObject::ObjectFlags<UObject>)
-        .def_member_prop("InternalIndex", &UObject::InternalIndex<UObject>)
-        .def_member_prop("Class", &UObject::Class<UObject>)
-        .def_member_prop("Name", &UObject::Name<UObject>)
-        .def_member_prop("Outer", &UObject::Outer<UObject>)
+        .def_member_prop("ObjectFlags", &UObject::ObjectFlags)
+        .def_member_prop("InternalIndex", &UObject::InternalIndex)
+        .def_member_prop("Class", &UObject::Class)
+        .def_member_prop("Name", &UObject::Name)
+        .def_member_prop("Outer", &UObject::Outer)
         .def("__new__",
              [](const py::args&, const py::kwargs&) {
                  throw py::type_error("Cannot create new instances of unreal objects.");
