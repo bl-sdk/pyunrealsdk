@@ -57,6 +57,7 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UStruct, UField>(mod, "UStruct")
         .def_member_prop("SuperField", &UStruct::SuperField)
         .def_member_prop("Children", &UStruct::Children)
+        .def_member_prop("PropertySize", &UStruct::PropertySize)
         .def_member_prop("PropertyLink", &UStruct::PropertyLink)
         .def(
             "_fields",

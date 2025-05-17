@@ -29,6 +29,7 @@ class UProperty(UField):
 class UStruct(UField):
     Children: UField | None
     PropertyLink: UProperty | None
+    PropertySize: int
     SuperField: UStruct | None
 
     def _fields(self) -> Iterator[UField]:
