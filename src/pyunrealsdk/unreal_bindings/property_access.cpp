@@ -94,13 +94,13 @@ py::object py_getattr(UField* field,
                 auto val = get_property<T>(prop, i, base_addr, parent);
 
                 // Multiple property types expose a get enum method
-                constexpr bool is_enum = requires(const T* type) {
-                    { type->get_enum() } -> std::same_as<UEnum*>;
+                constexpr bool is_enum = requires(T* type) {
+                    { type->Enum() } -> std::convertible_to<UEnum*>;
                 };
 
                 // If the value we're reading is an enum, convert it to a python enum
                 if constexpr (is_enum) {
-                    auto ue_enum = prop->get_enum();
+                    auto ue_enum = prop->Enum();
                     if (ue_enum != nullptr) {
                         ret[i] = enum_as_py_enum(ue_enum)(val);
                         continue;
