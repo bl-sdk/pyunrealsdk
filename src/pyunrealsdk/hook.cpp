@@ -3,6 +3,7 @@
 #include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/cast.h"
@@ -190,12 +191,14 @@ void register_module(py::module_& mod) {
         "add_hook",
         [](const std::wstring& func, Type type, const std::wstring& identifier,
            const py::object& callback) {
-            add_hook(func, type, identifier, [callback](Details& hook) {
+            // Convert to a static py object, so the lambda can safely get destroyed whenever
+            const StaticPyObject static_callback{callback};
+            add_hook(func, type, identifier, [static_callback](Details& hook) {
                 try {
                     const py::gil_scoped_acquire gil{};
                     debug_this_thread();
 
-                    return handle_py_hook(hook, callback);
+                    return handle_py_hook(hook, static_callback);
 
                 } catch (const std::exception& ex) {
                     logging::log_python_exception(ex);

@@ -2,6 +2,7 @@
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/debugging.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/config.h"
 #include "unrealsdk/utils.h"
@@ -99,44 +100,6 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     }
 }
 
-// Since next line commands may be removed asynchronusly, we need a custom type to make sure we hold
-// the GIL when it's destroyed
-struct PythonCommandCallback {
-    py::object callback;
-
-    PythonCommandCallback(py::object callback) : callback(std::move(callback)) {}
-    PythonCommandCallback(const PythonCommandCallback&) = default;
-    PythonCommandCallback(PythonCommandCallback&&) noexcept = default;
-    PythonCommandCallback& operator=(const PythonCommandCallback&) = default;
-    PythonCommandCallback& operator=(PythonCommandCallback&&) noexcept = default;
-
-    ~PythonCommandCallback() {
-        if (callback) {
-            const py::gil_scoped_acquire gil{};
-            callback.release().dec_ref();
-        }
-    }
-
-    /**
-     * @brief Runs the command callback.
-     *
-     * @param line The line which triggered the command.
-     * @param size The size of the line which triggered the command.
-     * @param cmd_len The length of the matched command at the start of the line.
-     */
-    void operator()(const wchar_t* line, size_t size, size_t cmd_len) {
-        try {
-            const py::gil_scoped_acquire gil{};
-            debug_this_thread();
-
-            const py::str py_line{PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
-            callback(py_line, cmd_len);
-        } catch (const std::exception& ex) {
-            logging::log_python_exception(ex);
-        }
-    }
-};
-
 }  // namespace
 
 void register_module(py::module_& mod) {
@@ -145,7 +108,22 @@ void register_module(py::module_& mod) {
     commands.def(
         "add_command",
         [](const std::wstring& cmd, const py::object& callback) {
-            unrealsdk::commands::add_command(cmd, PythonCommandCallback{callback});
+            // Convert to a static py object, so the lambda can safely get destroyed whenever
+            const StaticPyObject static_callback{callback};
+            unrealsdk::commands::add_command(
+                cmd, [static_callback](const wchar_t* line, size_t size, size_t cmd_len) {
+                    try {
+                        const py::gil_scoped_acquire gil{};
+                        debug_this_thread();
+
+                        const py::str py_line{
+                            PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
+
+                        static_callback(py_line, cmd_len);
+                    } catch (const std::exception& ex) {
+                        logging::log_python_exception(ex);
+                    }
+                });
         },
         "Adds a custom console command.\n"
         "\n"
