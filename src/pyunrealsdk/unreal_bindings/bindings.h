@@ -23,7 +23,32 @@ void register_module(py::module_& mod);
  * @tparam Options Extra options for the class definition.
  */
 template <typename T, typename... Options>
-using PyUEClass = py::class_<T, Options..., std::unique_ptr<T, py::nodelete>>;
+class PY_OBJECT_VISIBILITY PyUEClass
+    : public py::class_<T, Options..., std::unique_ptr<T, py::nodelete>> {
+   public:
+    using py::class_<T, Options..., std::unique_ptr<T, py::nodelete>>::class_;
+
+    /**
+     * @brief Helper type to define one of our C++ "properties" as a python property.
+     * @note These must be the first calls, as the standard def functions return a base py::class_,
+     *       rendering this function inaccessible.
+     *
+     * @tparam C The type of this class, should be picked up automatically.
+     * @tparam D The type of the property, should be picked up automatically.
+     * @tparam Extra Any extra template args to forward.
+     * @param name The name of the property.
+     * @param getter The getter function.
+     * @param extra Any extra args to forward.
+     * @return A reference to the same class object.
+     */
+    template <typename C, typename D, typename... Extra>
+    PyUEClass& def_member_prop(const char* name, D& (C::*getter)(void), const Extra&... extra) {
+        this->def_property(
+            name, [getter](C& self) { return (self.*getter)(); },
+            [getter](C& self, D&& value) { (self.*getter)() = std::move(value); }, extra...);
+        return *this;
+    }
+};
 
 }  // namespace pyunrealsdk::unreal
 

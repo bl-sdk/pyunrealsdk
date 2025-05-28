@@ -5,16 +5,6 @@
 
 namespace pyunrealsdk {
 
-// By default, pybind tries to compile with visibility hidden
-// If we have default visibility in a type holding pybind objects as members, this may cause a
-// warning, since our type has greater visibility than it's members
-// This macro sets the right visibility
-#if defined(__MINGW32__)
-#define PY_OBJECT_VISIBILITY __attribute__((visibility("hidden")))
-#else
-#define PY_OBJECT_VISIBILITY
-#endif
-
 /*
 A pybind object wrapper which can safely be stored statically.
 

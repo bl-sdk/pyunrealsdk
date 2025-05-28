@@ -1,6 +1,5 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/logging.h"
-#include "unrealsdk/format.h"
 #include "unrealsdk/logging.h"
 #include "unrealsdk/unrealsdk.h"
 
@@ -113,7 +112,7 @@ template <Level level>
 void register_per_log_level_printer(py::module_& logging,
                                     const char* func_name,
                                     std::string_view docstring_name) {
-    const auto docstring = unrealsdk::fmt::format(
+    const auto docstring = std::format(
         "Wrapper around print(), which uses a custom file at the {} log level.\n"
         "\n"
         "Args:\n"

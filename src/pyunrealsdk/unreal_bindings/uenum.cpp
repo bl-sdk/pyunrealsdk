@@ -37,7 +37,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
     if (!enum_cache.contains(enum_obj)) {
         std::unordered_map<FName, uint64_t> enum_names{};
 
-#ifdef UE4
+#if UNREALSDK_FLAVOUR == UNREALSDK_FLAVOUR_OAK
         // UE4 enums include the enum name and a namespace separator before the name - strip them
 
         for (const auto& [key, value] : enum_obj->get_names()) {
@@ -52,7 +52,7 @@ py::object enum_as_py_enum(const UEnum* enum_obj) {
         enum_names = enum_obj->get_names();
 #endif
 
-        auto py_enum = intflag(enum_obj->Name, enum_names);
+        auto py_enum = intflag(enum_obj->Name(), enum_names);
         py_enum.attr("_unreal") = enum_obj;
 
         enum_cache.emplace(enum_obj, py_enum);

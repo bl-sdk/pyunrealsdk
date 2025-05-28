@@ -6,10 +6,6 @@ on: [
   workflow_dispatch
 ]
 
-env:
-  LLVM_MINGW_VERSION: llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64
-  LLVM_MINGW_DOWNLOAD: https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-msvcrt-ubuntu-20.04-x86_64.tar.xz
-
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -18,10 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         preset: [
-          "clang-ue3-x86-release",
-          "clang-ue4-x64-release",
-          "msvc-ue3-x86-release",
-          "msvc-ue4-x64-release",
+          "clang-willow-release",
+          "clang-oak-release",
+          "msvc-willow-release",
+          "msvc-oak-release",
         ]
 
     steps:
@@ -33,7 +29,7 @@ jobs:
       if: startswith(matrix.preset, 'msvc')
       uses: TheMrMilchmann/setup-msvc-dev@v3
       with:
-        arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'x64')] }}
+        arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'oak')] }}
 
     - name: Setup CMake and Ninja
       uses: lukka/get-cmake@latest
@@ -60,24 +56,23 @@ jobs:
       run: cmake --build out/build/${{ matrix.preset }}
 
   build-ubuntu:
-    # Require at least 24 for the mingw build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         toolchain:
-          - preset: clang-cross-ue3-x86-release
+          - preset: clang-cross-willow-release
             container: clang-cross
-          - preset: clang-cross-ue4-x64-release
+          - preset: clang-cross-oak-release
             container: clang-cross
-          - preset: llvm-mingw-ue3-x86-release
+          - preset: llvm-mingw-willow-release
             container: llvm-mingw
-          - preset: llvm-mingw-ue4-x64-release
+          - preset: llvm-mingw-oak-release
             container: llvm-mingw
-          - preset: mingw-ue3-x86-release
+          - preset: mingw-willow-release
             container: mingw
-          - preset: mingw-ue4-x64-release
+          - preset: mingw-oak-release
             container: mingw
 
     steps:
@@ -85,6 +80,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         uses: devcontainers/ci@v0.3
@@ -109,13 +111,12 @@ jobs:
       fail-fast: false
       matrix:
         preset: [
-          "clang-ue3-x86-release",
-          "clang-ue4-x64-release",
+          "clang-willow-release",
+          "clang-oak-release",
         ]
 
     steps:
     - name: Setup Clang
-      if: startswith(matrix.preset, 'clang')
       uses: egor-tensin/setup-clang@v1
 
     - name: Setup CMake and Ninja
@@ -137,7 +138,6 @@ jobs:
         submodules: recursive
 
     - name: Configure CMake
-      working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: cmake . --preset ${{ matrix.preset }} -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
 
     - name: Remove `.modmap`s from compile commands
@@ -148,7 +148,6 @@ jobs:
           -Path "out\build\${{ matrix.preset }}\compile_commands.json"
 
     - name: Run clang-tidy
-      working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: |
         python (Get-Command run-clang-tidy).Source                              `
           -p "out\build\${{ matrix.preset }}"                                   `
@@ -165,7 +164,6 @@ jobs:
 
     steps:
     - name: Setup Clang
-      if: startswith(matrix.preset, 'clang')
       uses: egor-tensin/setup-clang@v1
 
     - name: Checkout repository

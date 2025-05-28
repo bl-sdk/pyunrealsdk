@@ -23,11 +23,11 @@ size_t convert_py_idx(const WrappedArray& arr, py::ssize_t idx) {
 }
 
 py::object array_get(const WrappedArray& arr, size_t idx) {
-    if (arr.type->Offset_Internal != 0) {
+    if (arr.type->Offset_Internal() != 0) {
         throw std::runtime_error(
             "array inner property has non-zero offset, unsure how to handle, aborting!");
     }
-    if (arr.type->ArrayDim != 1) {
+    if (arr.type->ArrayDim() != 1) {
         throw std::runtime_error(
             "array inner property is fixed array, unsure how to handle, aborting!");
     }
@@ -35,23 +35,23 @@ py::object array_get(const WrappedArray& arr, size_t idx) {
     // Const cast is slightly naughty, but we know the internals aren't going to modify properties
     return py_getattr(
         const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize * idx),
+        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize() * idx),
         arr.base);
 }
 
 void array_set(WrappedArray& arr, size_t idx, const py::object& value) {
-    if (arr.type->Offset_Internal != 0) {
+    if (arr.type->Offset_Internal() != 0) {
         throw std::runtime_error(
             "array inner property has non-zero offset, unsure how to handle, aborting!");
     }
-    if (arr.type->ArrayDim != 1) {
+    if (arr.type->ArrayDim() != 1) {
         throw std::runtime_error(
             "array inner property is fixed array, unsure how to handle, aborting!");
     }
 
     py_setattr_direct(
         const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize * idx), value);
+        reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize() * idx), value);
 }
 
 void array_delete_range(WrappedArray& arr, size_t start, size_t stop) {
@@ -67,7 +67,7 @@ void array_delete_range(WrappedArray& arr, size_t start, size_t stop) {
 
     if (stop != size) {
         auto data = reinterpret_cast<uintptr_t>(arr.base->data);
-        auto element_size = arr.type->ElementSize;
+        auto element_size = arr.type->ElementSize();
 
         auto dest = data + (start * element_size);
         auto src = dest + (num_deleted * element_size);

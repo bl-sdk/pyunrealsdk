@@ -38,7 +38,7 @@ UField* py_find_field(const FName& name, const UStruct* type) {
         return type->find(name);
     } catch (const std::invalid_argument&) {
         throw py::attribute_error(
-            unrealsdk::fmt::format("'{}' object has no attribute '{}'", type->Name, name));
+            std::format("'{}' object has no attribute '{}'", type->Name(), name));
     }
 }
 
@@ -68,7 +68,7 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
         // Append our fields
         auto fields = type->fields();
         std::ranges::transform(fields, std::back_inserter(names),
-                               [](auto obj) { return obj->Name; });
+                               [](auto obj) { return obj->Name(); });
     }
 
     return names;
@@ -80,27 +80,27 @@ py::object py_getattr(UField* field,
                       UObject* func_obj) {
     if (field->is_instance(find_class<UProperty>())) {
         auto prop = reinterpret_cast<UProperty*>(field);
-        if (prop->ArrayDim < 1) {
-            throw py::attribute_error(unrealsdk::fmt::format("attribute '{}' has size of {}",
-                                                             prop->Name, prop->ArrayDim));
+        if (prop->ArrayDim() < 1) {
+            throw py::attribute_error(
+                std::format("attribute '{}' has size of {}", prop->Name(), prop->ArrayDim()));
         }
 
         // If we have a static array, return it as a tuple.
         // Store in a list for now so we can still append.
-        py::list ret{prop->ArrayDim};
+        py::list ret{prop->ArrayDim()};
 
         cast(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
-            for (size_t i = 0; i < (size_t)prop->ArrayDim; i++) {
+            for (size_t i = 0; i < (size_t)prop->ArrayDim(); i++) {
                 auto val = get_property<T>(prop, i, base_addr, parent);
 
                 // Multiple property types expose a get enum method
-                constexpr bool is_enum = requires(const T* type) {
-                    { type->get_enum() } -> std::same_as<UEnum*>;
+                constexpr bool is_enum = requires(T* type) {
+                    { type->Enum() } -> std::convertible_to<UEnum*>;
                 };
 
                 // If the value we're reading is an enum, convert it to a python enum
                 if constexpr (is_enum) {
-                    auto ue_enum = prop->get_enum();
+                    auto ue_enum = prop->Enum();
                     if (ue_enum != nullptr) {
                         ret[i] = enum_as_py_enum(ue_enum)(val);
                         continue;
@@ -111,7 +111,7 @@ py::object py_getattr(UField* field,
                 ret[i] = std::move(val);
             }
         });
-        if (prop->ArrayDim == 1) {
+        if (prop->ArrayDim() == 1) {
             return ret[0];
         }
         return py::tuple(ret);
@@ -119,7 +119,7 @@ py::object py_getattr(UField* field,
     if (field->is_instance(find_class<UFunction>())) {
         if (func_obj == nullptr) {
             throw py::attribute_error(
-                unrealsdk::fmt::format("cannot bind function '{}' with null object", field->Name));
+                std::format("cannot bind function '{}' with null object", field->Name()));
         }
 
         return py::cast(
@@ -131,15 +131,15 @@ py::object py_getattr(UField* field,
     }
 
     if (field->is_instance(find_class<UConst>())) {
-        return py::cast((std::string) reinterpret_cast<UConst*>(field)->Value);
+        return py::cast((std::string) reinterpret_cast<UConst*>(field)->Value());
     }
 
     if (field->is_instance(find_class<UEnum>())) {
         return enum_as_py_enum(reinterpret_cast<UEnum*>(field));
     }
 
-    throw py::attribute_error(unrealsdk::fmt::format("attribute '{}' has unknown type '{}'",
-                                                     field->Name, field->Class->Name));
+    throw py::attribute_error(
+        std::format("attribute '{}' has unknown type '{}'", field->Name(), field->Class()->Name()));
 }
 
 // The templated lambda and all the if constexprs make everything have a really high penalty
@@ -147,25 +147,25 @@ py::object py_getattr(UField* field,
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& value) {
     if (!field->is_instance(find_class<UProperty>())) {
-        throw py::attribute_error(unrealsdk::fmt::format(
-            "attribute '{}' is not a property, and thus cannot be set", field->Name));
+        throw py::attribute_error(
+            std::format("attribute '{}' is not a property, and thus cannot be set", field->Name()));
     }
 
     auto prop = reinterpret_cast<UProperty*>(field);
 
     py::sequence value_seq;
-    if (prop->ArrayDim > 1) {
+    if (prop->ArrayDim() > 1) {
         if (!py::isinstance<py::sequence>(value)) {
             std::string value_type_name = py::str(py::type::of(value).attr("__name__"));
-            throw py::type_error(unrealsdk::fmt::format(
+            throw py::type_error(std::format(
                 "attribute value has unexpected type '{}', expected a sequence", value_type_name));
         }
         value_seq = value;
 
-        if (value_seq.size() > static_cast<size_t>(prop->ArrayDim)) {
-            throw py::type_error(unrealsdk::fmt::format(
-                "attribute value is too long, {} supports a maximum of {} values", prop->Name,
-                prop->ArrayDim));
+        if (value_seq.size() > static_cast<size_t>(prop->ArrayDim())) {
+            throw py::type_error(
+                std::format("attribute value is too long, {} supports a maximum of {} values",
+                            prop->Name(), prop->ArrayDim()));
         }
     } else {
         value_seq = py::make_tuple(value);
@@ -175,7 +175,7 @@ void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& val
         using value_type = typename PropTraits<T>::Value;
 
         const size_t seq_size = value_seq.size();
-        const size_t prop_size = prop->ArrayDim;
+        const size_t prop_size = prop->ArrayDim();
 
         // As a special case, if we have an array property, allow assigning non-wrapped array
         // sequences
@@ -201,10 +201,10 @@ void py_setattr_direct(UField* field, uintptr_t base_addr, const py::object& val
             }
         } else {
             if (seq_size != prop_size) {
-                throw py::type_error(unrealsdk::fmt::format(
+                throw py::type_error(std::format(
                     "attribute value is too short, {} must be given as exactly {} values (no known "
                     "default to use when less are given)",
-                    prop->Name, prop->ArrayDim));
+                    prop->Name(), prop->ArrayDim()));
             }
         }
 

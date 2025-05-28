@@ -84,9 +84,9 @@ void array_py_setitem_slice(WrappedArray& self, const py::slice& slice, const py
     // This logic sounds backwards, but it lets our simpler code early exit, and it works the same
     // way as list
     if (step != 1 && step != -1) {
-        throw py::value_error(unrealsdk::fmt::format(
-            "attempt to assign sequence of size {} to extended slice of size {}", value.size(),
-            slicelength));
+        throw py::value_error(
+            std::format("attempt to assign sequence of size {} to extended slice of size {}",
+                        value.size(), slicelength));
     }
 
     if (step < 0) {

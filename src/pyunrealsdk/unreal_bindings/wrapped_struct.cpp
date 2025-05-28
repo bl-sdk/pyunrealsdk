@@ -67,17 +67,17 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
             py_setattr_direct(prop, reinterpret_cast<uintptr_t>(out_struct.base.get()),
                               args[arg_idx++]);
 
-            if (converted_kwargs.contains(prop->Name)) {
+            if (converted_kwargs.contains(prop->Name())) {
                 throw py::type_error(
-                    unrealsdk::fmt::format("{}.__init__() got multiple values for argument '{}'",
-                                           out_struct.type->Name, prop->Name));
+                    std::format("{}.__init__() got multiple values for argument '{}'",
+                                out_struct.type->Name(), prop->Name()));
             }
 
             continue;
         }
         // If we're on to just kwargs
 
-        auto iter = converted_kwargs.find(prop->Name);
+        auto iter = converted_kwargs.find(prop->Name());
         if (iter != converted_kwargs.end()) {
             // Use extract to also remove the value from the map, so we can ensure it's empty later
             py_setattr_direct(prop, reinterpret_cast<uintptr_t>(out_struct.base.get()),
@@ -88,9 +88,8 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
 
     if (!converted_kwargs.empty()) {
         // Copying python, we only need to warn about one extra kwarg
-        throw py::type_error(
-            unrealsdk::fmt::format("{}.__init__() got an unexpected keyword argument '{}'",
-                                   out_struct.type->Name, converted_kwargs.begin()->first));
+        throw py::type_error(std::format("{}.__init__() got an unexpected keyword argument '{}'",
+                                         out_struct.type->Name(), converted_kwargs.begin()->first));
     }
 }
 
@@ -119,14 +118,14 @@ void register_wrapped_struct(py::module_& mod) {
                         output << ", ";
                     }
                     first = false;
-                    output << prop->Name << ": ";
+                    output << prop->Name() << ": ";
 
                     try {
                         auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()),
                                                 self.base);
                         output << py::repr(value);
                     } catch (...) {
-                        output << "<unknown " << prop->Class->Name << ">";
+                        output << "<unknown " << prop->Class()->Name() << ">";
                     }
                 }
 

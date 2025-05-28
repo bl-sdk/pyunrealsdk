@@ -37,23 +37,28 @@ namespace pyunrealsdk::unreal {
 void register_uobject_children(py::module_& mod) {
     // ======== First Layer Subclasses ========
 
-    PyUEClass<UField, UObject>(mod, "UField").def_readwrite("Next", &UField::Next);
+    PyUEClass<UField, UObject>(mod, "UField").def_member_prop("Next", &UField::Next);
 
     // ======== Second Layer Subclasses ========
 
     PyUEClass<UConst, UField>(mod, "UConst")
+        // Deliberately not using def_member_prop, since we need to do extra string conversions
         .def_property(
-            "Value", [](const UConst* self) { return (std::string)self->Value; },
-            [](UConst* self, const std::string& new_value) { self->Value = new_value; });
+            "Value", [](const UConst* self) { return (std::string)self->Value(); },
+            [](UConst* self, const std::string& new_value) { self->Value() = new_value; });
 
     PyUEClass<UProperty, UField>(mod, "UProperty")
-        .def_readwrite("ArrayDim", &UProperty::ArrayDim)
-        .def_readwrite("ElementSize", &UProperty::ElementSize)
-        .def_readwrite("PropertyFlags", &UProperty::PropertyFlags)
-        .def_readwrite("Offset_Internal", &UProperty::Offset_Internal)
-        .def_readwrite("PropertyLinkNext", &UProperty::PropertyLinkNext);
+        .def_member_prop("ArrayDim", &UProperty::ArrayDim)
+        .def_member_prop("ElementSize", &UProperty::ElementSize)
+        .def_member_prop("PropertyFlags", &UProperty::PropertyFlags)
+        .def_member_prop("Offset_Internal", &UProperty::Offset_Internal)
+        .def_member_prop("PropertyLinkNext", &UProperty::PropertyLinkNext);
 
     PyUEClass<UStruct, UField>(mod, "UStruct")
+        .def_member_prop("SuperField", &UStruct::SuperField)
+        .def_member_prop("Children", &UStruct::Children)
+        .def_member_prop("PropertySize", &UStruct::PropertySize)
+        .def_member_prop("PropertyLink", &UStruct::PropertyLink)
         .def(
             "_fields",
             [](UStruct* self) {
@@ -126,23 +131,21 @@ void register_uobject_children(py::module_& mod) {
              "    name: The name of the child property.\n"
              "Returns:\n"
              "    The found child property.",
-             "name"_a)
-        .def_readwrite("SuperField", &UStruct::SuperField)
-        .def_readwrite("Children", &UStruct::Children)
-        .def_readwrite("PropertyLink", &UStruct::PropertyLink);
+             "name"_a);
 
     // ======== Third Layer Subclasses ========
 
     PyUEClass<UArrayProperty, UProperty>(mod, "UArrayProperty")
-        .def_property_readonly("Inner", &UArrayProperty::get_inner);
+        .def_member_prop("Inner", &UArrayProperty::Inner);
 
     PyUEClass<UBoolProperty, UProperty>(mod, "UBoolProperty")
-        .def_property_readonly("FieldMask", &UBoolProperty::get_field_mask);
+        .def_member_prop("FieldMask", &UBoolProperty::FieldMask);
 
     PyUEClass<UByteProperty, UProperty>(mod, "UByteProperty")
-        .def_property_readonly("Enum", &UByteProperty::get_enum);
+        .def_member_prop("Enum", &UByteProperty::Enum);
 
     PyUEClass<UClass, UStruct>(mod, "UClass")
+        .def_member_prop("ClassDefaultObject", &UClass::ClassDefaultObject)
         .def(
             "_implements",
             [](UClass* self, UClass* interface) { return self->implements(interface, nullptr); },
@@ -153,9 +156,6 @@ void register_uobject_children(py::module_& mod) {
             "Returns:\n"
             "    True if this class implements the interface, false otherwise.",
             "interface"_a)
-        .def_property(
-            "ClassDefaultObject", [](const UClass* self) { return self->ClassDefaultObject(); },
-            [](UClass* self, UObject* value) { self->ClassDefaultObject() = value; })
         .def_property_readonly("Interfaces", [](const UClass* self) {
             std::vector<UClass*> interfaces{};
             for (const auto& iface : self->Interfaces()) {
@@ -165,34 +165,26 @@ void register_uobject_children(py::module_& mod) {
         });
 
     PyUEClass<UDelegateProperty, UProperty>(mod, "UDelegateProperty")
-        .def_property_readonly("Signature", &UDelegateProperty::get_signature);
+        .def_member_prop("Signature", &UDelegateProperty::Signature);
 
     PyUEClass<UDoubleProperty, UProperty>(mod, "UDoubleProperty");
 
     PyUEClass<UEnumProperty, UProperty>(mod, "UEnumProperty")
-        .def_property_readonly("UnderlyingProp", &UEnumProperty::get_underlying_prop)
-        .def_property_readonly("Enum", &UEnumProperty::get_enum);
+        .def_member_prop("UnderlyingProp", &UEnumProperty::UnderlyingProp)
+        .def_member_prop("Enum", &UEnumProperty::Enum);
 
     PyUEClass<UFloatProperty, UProperty>(mod, "UFloatProperty");
 
     PyUEClass<UFunction, UStruct>(mod, "UFunction")
+        .def_member_prop("FunctionFlags", &UFunction::FunctionFlags)
+        .def_member_prop("NumParams", &UFunction::NumParams)
+        .def_member_prop("ParamsSize", &UFunction::ParamsSize)
+        .def_member_prop("ReturnValueOffset", &UFunction::ReturnValueOffset)
         .def("_find_return_param", &UFunction::find_return_param,
              "Finds the return param for this function (if it exists).\n"
              "\n"
              "Returns:\n"
-             "    The return param, or None if it doesn't exist.")
-        .def_property(
-            "FunctionFlags", [](const UFunction* self) { return self->FunctionFlags(); },
-            [](UFunction* self, uint32_t value) { self->FunctionFlags() = value; })
-        .def_property(
-            "NumParams", [](const UFunction* self) { return self->NumParams(); },
-            [](UFunction* self, uint8_t value) { self->NumParams() = value; })
-        .def_property(
-            "ParamsSize", [](const UFunction* self) { return self->ParamsSize(); },
-            [](UFunction* self, uint16_t value) { self->ParamsSize() = value; })
-        .def_property(
-            "ReturnValueOffset", [](const UFunction* self) { return self->ReturnValueOffset(); },
-            [](UFunction* self, uint16_t value) { self->ReturnValueOffset() = value; });
+             "    The return param, or None if it doesn't exist.");
 
     PyUEClass<UInt8Property, UProperty>(mod, "UInt8Property");
 
@@ -201,27 +193,25 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UInt64Property, UProperty>(mod, "UInt64Property");
 
     PyUEClass<UInterfaceProperty, UProperty>(mod, "UInterfaceProperty")
-        .def_property_readonly("InterfaceClass", &UInterfaceProperty::get_interface_class);
+        .def_member_prop("InterfaceClass", &UInterfaceProperty::InterfaceClass);
 
     PyUEClass<UIntProperty, UProperty>(mod, "UIntProperty");
 
     PyUEClass<UMulticastDelegateProperty, UProperty>(mod, "UMulticastDelegateProperty")
-        .def_property_readonly("Signature", &UMulticastDelegateProperty::get_signature);
+        .def_member_prop("Signature", &UMulticastDelegateProperty::Signature);
 
     PyUEClass<UNameProperty, UProperty>(mod, "UNameProperty");
 
     PyUEClass<UObjectProperty, UProperty>(mod, "UObjectProperty")
-        .def_property_readonly("PropertyClass", &UObjectProperty::get_property_class);
+        .def_member_prop("PropertyClass", &UObjectProperty::PropertyClass);
 
     PyUEClass<UScriptStruct, UStruct>(mod, "UScriptStruct")
-        .def_property(
-            "StructFlags", [](const UScriptStruct* self) { return self->StructFlags(); },
-            [](UScriptStruct* self, uint32_t value) { self->StructFlags() = value; });
+        .def_member_prop("StructFlags", &UScriptStruct::StructFlags);
 
     PyUEClass<UStrProperty, UProperty>(mod, "UStrProperty");
 
     PyUEClass<UStructProperty, UProperty>(mod, "UStructProperty")
-        .def_property_readonly("Struct", &UStructProperty::get_inner_struct);
+        .def_member_prop("Struct", &UStructProperty::Struct);
 
     PyUEClass<UTextProperty, UProperty>(mod, "UTextProperty");
 
@@ -236,27 +226,22 @@ void register_uobject_children(py::module_& mod) {
     PyUEClass<UBlueprintGeneratedClass, UClass>(mod, "UBlueprintGeneratedClass");
 
     PyUEClass<UByteAttributeProperty, UByteProperty>(mod, "UByteAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UByteAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UByteAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty", &UByteAttributeProperty::ModifierStackProperty)
+        .def_member_prop("OtherAttributeProperty", &UByteAttributeProperty::OtherAttributeProperty);
 
     PyUEClass<UClassProperty, UObjectProperty>(mod, "UClassProperty")
-        .def_property_readonly("MetaClass", &UClassProperty::get_meta_class);
+        .def_member_prop("MetaClass", &UClassProperty::MetaClass);
 
     PyUEClass<UComponentProperty, UObjectProperty>(mod, "UComponentProperty");
 
     PyUEClass<UFloatAttributeProperty, UFloatProperty>(mod, "UFloatAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UFloatAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UFloatAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty", &UFloatAttributeProperty::ModifierStackProperty)
+        .def_member_prop("OtherAttributeProperty",
+                         &UFloatAttributeProperty::OtherAttributeProperty);
 
     PyUEClass<UIntAttributeProperty, UIntProperty>(mod, "UIntAttributeProperty")
-        .def_property_readonly("ModifierStackProperty",
-                               &UIntAttributeProperty::get_modifier_stack_prop)
-        .def_property_readonly("OtherAttributeProperty",
-                               &UIntAttributeProperty::get_other_attribute_property);
+        .def_member_prop("ModifierStackProperty", &UIntAttributeProperty::ModifierStackProperty)
+        .def_member_prop("OtherAttributeProperty", &UIntAttributeProperty::OtherAttributeProperty);
 
     // ULazyObjectProperty - registered elsewhere
     // USoftObjectProperty - registered elsewhere

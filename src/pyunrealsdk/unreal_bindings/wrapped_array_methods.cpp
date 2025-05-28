@@ -98,8 +98,7 @@ size_t array_py_index(const WrappedArray& self,
         }
     }
 
-    throw py::value_error(
-        unrealsdk::fmt::format("{} is not in array", std::string(py::repr(value))));
+    throw py::value_error(std::format("{} is not in array", std::string(py::repr(value))));
 }
 
 void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& value) {
@@ -116,7 +115,7 @@ void array_py_insert(WrappedArray& self, py::ssize_t py_idx, const py::object& v
     self.resize(size + 1);
 
     auto data = reinterpret_cast<uintptr_t>(self.base->data);
-    auto element_size = self.type->ElementSize;
+    auto element_size = self.type->ElementSize();
 
     auto src = data + (idx * element_size);
     auto remaining_size = (size - idx) * element_size;
@@ -214,7 +213,7 @@ void array_py_emplace_struct(WrappedArray& self,
     self.resize(size + 1);
 
     auto data = reinterpret_cast<uintptr_t>(self.base->data);
-    auto element_size = self.type->ElementSize;
+    auto element_size = self.type->ElementSize();
 
     auto src = data + (idx * element_size);
     auto remaining_size = (size - idx) * element_size;

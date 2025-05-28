@@ -3,6 +3,7 @@
 #include "pyunrealsdk/exports.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/cast.h"
@@ -55,46 +56,63 @@ bool handle_py_hook(Details& hook, const py::object& callback) {
         ret_arg = py::type::of<Unset>();
     }
 
-    auto should_block = callback(hook.obj, hook.args, ret_arg, hook.func);
+    auto py_ret = callback(hook.obj, hook.args, ret_arg, hook.func);
 
-    if (py::isinstance<py::tuple>(should_block)) {
-        auto ret_tuple = py::cast<py::tuple>(should_block);
-        auto size = ret_tuple.size();
-
-        if (size == 1) {
-            LOG(WARNING,
-                "Return value of hook was tuple of size 1, expected 2. Not overwriting return "
-                "value.");
-        } else {
-            if (size != 2) {
-                LOG(WARNING,
-                    "Return value of hook was tuple of size {}, expected 2. Extra values will be "
-                    "ignored.",
-                    size);
-            }
-
-            auto ret_override = ret_tuple[1];
-
-            if (py::type::of<Unset>().is(ret_override) || py::isinstance<Unset>(ret_override)) {
-                hook.ret.destroy();
-            } else if (!py::ellipsis{}.equal(ret_override)) {
-                cast(hook.ret.prop, [&hook, &ret_override]<typename T>(T* prop) {
-                    // Need to replicate PropertyProxy::set ourselves a bit, since we want to use
-                    // our custom python setter
-                    if (hook.ret.ptr.get() == nullptr) {
-                        hook.ret.ptr = UnrealPointer<void>(hook.ret.prop);
-                    }
-
-                    pyunrealsdk::unreal::py_setattr_direct(
-                        prop, reinterpret_cast<uintptr_t>(hook.ret.ptr.get()), ret_override);
-                });
-            }
-        }
-
-        should_block = std::move(ret_tuple[0]);
+    if (!py::isinstance<py::tuple>(py_ret)) {
+        // If not a tuple, the value we got is always the first field, if to block
+        return is_block_sentinel(py_ret);
     }
 
-    return is_block_sentinel(should_block);
+    auto ret_tuple = py::cast<py::tuple>(py_ret);
+    auto size = ret_tuple.size();
+
+    if (size == 0) {
+        LOG(DEV_WARNING,
+            "Hook returned empty tuple. Not blocking execution, not overwriting return.");
+        LOG(DEV_WARNING, "Hooked function: {}", hook.func.func->get_path_name());
+        return false;
+    }
+
+    auto should_block = is_block_sentinel(ret_tuple[0]);
+    if (size < 2) {
+        return should_block;
+    }
+
+    auto ret_override = ret_tuple[1];
+    if (py::type::of<Unset>().is(ret_override) || py::isinstance<Unset>(ret_override)) {
+        // If unset, destroy whatever was there before
+        hook.ret.destroy();
+    } else if (py::ellipsis{}.equal(ret_override)) {
+        // If ellipsis, keep whatever there was before - intentionally empty
+    } else if (hook.ret.prop == nullptr) {
+        // Try overwrite the return value - except we can't, this is a void function
+        LOG(DEV_WARNING,
+            "Hook of void function tried to overwrite return value. This will be "
+            "ignored.");
+        LOG(DEV_WARNING, "Hooked function: {}", hook.func.func->get_path_name());
+    } else {
+        // Overwrite the return value
+        cast(hook.ret.prop, [&hook, &ret_override]<typename T>(T* prop) {
+            // Need to replicate PropertyProxy::set ourselves a bit, since we want to
+            // use our custom python setter
+            if (hook.ret.ptr.get() == nullptr) {
+                hook.ret.ptr = UnrealPointer<void>(hook.ret.prop);
+            }
+
+            pyunrealsdk::unreal::py_setattr_direct(
+                prop, reinterpret_cast<uintptr_t>(hook.ret.ptr.get()), ret_override);
+        });
+    }
+    if (size < 3) {
+        return should_block;
+    }
+
+    LOG(DEV_WARNING,
+        "Hook returned tuple of size {}, which is greater than the maximum used size of 2."
+        " Extra values will be ignored.",
+        size);
+    LOG(DEV_WARNING, "Hooked function: {}", hook.func.func->get_path_name());
+    return should_block;
 }
 
 }  // namespace
@@ -173,12 +191,14 @@ void register_module(py::module_& mod) {
         "add_hook",
         [](const std::wstring& func, Type type, const std::wstring& identifier,
            const py::object& callback) {
-            add_hook(func, type, identifier, [callback](Details& hook) {
+            // Convert to a static py object, so the lambda can safely get destroyed whenever
+            const StaticPyObject static_callback{callback};
+            add_hook(func, type, identifier, [static_callback](Details& hook) {
                 try {
                     const py::gil_scoped_acquire gil{};
                     debug_this_thread();
 
-                    return handle_py_hook(hook, callback);
+                    return handle_py_hook(hook, static_callback);
 
                 } catch (const std::exception& ex) {
                     logging::log_python_exception(ex);

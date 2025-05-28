@@ -2,7 +2,6 @@
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
-#include "unrealsdk/format.h"
 #include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uobject.h"
@@ -64,15 +63,15 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
     std::vector<FName> missing_required_args{};
 
     for (auto prop : info.params.type->properties()) {
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_PARAM) == 0) {
+        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_PARAM) == 0) {
             continue;
         }
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0
+        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_RETURN) != 0
             && info.return_param == nullptr) {
             info.return_param = prop;
             continue;
         }
-        if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
+        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_OUT) != 0) {
             info.out_params.push_back(prop);
         }
 
@@ -81,45 +80,44 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
             py_setattr_direct(prop, reinterpret_cast<uintptr_t>(info.params.base.get()),
                               args[arg_idx++]);
 
-            if (kwargs.contains(prop->Name)) {
-                throw py::type_error(
-                    unrealsdk::fmt::format("{}() got multiple values for argument '{}'",
-                                           info.params.type->Name, prop->Name));
+            if (kwargs.contains(prop->Name())) {
+                throw py::type_error(std::format("{}() got multiple values for argument '{}'",
+                                                 info.params.type->Name(), prop->Name()));
             }
 
             continue;
         }
         // If we're on to just kwargs
 
-        if (kwargs.contains(prop->Name)) {
+        if (kwargs.contains(prop->Name())) {
             // Extract the value with pop, so we can check that kwargs are empty at the
             // end
             py_setattr_direct(prop, reinterpret_cast<uintptr_t>(info.params.base.get()),
-                              kwargs.attr("pop")(prop->Name));
+                              kwargs.attr("pop")(prop->Name()));
             continue;
         }
 
         // NOLINTNEXTLINE(misc-const-correctness)
         bool optional = false;
-#ifdef UE3
-        optional = (prop->PropertyFlags & UProperty::PROP_FLAG_OPTIONAL) != 0;
+#if UNREALSDK_FLAVOUR == UNREALSDK_FLAVOUR_WILLOW
+        optional = (prop->PropertyFlags() & UProperty::PROP_FLAG_OPTIONAL) != 0;
 #endif
 
         // If not given, and not optional, record for error later
         if (!optional) {
-            missing_required_args.push_back(prop->Name);
+            missing_required_args.push_back(prop->Name());
         }
     }
 
     if (!missing_required_args.empty()) {
-        throw_missing_required_args(info.params.type->Name, missing_required_args);
+        throw_missing_required_args(info.params.type->Name(), missing_required_args);
     }
 
     if (!kwargs.empty()) {
         // Copying python, we only need to warn about one extra kwarg
         std::string bad_kwarg = py::str(kwargs.begin()->first);
-        throw py::type_error(unrealsdk::fmt::format("{}() got an unexpected keyword argument '{}'",
-                                                    info.params.type->Name, bad_kwarg));
+        throw py::type_error(std::format("{}() got an unexpected keyword argument '{}'",
+                                         info.params.type->Name(), bad_kwarg));
     }
 }
 
@@ -131,9 +129,8 @@ PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kw
     // Start by initializing a null struct, to avoid allocations
     : params(func, nullptr) {
     if (func->NumParams() < args.size()) {
-        throw py::type_error(
-            unrealsdk::fmt::format("{}() takes {} positional args, but {} were given", func->Name,
-                                   func->NumParams(), args.size()));
+        throw py::type_error(std::format("{}() takes {} positional args, but {} were given",
+                                         func->Name(), func->NumParams(), args.size()));
     }
 
     // If we're given exactly one arg, and it's a wrapped struct of our function type, take it as
@@ -145,12 +142,12 @@ PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kw
 
             // Manually gather the return value and out params
             for (auto prop : func->properties()) {
-                if ((prop->PropertyFlags & UProperty::PROP_FLAG_RETURN) != 0
+                if ((prop->PropertyFlags() & UProperty::PROP_FLAG_RETURN) != 0
                     && return_param == nullptr) {
                     this->return_param = prop;
                     continue;
                 }
-                if ((prop->PropertyFlags & UProperty::PROP_FLAG_OUT) != 0) {
+                if ((prop->PropertyFlags() & UProperty::PROP_FLAG_OUT) != 0) {
                     this->out_params.push_back(prop);
                 }
             }
@@ -200,9 +197,8 @@ void register_bound_function(py::module_& mod) {
         .def(
             "__repr__",
             [](BoundFunction& self) {
-                return unrealsdk::fmt::format(
-                    "<bound function {} on {}>", self.func->Name,
-                    unrealsdk::utils::narrow(self.object->get_path_name()));
+                return std::format("<bound function {} on {}>", self.func->Name(),
+                                   unrealsdk::utils::narrow(self.object->get_path_name()));
             },
             "Gets a string representation of this function and the object it's bound to.\n"
             "\n"
@@ -235,7 +231,7 @@ void register_bound_function(py::module_& mod) {
             "    The unreal function's args. Out params will be used to initialized the\n"
             "    unreal value, but the python value is not modified in place. Kwargs are\n"
             "    supported.\n"
-#ifdef UE3
+#if UNREALSDK_FLAVOUR == UNREALSDK_FLAVOUR_WILLOW
             "    Optional params should also be optional.\n"
 #endif
             "    Alternatively, may call with a single positional WrappedStruct which matches\n"

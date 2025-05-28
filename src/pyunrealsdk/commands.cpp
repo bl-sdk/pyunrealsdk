@@ -2,6 +2,7 @@
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/debugging.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/static_py_object.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/config.h"
 #include "unrealsdk/utils.h"
@@ -107,8 +108,10 @@ void register_module(py::module_& mod) {
     commands.def(
         "add_command",
         [](const std::wstring& cmd, const py::object& callback) {
+            // Convert to a static py object, so the lambda can safely get destroyed whenever
+            const StaticPyObject static_callback{callback};
             unrealsdk::commands::add_command(
-                cmd, [callback](const wchar_t* line, size_t size, size_t cmd_len) {
+                cmd, [static_callback](const wchar_t* line, size_t size, size_t cmd_len) {
                     try {
                         const py::gil_scoped_acquire gil{};
                         debug_this_thread();
@@ -116,7 +119,7 @@ void register_module(py::module_& mod) {
                         const py::str py_line{
                             PyUnicode_FromWideChar(line, static_cast<py::ssize_t>(size))};
 
-                        callback(py_line, cmd_len);
+                        static_callback(py_line, cmd_len);
                     } catch (const std::exception& ex) {
                         logging::log_python_exception(ex);
                     }

@@ -76,15 +76,15 @@ FScriptDelegate* find_matching_delegate(WrappedMulticastDelegate& self,
 
     auto ptr = std::find_if(begin, end, [&value](FScriptDelegate other) {
         // Do the cheap checks first
-        if (value.object != other.get_object() || value.func->Name != other.func_name) {
+        if (value.object != other.get_object() || value.func->Name() != other.func_name) {
             return false;
         }
 
         // Now check it resolves to the same function, which is a more expensive check
         // Manually iterate through fields to avoid the exceptions if we can't find what we're
         // looking for
-        for (auto field : value.object->Class->fields()) {
-            if (field->Name == other.func_name) {
+        for (auto field : value.object->Class()->fields()) {
+            if (field->Name() == other.func_name) {
                 // Return immediately on the first name match
                 return field == value.func;
             }
