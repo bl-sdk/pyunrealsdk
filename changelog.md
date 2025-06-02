@@ -3,6 +3,8 @@
 ## v1.8.0
 - Trying to overwrite the return value of a void function will now return a more appropriate error.
 
+- The type hinting of `WrappedArray`s now default to `WrappedArray[Any]`, no generic required.
+
 - Upgraded to support unrealsdk v2 - native modules can expect some breakage. The most notable
   effect this has on Python code is a number of formerly read-only fields on core unreal types have
   become read-write.

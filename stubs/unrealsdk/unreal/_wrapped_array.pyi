@@ -9,7 +9,7 @@ from typing import Any, Never, Self, overload
 
 from ._uobject_children import UProperty
 
-class WrappedArray[T]:
+class WrappedArray[T = Any]:
     _type: UProperty
 
     def __add__(self, values: Sequence[T]) -> list[T]:
