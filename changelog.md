@@ -1,6 +1,8 @@
 # Changelog
 
 ## v1.8.0
+- Added `WeakPointer.replace`, to modify a pointer in-place.
+
 - Trying to overwrite the return value of a void function will now return a more appropriate error.
 
 - The type hinting of `WrappedArray`s now default to `WrappedArray[Any]`, no generic required.

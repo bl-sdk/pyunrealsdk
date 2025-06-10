@@ -30,6 +30,17 @@ class WeakPointer[T: UObject = UObject]:
             The object this is pointing at, or None if it's become invalid.
         """
 
+    def replace(self, obj: T | None) -> None:
+        """
+        Replaces the reference in this pointer in-place.
+
+        This is equivalent to assigning the same variable to a new pointer, but may be
+        more convenient when modifying a parent scope.
+
+        Args:
+            obj: The new object to hold a weak reference to.
+        """
+
     @classmethod
     def __class_getitem__(cls, *args: Any, **kwargs: Any) -> GenericAlias:
         """
