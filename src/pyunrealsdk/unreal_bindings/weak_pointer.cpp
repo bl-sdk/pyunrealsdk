@@ -34,7 +34,17 @@ void register_weak_pointer(py::module_& mod) {
             "be safe under a hook, since the GC shouldn't be running.\n"
             "\n"
             "Returns:\n"
-            "    The object this is pointing at, or None if it's become invalid.");
+            "    The object this is pointing at, or None if it's become invalid.")
+        .def(
+            "replace", [](WeakPointer& self, const UObject* obj) { self = WeakPointer{obj}; },
+            "Replaces the reference in this pointer in-place.\n"
+            "\n"
+            "This is equivalent to assigning the same variable to a new pointer, but may be\n"
+            "more convenient when modifying a parent scope.\n"
+            "\n"
+            "Args:\n"
+            "    obj: The new object to hold a weak reference to.",
+            "obj"_a);
 
     // Create as a class method, see pybind11#1693
     cls.attr("__class_getitem__") = py::reinterpret_borrow<py::object>(PyClassMethod_New(
