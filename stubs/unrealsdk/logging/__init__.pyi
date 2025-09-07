@@ -1,5 +1,3 @@
-# ruff: noqa: D205
-
 from __future__ import annotations
 
 from typing import Any, ClassVar
