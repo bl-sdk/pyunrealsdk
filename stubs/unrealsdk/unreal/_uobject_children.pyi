@@ -7,8 +7,6 @@ from ._uobject import UObject
 from ._wrapped_array import WrappedArray
 from ._wrapped_struct import WrappedStruct
 
-# ruff: noqa: N802, N803
-
 # ======== First Layer Subclasses ========
 
 class UField(UObject):
@@ -107,14 +105,13 @@ class UBoolProperty(UProperty):
     FieldMask: int
 
 class UByteProperty(UProperty):
-    @property
-    def Enum(self) -> UEnum | None: ...
+    Enum: UEnum | None
 
 class UClass(UStruct):
     ClassDefaultObject: UObject
 
     @property
-    def Interfaces(self) -> list[UClass]: ...
+    def Interfaces(self) -> list[UClass]: ...  # noqa: N802
     def _implements(self, interface: UClass) -> bool:
         """
         Checks if this class implements a given interface.
