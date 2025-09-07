@@ -1,5 +1,10 @@
 # Changelog
 
+## Upcoming
+- The `pyunrealsdk.init_script` and `pyunrealsdk.pyexec_root` config options are now relative to the
+  folder containing the `pyunrealsdk.dll`. Previously, they were relative to the cwd, which could
+  cause issues if it changed.
+
 ## v1.8.0
 - Added `WeakPointer.replace`, to modify a pointer in-place.
 

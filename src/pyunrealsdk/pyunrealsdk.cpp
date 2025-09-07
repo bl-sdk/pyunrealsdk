@@ -8,6 +8,7 @@
 #include "pyunrealsdk/version.h"
 #include "unrealsdk/config.h"
 #include "unrealsdk/unrealsdk.h"
+#include "unrealsdk/utils.h"
 #include "unrealsdk/version.h"
 
 #ifdef PYUNREALSDK_INTERNAL
@@ -73,8 +74,10 @@ void init(void) {
     try {
         // Use a custom globals to make sure we don't contaminate `py`/`pyexec` commands
         // This also ensures `__file__` gets redefined properly
-        py::eval_file(unrealsdk::config::get_str("pyunrealsdk.init_script").value_or("__main__.py"),
-                      py::dict{});
+        auto startup =
+            unrealsdk::utils::get_this_dll().parent_path()
+            / unrealsdk::config::get_str("pyunrealsdk.init_script").value_or("__main__.py");
+        py::eval_file(startup.generic_string(), py::dict{});
     } catch (const std::exception& ex) {
         LOG(ERROR, "Error running python initialization script:");
         logging::log_python_exception(ex);

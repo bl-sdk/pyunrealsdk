@@ -15,7 +15,8 @@ namespace {
 
 void pyexec_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
     static const std::filesystem::path root =
-        unrealsdk::config::get_str("pyunrealsdk.pyexec_root").value_or("");
+        unrealsdk::utils::get_this_dll().parent_path()
+        / unrealsdk::config::get_str("pyunrealsdk.pyexec_root").value_or("");
 
     auto file_start = std::find_if_not(line + cmd_len, line + size, &std::iswspace);
     const size_t file_len = (line + size) - file_start;
