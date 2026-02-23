@@ -9,7 +9,7 @@
 namespace unrealsdk::unreal {
 
 class UFunction;
-class UProperty;
+class ZProperty;
 
 }  // namespace unrealsdk::unreal
 
@@ -20,8 +20,8 @@ namespace impl {
 // Type helping convert a python function call to an unreal one.
 struct PyCallInfo {
     unrealsdk::unreal::WrappedStruct params;
-    unrealsdk::unreal::UProperty* return_param{};
-    std::vector<unrealsdk::unreal::UProperty*> out_params;
+    unrealsdk::unreal::ZProperty* return_param{};
+    std::vector<unrealsdk::unreal::ZProperty*> out_params;
 
     /**
      * @brief Converts python args into a params struct.

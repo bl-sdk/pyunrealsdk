@@ -195,7 +195,7 @@ void register_wrapped_struct(py::module_& mod) {
                 "Returns:\n"
                 "    The field's value.\n"),
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | UProperty", )
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", )
 #else
             PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", )
 #endif
@@ -255,7 +255,7 @@ void register_wrapped_struct(py::module_& mod) {
                 "    field: The field to set.\n"
                 "    value: The value to write.\n"),
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | UProperty", ),
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", ),
 #else
             PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", ),
 #endif

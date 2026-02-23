@@ -248,7 +248,7 @@ void register_wrapped_array(py::module_& mod) {
              PYUNREALSDK_STUBGEN_POS_ONLY()                /* alignment */
              PYUNREALSDK_STUBGEN_ARG_N("*args"_a, "Any", ) /* alignment */
              PYUNREALSDK_STUBGEN_ARG_N("**kwargs"_a, "Any", ))
-        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("_type", "UProperty"), &WrappedArray::type);
+        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("_type", "ZProperty"), &WrappedArray::type);
 
     // Create as a class method, see pybind11#1693
     cls.attr(PYUNREALSDK_STUBGEN_CLASSMETHOD("__class_getitem__", "GenericAlias")) =

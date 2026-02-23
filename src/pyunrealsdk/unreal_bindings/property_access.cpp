@@ -6,18 +6,18 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/cast.h"
-#include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
-#include "unrealsdk/unreal/classes/properties/ustructproperty.h"
 #include "unrealsdk/unreal/classes/uconst.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
-#include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
 #include "unrealsdk/unreal/classes/ustruct_funcs.h"
 #include "unrealsdk/unreal/find_class.h"
 #include "unrealsdk/unreal/prop_traits.h"
+#include "unrealsdk/unreal/properties/zarrayproperty.h"
+#include "unrealsdk/unreal/properties/zproperty.h"
+#include "unrealsdk/unreal/properties/zstructproperty.h"
 #include "unrealsdk/unreal/structs/ffield.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/bound_function.h"
@@ -36,18 +36,18 @@ bool dir_includes_unreal = true;
 }  // namespace
 
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-PyFieldVariant::PyFieldVariant(const std::variant<std::nullptr_t, UProperty*, UField*>& var) {
+PyFieldVariant::PyFieldVariant(const std::variant<std::nullptr_t, ZProperty*, UField*>& var) {
     if (std::holds_alternative<std::nullptr_t>(var)) {
         *this = nullptr;
-    } else if (std::holds_alternative<UProperty*>(var)) {
-        *this = std::get<UProperty*>(var);
+    } else if (std::holds_alternative<ZProperty*>(var)) {
+        *this = std::get<ZProperty*>(var);
     } else {
         *this = std::get<UField*>(var);
     }
 }
 #endif
 
-UProperty* PyFieldVariant::as_prop(void) const {
+ZProperty* PyFieldVariant::as_prop(void) const {
     auto prop = this->as_ffield();
     if (prop != nullptr) {
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
@@ -63,8 +63,8 @@ UProperty* PyFieldVariant::as_prop(void) const {
         return nullptr;
     }
 
-    if (obj->is_instance(find_class<UProperty>())) {
-        return reinterpret_cast<UProperty*>(obj);
+    if (obj->is_instance(find_class<ZProperty>())) {
+        return reinterpret_cast<ZProperty*>(obj);
     }
     return nullptr;
 }
@@ -73,7 +73,7 @@ UField* PyFieldVariant::as_non_prop_field(void) const {
     if (obj == nullptr) {
         return nullptr;
     }
-    if (obj->is_instance(find_class<UProperty>())) {
+    if (obj->is_instance(find_class<ZProperty>())) {
         return nullptr;
     }
     return obj;
@@ -134,7 +134,7 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
 
 namespace {
 
-py::object py_getattr_property(UProperty* prop,
+py::object py_getattr_property(ZProperty* prop,
                                uintptr_t base_addr,
                                const unrealsdk::unreal::UnrealPointer<void>& parent) {
     if (prop->ArrayDim() < 1) {
@@ -204,7 +204,7 @@ py::object py_getattr_non_property(UField* field, UObject* func_obj) {
 // The templated lambda and all the if constexprs make everything have a really high penalty
 // Yes it's probably a bit complex, but it's also a bit awkward trying to split it up
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void py_setattr_direct(UProperty* prop, uintptr_t base_addr, const py::object& value) {
+void py_setattr_direct(ZProperty* prop, uintptr_t base_addr, const py::object& value) {
     py::sequence value_seq;
     if (prop->ArrayDim() > 1) {
         if (!py::isinstance<py::sequence>(value)) {
@@ -231,13 +231,13 @@ void py_setattr_direct(UProperty* prop, uintptr_t base_addr, const py::object& v
 
         // As a special case, if we have an array property, allow assigning non-wrapped array
         // sequences
-        if constexpr (std::is_same_v<T, UArrayProperty>) {
+        if constexpr (std::is_same_v<T, ZArrayProperty>) {
             // Also make sure it's not somehow a fixed array, since the sdk can't handle that, let
             // it fall through to the standard error handler
             if (prop_size == 1 && seq_size == 1 && !py::isinstance<WrappedArray>(value_seq[0])
                 && py::isinstance<py::sequence>(value_seq[0])) {
                 // Implement using slice assignment
-                auto arr = get_property<UArrayProperty>(prop, 0, base_addr);
+                auto arr = get_property<ZArrayProperty>(prop, 0, base_addr);
                 impl::array_py_setitem_slice(
                     arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
                 return;
@@ -262,7 +262,7 @@ void py_setattr_direct(UProperty* prop, uintptr_t base_addr, const py::object& v
 
         for (size_t i = 0; i < seq_size; i++) {
             // If we're setting a struct property, we might be being told to ignore it
-            if constexpr (std::is_base_of_v<UStructProperty, T>) {
+            if constexpr (std::is_base_of_v<ZStructProperty, T>) {
                 if (is_ignore_struct_sentinel(value_seq[i])) {
                     continue;
                 }
@@ -283,7 +283,7 @@ py::object py_getattr(PyFieldVariant field,
                       uintptr_t base_addr,
                       const unrealsdk::unreal::UnrealPointer<void>& parent,
                       unrealsdk::unreal::UObject* func_obj) {
-    UProperty* prop = field.as_prop();
+    ZProperty* prop = field.as_prop();
     if (prop != nullptr) {
         return py_getattr_property(prop, base_addr, parent);
     }
@@ -298,7 +298,7 @@ py::object py_getattr(PyFieldVariant field,
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void py_setattr_direct(PyFieldVariant field, uintptr_t base_addr, const py::object& value) {
-    UProperty* prop = field.as_prop();
+    ZProperty* prop = field.as_prop();
     if (prop != nullptr) {
         py_setattr_direct(prop, base_addr, value);
         return;

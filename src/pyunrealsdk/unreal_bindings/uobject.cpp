@@ -6,8 +6,8 @@
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uobject.h"
-#include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/find_class.h"
+#include "unrealsdk/unreal/properties/zproperty.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unrealsdk.h"
 #include "unrealsdk/utils.h"
@@ -121,7 +121,7 @@ void register_uobject(py::module_& mod) {
                 "Returns:\n"
                 "    The field's value.\n"),
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | UProperty", )
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", )
 #else
             PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", )
 #endif
@@ -192,7 +192,7 @@ void register_uobject(py::module_& mod) {
                 "    field: The field to set.\n"
                 "    value: The value to write.\n"),
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | UProperty", ),
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", ),
 #else
             PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", ),
 #endif
@@ -206,7 +206,7 @@ void register_uobject(py::module_& mod) {
                                           "    This object's address.\n"))
         .def(
             PYUNREALSDK_STUBGEN_METHOD("_post_edit_change_property", "None"),
-            [](UObject* self, std::variant<FName, UProperty*> prop) {
+            [](UObject* self, std::variant<FName, ZProperty*> prop) {
                 std::visit([self](auto&& val) { self->post_edit_change_property(val); }, prop);
             },
             PYUNREALSDK_STUBGEN_DOCSTRING(
@@ -218,15 +218,15 @@ void register_uobject(py::module_& mod) {
                 "\n"
                 "Args:\n"
                 "    prop: The property, or the name of the property, which was changed.\n"),
-            PYUNREALSDK_STUBGEN_ARG("prop"_a, "UProperty | str", ))
+            PYUNREALSDK_STUBGEN_ARG("prop"_a, "ZProperty | str", ))
         .def(
             PYUNREALSDK_STUBGEN_METHOD("_post_edit_change_chain_property", "None"),
-            [](UObject* self, UProperty* prop, const py::args& args) {
-                std::vector<UProperty*> chain;
+            [](UObject* self, ZProperty* prop, const py::args& args) {
+                std::vector<ZProperty*> chain;
                 chain.reserve(args.size());
 
                 for (const auto& val : args) {
-                    chain.push_back(py::cast<UProperty*>(val));
+                    chain.push_back(py::cast<ZProperty*>(val));
                 }
                 self->post_edit_change_chain_property(prop, chain);
             },
@@ -238,8 +238,8 @@ void register_uobject(py::module_& mod) {
                 "Args:\n"
                 "    prop: The property which was changed.\n"
                 "    *chain: The chain of properties to follow.\n"),
-            PYUNREALSDK_STUBGEN_ARG("prop"_a, "UProperty", )
-                PYUNREALSDK_STUBGEN_ARG_N("*chain"_a, "UProperty", ));
+            PYUNREALSDK_STUBGEN_ARG("prop"_a, "ZProperty", )
+                PYUNREALSDK_STUBGEN_ARG_N("*chain"_a, "ZProperty", ));
 
     // Create under an empty handle to prevent this type being normally accessible
     py::classh<ContextManager>(py::handle(), "context_manager", pybind11::module_local())

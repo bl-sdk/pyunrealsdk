@@ -1,8 +1,8 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/gbxdefptr.h"
 #include "pyunrealsdk/stubgen.h"
-#include "unrealsdk/unreal/classes/properties/fgbxdefptrproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
+#include "unrealsdk/unreal/properties/zgbxdefptrproperty.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
 #ifdef PYUNREALSDK_INTERNAL

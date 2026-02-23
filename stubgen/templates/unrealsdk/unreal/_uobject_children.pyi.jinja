@@ -27,39 +27,39 @@ from ._wrapped_struct import WrappedStruct
 
 {% set classes = [
     "unrealsdk.unreal.UConst",
-    "unrealsdk.unreal.UProperty",
     "unrealsdk.unreal.UStruct",
+    "unrealsdk.unreal.ZProperty",
 ] %}
 {{ classes | declare_all }}
 
 # ======== Third Layer Subclasses ========
 
 {% set classes = [
-    "unrealsdk.unreal.FGbxDefPtrProperty",
-    "unrealsdk.unreal.UArrayProperty",
-    "unrealsdk.unreal.UBoolProperty",
-    "unrealsdk.unreal.UByteProperty",
     "unrealsdk.unreal.UClass",
-    "unrealsdk.unreal.UDelegateProperty",
-    "unrealsdk.unreal.UDoubleProperty",
-    "unrealsdk.unreal.UEnumProperty",
-    "unrealsdk.unreal.UFloatProperty",
     "unrealsdk.unreal.UFunction",
-    "unrealsdk.unreal.UInt8Property",
-    "unrealsdk.unreal.UInt16Property",
-    "unrealsdk.unreal.UInt64Property",
-    "unrealsdk.unreal.UInterfaceProperty",
-    "unrealsdk.unreal.UIntProperty",
-    "unrealsdk.unreal.UMulticastDelegateProperty",
-    "unrealsdk.unreal.UNameProperty",
-    "unrealsdk.unreal.UObjectProperty",
     "unrealsdk.unreal.UScriptStruct",
-    "unrealsdk.unreal.UStrProperty",
-    "unrealsdk.unreal.UStructProperty",
-    "unrealsdk.unreal.UTextProperty",
-    "unrealsdk.unreal.UUInt16Property",
-    "unrealsdk.unreal.UUInt32Property",
-    "unrealsdk.unreal.UUInt64Property",
+    "unrealsdk.unreal.ZArrayProperty",
+    "unrealsdk.unreal.ZBoolProperty",
+    "unrealsdk.unreal.ZByteProperty",
+    "unrealsdk.unreal.ZDelegateProperty",
+    "unrealsdk.unreal.ZDoubleProperty",
+    "unrealsdk.unreal.ZEnumProperty",
+    "unrealsdk.unreal.ZFloatProperty",
+    "unrealsdk.unreal.ZGbxDefPtrProperty",
+    "unrealsdk.unreal.ZInt16Property",
+    "unrealsdk.unreal.ZInt64Property",
+    "unrealsdk.unreal.ZInt8Property",
+    "unrealsdk.unreal.ZIntProperty",
+    "unrealsdk.unreal.ZInterfaceProperty",
+    "unrealsdk.unreal.ZMulticastDelegateProperty",
+    "unrealsdk.unreal.ZNameProperty",
+    "unrealsdk.unreal.ZObjectProperty",
+    "unrealsdk.unreal.ZStrProperty",
+    "unrealsdk.unreal.ZStructProperty",
+    "unrealsdk.unreal.ZTextProperty",
+    "unrealsdk.unreal.ZUInt16Property",
+    "unrealsdk.unreal.ZUInt32Property",
+    "unrealsdk.unreal.ZUInt64Property",
 ] %}
 {{ classes | declare_all }}
 
@@ -67,20 +67,20 @@ from ._wrapped_struct import WrappedStruct
 
 {% set classes = [
     "unrealsdk.unreal.UBlueprintGeneratedClass",
-    "unrealsdk.unreal.UByteAttributeProperty",
-    "unrealsdk.unreal.UClassProperty",
-    "unrealsdk.unreal.UComponentProperty",
-    "unrealsdk.unreal.UFloatAttributeProperty",
-    "unrealsdk.unreal.UIntAttributeProperty",
-    "unrealsdk.unreal.ULazyObjectProperty",
-    "unrealsdk.unreal.USoftObjectProperty",
-    "unrealsdk.unreal.UWeakObjectProperty",
+    "unrealsdk.unreal.ZByteAttributeProperty",
+    "unrealsdk.unreal.ZClassProperty",
+    "unrealsdk.unreal.ZComponentProperty",
+    "unrealsdk.unreal.ZFloatAttributeProperty",
+    "unrealsdk.unreal.ZIntAttributeProperty",
+    "unrealsdk.unreal.ZLazyObjectProperty",
+    "unrealsdk.unreal.ZSoftObjectProperty",
+    "unrealsdk.unreal.ZWeakObjectProperty",
 ] %}
 {{ classes | declare_all }}
 
 # ======== Fifth Layer Subclasses ========
 
 {% set classes = [
-    "unrealsdk.unreal.USoftClassProperty",
+    "unrealsdk.unreal.ZSoftClassProperty",
 ] %}
 {{ classes | declare_all }}

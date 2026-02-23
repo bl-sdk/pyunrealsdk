@@ -6,8 +6,8 @@
 #include "unrealsdk/hook_manager.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
 #include "unrealsdk/unreal/classes/uobject.h"
-#include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
+#include "unrealsdk/unreal/properties/zproperty.h"
 #include "unrealsdk/unreal/structs/fname.h"
 #include "unrealsdk/unreal/wrappers/bound_function.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
@@ -64,15 +64,15 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
     std::vector<FName> missing_required_args{};
 
     for (auto prop : info.params.type->properties()) {
-        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_PARAM) == 0) {
+        if ((prop->PropertyFlags() & ZProperty::PROP_FLAG_PARAM) == 0) {
             continue;
         }
-        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_RETURN) != 0
+        if ((prop->PropertyFlags() & ZProperty::PROP_FLAG_RETURN) != 0
             && info.return_param == nullptr) {
             info.return_param = prop;
             continue;
         }
-        if ((prop->PropertyFlags() & UProperty::PROP_FLAG_OUT) != 0) {
+        if ((prop->PropertyFlags() & ZProperty::PROP_FLAG_OUT) != 0) {
             info.out_params.push_back(prop);
         }
 
@@ -101,7 +101,7 @@ void fill_py_params(impl::PyCallInfo& info, const py::args& args, const py::kwar
         // NOLINTNEXTLINE(misc-const-correctness)
         bool optional = false;
 #if UNREALSDK_HAS_OPTIONAL_FUNC_PARAMS
-        optional = (prop->PropertyFlags() & UProperty::PROP_FLAG_OPTIONAL) != 0;
+        optional = (prop->PropertyFlags() & ZProperty::PROP_FLAG_OPTIONAL) != 0;
 #endif
 
         // If not given, and not optional, record for error later
@@ -143,12 +143,12 @@ PyCallInfo::PyCallInfo(const UFunction* func, const py::args& args, const py::kw
 
             // Manually gather the return value and out params
             for (auto prop : func->properties()) {
-                if ((prop->PropertyFlags() & UProperty::PROP_FLAG_RETURN) != 0
+                if ((prop->PropertyFlags() & ZProperty::PROP_FLAG_RETURN) != 0
                     && return_param == nullptr) {
                     this->return_param = prop;
                     continue;
                 }
-                if ((prop->PropertyFlags() & UProperty::PROP_FLAG_OUT) != 0) {
+                if ((prop->PropertyFlags() & ZProperty::PROP_FLAG_OUT) != 0) {
                     this->out_params.push_back(prop);
                 }
             }

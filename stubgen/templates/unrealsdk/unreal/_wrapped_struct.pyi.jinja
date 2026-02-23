@@ -4,7 +4,7 @@ from typing import Any
 
 from ._uobject_children import UField, UFunction, UScriptStruct, UStruct
 {% if UNREALSDK_PROPERTIES_ARE_FFIELD %}
-from ._uobject_children import UProperty
+from ._uobject_children import ZProperty
 {% endif %}
 
 {{ "unrealsdk.unreal.IGNORE_STRUCT" | declare }}

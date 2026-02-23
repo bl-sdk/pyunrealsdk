@@ -2,33 +2,33 @@
 #include "pyunrealsdk/unreal_bindings/uobject_children.h"
 #include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
-#include "unrealsdk/unreal/classes/properties/attribute_property.h"
-#include "unrealsdk/unreal/classes/properties/copyable_property.h"
-#include "unrealsdk/unreal/classes/properties/fgbxdefptrproperty.h"
-#include "unrealsdk/unreal/classes/properties/persistent_object_ptr_property.h"
-#include "unrealsdk/unreal/classes/properties/uarrayproperty.h"
-#include "unrealsdk/unreal/classes/properties/uboolproperty.h"
-#include "unrealsdk/unreal/classes/properties/ubyteproperty.h"
-#include "unrealsdk/unreal/classes/properties/uclassproperty.h"
-#include "unrealsdk/unreal/classes/properties/ucomponentproperty.h"
-#include "unrealsdk/unreal/classes/properties/udelegateproperty.h"
-#include "unrealsdk/unreal/classes/properties/uenumproperty.h"
-#include "unrealsdk/unreal/classes/properties/uinterfaceproperty.h"
-#include "unrealsdk/unreal/classes/properties/umulticastdelegateproperty.h"
-#include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
-#include "unrealsdk/unreal/classes/properties/ustrproperty.h"
-#include "unrealsdk/unreal/classes/properties/ustructproperty.h"
-#include "unrealsdk/unreal/classes/properties/utextproperty.h"
-#include "unrealsdk/unreal/classes/properties/uweakobjectproperty.h"
 #include "unrealsdk/unreal/classes/ublueprintgeneratedclass.h"
 #include "unrealsdk/unreal/classes/uclass.h"
 #include "unrealsdk/unreal/classes/uconst.h"
 #include "unrealsdk/unreal/classes/uenum.h"
 #include "unrealsdk/unreal/classes/ufield.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
-#include "unrealsdk/unreal/classes/uproperty.h"
 #include "unrealsdk/unreal/classes/uscriptstruct.h"
 #include "unrealsdk/unreal/classes/ustruct.h"
+#include "unrealsdk/unreal/properties/attribute_property.h"
+#include "unrealsdk/unreal/properties/copyable_property.h"
+#include "unrealsdk/unreal/properties/persistent_object_ptr_property.h"
+#include "unrealsdk/unreal/properties/zarrayproperty.h"
+#include "unrealsdk/unreal/properties/zboolproperty.h"
+#include "unrealsdk/unreal/properties/zbyteproperty.h"
+#include "unrealsdk/unreal/properties/zclassproperty.h"
+#include "unrealsdk/unreal/properties/zcomponentproperty.h"
+#include "unrealsdk/unreal/properties/zdelegateproperty.h"
+#include "unrealsdk/unreal/properties/zenumproperty.h"
+#include "unrealsdk/unreal/properties/zgbxdefptrproperty.h"
+#include "unrealsdk/unreal/properties/zinterfaceproperty.h"
+#include "unrealsdk/unreal/properties/zmulticastdelegateproperty.h"
+#include "unrealsdk/unreal/properties/zobjectproperty.h"
+#include "unrealsdk/unreal/properties/zproperty.h"
+#include "unrealsdk/unreal/properties/zstrproperty.h"
+#include "unrealsdk/unreal/properties/zstructproperty.h"
+#include "unrealsdk/unreal/properties/ztextproperty.h"
+#include "unrealsdk/unreal/properties/zweakobjectproperty.h"
 #include "unrealsdk/unreal/structs/ffield.h"
 #include "unrealsdk/unreal/structs/tfieldvariant.h"
 
@@ -139,25 +139,25 @@ void register_uobject_children(py::module_& mod) {
             [](UConst* self, const std::string& new_value) { self->Value() = new_value; });
 
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-    PyUEClass<UProperty, FField>(mod, PYUNREALSDK_STUBGEN_CLASS("UProperty", "FField"))
+    PyUEClass<ZProperty, FField>(mod, PYUNREALSDK_STUBGEN_CLASS("ZProperty", "FField"))
 #else
-    PyUEClass<UProperty, UField>(mod, PYUNREALSDK_STUBGEN_CLASS("UProperty", "UField"))
+    PyUEClass<ZProperty, UField>(mod, PYUNREALSDK_STUBGEN_CLASS("ZProperty", "UField"))
 #endif
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ArrayDim", "int"), &UProperty::ArrayDim)
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ElementSize", "int"), &UProperty::ElementSize)
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ArrayDim", "int"), &ZProperty::ArrayDim)
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ElementSize", "int"), &ZProperty::ElementSize)
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyFlags", "int"),
-                         &UProperty::PropertyFlags)
+                         &ZProperty::PropertyFlags)
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Offset_Internal", "int"),
-                         &UProperty::Offset_Internal)
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyLinkNext", "UProperty | None"),
-                         &UProperty::PropertyLinkNext);
+                         &ZProperty::Offset_Internal)
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyLinkNext", "ZProperty | None"),
+                         &ZProperty::PropertyLinkNext);
 
     PyUEClass<UStruct, UField>(mod, PYUNREALSDK_STUBGEN_CLASS("UStruct", "UField"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("SuperField", "UStruct | None"),
                          &UStruct::SuperField)
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Children", "UField | None"), &UStruct::Children)
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertySize", "int"), &UStruct::PropertySize)
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyLink", "UProperty | None"),
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyLink", "ZProperty | None"),
                          &UStruct::PropertyLink)
 #if UNREALSDK_USTRUCT_HAS_ALIGNMENT
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("MinAlignment", "int"), &UStruct::MinAlignment)
@@ -181,7 +181,7 @@ void register_uobject_children(py::module_& mod) {
                                           "Returns:\n"
                                           "    An iterator over all fields in the struct.\n"))
         .def(
-            PYUNREALSDK_STUBGEN_METHOD("_properties", "Iterator[UProperty]"),
+            PYUNREALSDK_STUBGEN_METHOD("_properties", "Iterator[ZProperty]"),
             [](UStruct* self) {
                 auto props = self->properties();
                 return py::make_iterator(props.begin(), props.end());
@@ -221,7 +221,7 @@ void register_uobject_children(py::module_& mod) {
                  "    The size which must be allocated.\n"))
         .def(
 #ifdef UNREALSDK_PROPERTIES_ARE_FFIELD
-            PYUNREALSDK_STUBGEN_METHOD("_find", "UField | UProperty"),
+            PYUNREALSDK_STUBGEN_METHOD("_find", "UField | ZProperty"),
 #else
             PYUNREALSDK_STUBGEN_METHOD("_find", "UField"),
 #endif
@@ -252,7 +252,7 @@ void register_uobject_children(py::module_& mod) {
                                           "Returns:\n"
                                           "    The found child field.\n"),
             PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ))
-        .def(PYUNREALSDK_STUBGEN_METHOD("_find_prop", "UProperty"), &UStruct::find_prop,
+        .def(PYUNREALSDK_STUBGEN_METHOD("_find_prop", "ZProperty"), &UStruct::find_prop,
              PYUNREALSDK_STUBGEN_DOCSTRING(
                  "Finds a child property by name.\n"
                  "\n"
@@ -268,22 +268,22 @@ void register_uobject_children(py::module_& mod) {
 
     // ======== Third Layer Subclasses ========
 
-    PyUEClass<FGbxDefPtrProperty, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("FGbxDefPtrProperty", "UProperty"))
+    PyUEClass<ZGbxDefPtrProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZGbxDefPtrProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Struct", "UScriptStruct"),
-                         &FGbxDefPtrProperty::Struct);
+                         &ZGbxDefPtrProperty::Struct);
 
-    PyUEClass<UArrayProperty, UProperty>(mod,
-                                         PYUNREALSDK_STUBGEN_CLASS("UArrayProperty", "UProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Inner", "UProperty"), &UArrayProperty::Inner);
+    PyUEClass<ZArrayProperty, ZProperty>(mod,
+                                         PYUNREALSDK_STUBGEN_CLASS("ZArrayProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Inner", "ZProperty"), &ZArrayProperty::Inner);
 
-    PyUEClass<UBoolProperty, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UBoolProperty", "UProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("FieldMask", "int"), &UBoolProperty::FieldMask);
+    PyUEClass<ZBoolProperty, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZBoolProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("FieldMask", "int"), &ZBoolProperty::FieldMask);
 
-    PyUEClass<UByteProperty, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UByteProperty", "UProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Enum", "UEnum | None"), &UByteProperty::Enum);
+    PyUEClass<ZByteProperty, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZByteProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Enum", "UEnum | None"), &ZByteProperty::Enum);
 
     PyUEClass<UClass, UStruct>(mod, PYUNREALSDK_STUBGEN_CLASS("UClass", "UStruct"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ClassDefaultObject", "UObject"),
@@ -308,22 +308,22 @@ void register_uobject_children(py::module_& mod) {
                                    return interfaces;
                                });
 
-    PyUEClass<UDelegateProperty, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UDelegateProperty", "UProperty"))
+    PyUEClass<ZDelegateProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZDelegateProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Signature", "UFunction"),
-                         &UDelegateProperty::Signature);
+                         &ZDelegateProperty::Signature);
 
-    PyUEClass<UDoubleProperty, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UDoubleProperty", "UProperty"));
+    PyUEClass<ZDoubleProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZDoubleProperty", "ZProperty"));
 
-    PyUEClass<UEnumProperty, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UEnumProperty", "UProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("UnderlyingProp", "UProperty"),
-                         &UEnumProperty::UnderlyingProp)
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Enum", "UEnum"), &UEnumProperty::Enum);
+    PyUEClass<ZEnumProperty, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZEnumProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("UnderlyingProp", "ZProperty"),
+                         &ZEnumProperty::UnderlyingProp)
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Enum", "UEnum"), &ZEnumProperty::Enum);
 
-    PyUEClass<UFloatProperty, UProperty>(mod,
-                                         PYUNREALSDK_STUBGEN_CLASS("UFloatProperty", "UProperty"));
+    PyUEClass<ZFloatProperty, ZProperty>(mod,
+                                         PYUNREALSDK_STUBGEN_CLASS("ZFloatProperty", "ZProperty"));
 
     PyUEClass<UFunction, UStruct>(mod, PYUNREALSDK_STUBGEN_CLASS("UFunction", "UStruct"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("FunctionFlags", "int"),
@@ -332,7 +332,7 @@ void register_uobject_children(py::module_& mod) {
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ParamsSize", "int"), &UFunction::ParamsSize)
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ReturnValueOffset", "int"),
                          &UFunction::ReturnValueOffset)
-        .def(PYUNREALSDK_STUBGEN_METHOD("_find_return_param", "UProperty"),
+        .def(PYUNREALSDK_STUBGEN_METHOD("_find_return_param", "ZProperty"),
              &UFunction::find_return_param,
              PYUNREALSDK_STUBGEN_DOCSTRING(
                  "Finds the return param for this function (if it exists).\n"
@@ -340,104 +340,158 @@ void register_uobject_children(py::module_& mod) {
                  "Returns:\n"
                  "    The return param, or None if it doesn't exist.\n"));
 
-    PyUEClass<UInt8Property, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UInt8Property", "UProperty"));
+    PyUEClass<ZInt8Property, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZInt8Property", "ZProperty"));
 
-    PyUEClass<UInt16Property, UProperty>(mod,
-                                         PYUNREALSDK_STUBGEN_CLASS("UInt16Property", "UProperty"));
+    PyUEClass<ZInt16Property, ZProperty>(mod,
+                                         PYUNREALSDK_STUBGEN_CLASS("ZInt16Property", "ZProperty"));
 
-    PyUEClass<UInt64Property, UProperty>(mod,
-                                         PYUNREALSDK_STUBGEN_CLASS("UInt64Property", "UProperty"));
+    PyUEClass<ZInt64Property, ZProperty>(mod,
+                                         PYUNREALSDK_STUBGEN_CLASS("ZInt64Property", "ZProperty"));
 
-    PyUEClass<UInterfaceProperty, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UInterfaceProperty", "UProperty"))
+    PyUEClass<ZInterfaceProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZInterfaceProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("InterfaceClass", "UClass"),
-                         &UInterfaceProperty::InterfaceClass);
+                         &ZInterfaceProperty::InterfaceClass);
 
-    PyUEClass<UIntProperty, UProperty>(mod, PYUNREALSDK_STUBGEN_CLASS("UIntProperty", "UProperty"));
+    PyUEClass<ZIntProperty, ZProperty>(mod, PYUNREALSDK_STUBGEN_CLASS("ZIntProperty", "ZProperty"));
 
-    PyUEClass<UMulticastDelegateProperty, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UMulticastDelegateProperty", "UProperty"))
+    PyUEClass<ZMulticastDelegateProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZMulticastDelegateProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Signature", "UFunction"),
-                         &UMulticastDelegateProperty::Signature);
+                         &ZMulticastDelegateProperty::Signature);
 
-    PyUEClass<UNameProperty, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UNameProperty", "UProperty"));
+    PyUEClass<ZNameProperty, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZNameProperty", "ZProperty"));
 
-    PyUEClass<UObjectProperty, UProperty>(mod,
-                                          PYUNREALSDK_STUBGEN_CLASS("UObjectProperty", "UProperty"))
+    PyUEClass<ZObjectProperty, ZProperty>(mod,
+                                          PYUNREALSDK_STUBGEN_CLASS("ZObjectProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("PropertyClass", "UClass"),
-                         &UObjectProperty::PropertyClass);
+                         &ZObjectProperty::PropertyClass);
 
     PyUEClass<UScriptStruct, UStruct>(mod, PYUNREALSDK_STUBGEN_CLASS("UScriptStruct", "UStruct"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("StructFlags", "int"),
                          &UScriptStruct::StructFlags);
 
-    PyUEClass<UStrProperty, UProperty>(mod, PYUNREALSDK_STUBGEN_CLASS("UStrProperty", "UProperty"));
+    PyUEClass<ZStrProperty, ZProperty>(mod, PYUNREALSDK_STUBGEN_CLASS("ZStrProperty", "ZProperty"));
 
-    PyUEClass<UStructProperty, UProperty>(mod,
-                                          PYUNREALSDK_STUBGEN_CLASS("UStructProperty", "UProperty"))
+    PyUEClass<ZStructProperty, ZProperty>(mod,
+                                          PYUNREALSDK_STUBGEN_CLASS("ZStructProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Struct", "UScriptStruct"),
-                         &UStructProperty::Struct);
+                         &ZStructProperty::Struct);
 
-    PyUEClass<UTextProperty, UProperty>(mod,
-                                        PYUNREALSDK_STUBGEN_CLASS("UTextProperty", "UProperty"));
+    PyUEClass<ZTextProperty, ZProperty>(mod,
+                                        PYUNREALSDK_STUBGEN_CLASS("ZTextProperty", "ZProperty"));
 
-    PyUEClass<UUInt16Property, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UUInt16Property", "UProperty"));
+    PyUEClass<ZUInt16Property, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZUInt16Property", "ZProperty"));
 
-    PyUEClass<UUInt32Property, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UUInt32Property", "UProperty"));
+    PyUEClass<ZUInt32Property, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZUInt32Property", "ZProperty"));
 
-    PyUEClass<UUInt64Property, UProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UUInt64Property", "UProperty"));
+    PyUEClass<ZUInt64Property, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZUInt64Property", "ZProperty"));
 
     // ======== Fourth Layer Subclasses ========
 
     PyUEClass<UBlueprintGeneratedClass, UClass>(
         mod, PYUNREALSDK_STUBGEN_CLASS("UBlueprintGeneratedClass", "UClass"));
 
-    PyUEClass<UByteAttributeProperty, UByteProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UByteAttributeProperty", "UByteProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "UArrayProperty"),
-                         &UByteAttributeProperty::ModifierStackProperty)
+    PyUEClass<ZByteAttributeProperty, ZByteProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZByteAttributeProperty", "ZByteProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "ZArrayProperty"),
+                         &ZByteAttributeProperty::ModifierStackProperty)
         .def_member_prop(
-            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "UByteAttributeProperty"),
-            &UByteAttributeProperty::OtherAttributeProperty);
+            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "ZByteAttributeProperty"),
+            &ZByteAttributeProperty::OtherAttributeProperty);
 
-    PyUEClass<UClassProperty, UObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UClassProperty", "UObjectProperty"))
+    PyUEClass<ZClassProperty, ZObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZClassProperty", "ZObjectProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("MetaClass", "UClass"),
-                         &UClassProperty::MetaClass);
+                         &ZClassProperty::MetaClass);
 
-    PyUEClass<UComponentProperty, UObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UComponentProperty", "UObjectProperty"));
+    PyUEClass<ZComponentProperty, ZObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZComponentProperty", "ZObjectProperty"));
 
-    PyUEClass<UFloatAttributeProperty, UFloatProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UFloatAttributeProperty", "UFloatProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "UArrayProperty"),
-                         &UFloatAttributeProperty::ModifierStackProperty)
+    PyUEClass<ZFloatAttributeProperty, ZFloatProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZFloatAttributeProperty", "ZFloatProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "ZArrayProperty"),
+                         &ZFloatAttributeProperty::ModifierStackProperty)
         .def_member_prop(
-            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "UFloatAttributeProperty"),
-            &UFloatAttributeProperty::OtherAttributeProperty);
+            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "ZFloatAttributeProperty"),
+            &ZFloatAttributeProperty::OtherAttributeProperty);
 
-    PyUEClass<UIntAttributeProperty, UIntProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UIntAttributeProperty", "UIntProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "UArrayProperty"),
-                         &UIntAttributeProperty::ModifierStackProperty)
+    PyUEClass<ZIntAttributeProperty, ZIntProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZIntAttributeProperty", "ZIntProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ModifierStackProperty", "ZArrayProperty"),
+                         &ZIntAttributeProperty::ModifierStackProperty)
         .def_member_prop(
-            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "UIntAttributeProperty"),
-            &UIntAttributeProperty::OtherAttributeProperty);
+            PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "ZIntAttributeProperty"),
+            &ZIntAttributeProperty::OtherAttributeProperty);
 
-    // ULazyObjectProperty - registered elsewhere
-    // USoftObjectProperty - registered elsewhere
+    // ZLazyObjectProperty - registered elsewhere
+    // ZSoftObjectProperty - registered elsewhere
 
-    PyUEClass<UWeakObjectProperty, UObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("UWeakObjectProperty", "UObjectProperty"));
+    PyUEClass<ZWeakObjectProperty, ZObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZWeakObjectProperty", "ZObjectProperty"));
 
     // ======== Fifth Layer Subclasses ========
 
-    // USoftClassProperty - registered elsewhere
+    // ZSoftClassProperty - registered elsewhere
+
+    // ======== Deprecated UProperty Aliases ========
+
+    // In pyunrealsdk 1.9.0, we changed all `UProperty` types to `ZProperty` types. Add back aliases
+    // for the old names.
+    // In Python, we just do this using an attribute level copy
+    // In the stubs, pretend it's a subclass so that we can attach a deprecated marker
+
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define DECLARE_DEPRECATED_PROPERTY_ALIAS(name_without_prefix, parent_class)      \
+    PYUNREALSDK_STUBGEN_CLASS_N("U" name_without_prefix,                          \
+                                "Z" name_without_prefix ", " parent_class)        \
+    PYUNREALSDK_STUBGEN_DEPRECATED_N("U" name_without_prefix                      \
+                                     " has been renamed to Z" name_without_prefix \
+                                     ", this is a deprecated alias")              \
+    mod.attr("U" name_without_prefix) = mod.attr("Z" name_without_prefix);
+
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("Property", "FField")
+#else
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("Property", "UField")
+#endif
+
+    // This only needs the types which were available in pyunrealsdk 1.8.0 - no need to add new ones
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ArrayProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("BoolProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ByteAttributeProperty", "UByteProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ByteProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ClassProperty", "UObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ComponentProperty", "UObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("DelegateProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("DoubleProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("EnumProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("FloatAttributeProperty", "UByteProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("FloatProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("Int16Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("Int64Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("Int8Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("IntAttributeProperty", "UByteProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("IntProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("InterfaceProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("LazyObjectProperty", "UObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("MulticastDelegateProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("NameProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("ObjectProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftClassProperty", "USoftObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftObjectProperty", "UObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("StrProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("StructProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("TextProperty", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("UInt16Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("UInt32Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("UInt64Property", "UProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("WeakObjectProperty", "UObjectProperty")
 }
 
 }  // namespace pyunrealsdk::unreal

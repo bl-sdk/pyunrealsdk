@@ -13,7 +13,7 @@ struct FField;
 class UObject;
 class UField;
 class UStruct;
-class UProperty;
+class ZProperty;
 
 template <typename T>
 class UnrealPointer;
@@ -32,7 +32,7 @@ void register_property_helpers(py::module_& mod);
 namespace {
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
 using base_variant =
-    unrealsdk::unreal::TFieldVariant<unrealsdk::unreal::UProperty, unrealsdk::unreal::UField>;
+    unrealsdk::unreal::TFieldVariant<unrealsdk::unreal::ZProperty, unrealsdk::unreal::UField>;
 #else
 using base_variant = unrealsdk::unreal::TFieldVariantStub<unrealsdk::unreal::UField>;
 #endif
@@ -42,7 +42,7 @@ struct PyFieldVariant : public base_variant {
     PyFieldVariant(void) = default;
     PyFieldVariant(std::nullptr_t) {};
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
-    PyFieldVariant(const unrealsdk::unreal::UProperty* field) : base_variant(field) {}
+    PyFieldVariant(const unrealsdk::unreal::ZProperty* field) : base_variant(field) {}
 #endif
     PyFieldVariant(const unrealsdk::unreal::UField* obj) : base_variant(obj) {};
     PyFieldVariant(const base_variant& other) : base_variant(other) {}
@@ -58,7 +58,7 @@ struct PyFieldVariant : public base_variant {
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
     // A type guaranteed to be convertible to this from python.
     using from_py_type =
-        std::variant<std::nullptr_t, unrealsdk::unreal::UProperty*, unrealsdk::unreal::UField*>;
+        std::variant<std::nullptr_t, unrealsdk::unreal::ZProperty*, unrealsdk::unreal::UField*>;
 
     PyFieldVariant(const from_py_type& var);
 #else
@@ -71,10 +71,10 @@ struct PyFieldVariant : public base_variant {
      *
      * @return The contained property, or nullptr if the wrong type.
      */
-    [[nodiscard]] unrealsdk::unreal::UProperty* as_prop(void) const;
+    [[nodiscard]] unrealsdk::unreal::ZProperty* as_prop(void) const;
 
     /**
-     * @brief Gets the contained field, if it holds a UField which *is not* a UProperty.
+     * @brief Gets the contained field, if it holds a UField which *is not* a ZProperty.
      *
      * @return The contained property, or nullptr if the wrong type.
      */

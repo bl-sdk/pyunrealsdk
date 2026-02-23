@@ -3,8 +3,8 @@
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/unreal/cast.h"
-#include "unrealsdk/unreal/classes/properties/ustructproperty.h"
 #include "unrealsdk/unreal/find_class.h"
+#include "unrealsdk/unreal/properties/zstructproperty.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 
@@ -186,7 +186,7 @@ void array_py_emplace_struct(WrappedArray& self,
                              py::ssize_t py_idx,
                              const py::args& args,
                              const py::kwargs& kwargs) {
-    if (!self.type->is_instance(find_class<UStructProperty>())) {
+    if (!self.type->is_instance(find_class<ZStructProperty>())) {
         throw py::type_error("tried to emplace_struct into an array not made of structs");
     }
 
@@ -196,7 +196,7 @@ void array_py_emplace_struct(WrappedArray& self,
         // We're just appending
         self.resize(size + 1);
         try {
-            auto new_struct = self.get_at<UStructProperty>(size);
+            auto new_struct = self.get_at<ZStructProperty>(size);
             // May need to zero if there's still leftovers from when this array was bigger
             memset(new_struct.base.get(), 0, new_struct.type->get_struct_size());
             make_struct(new_struct, args, kwargs);
@@ -221,7 +221,7 @@ void array_py_emplace_struct(WrappedArray& self,
             remaining_size);
 
     try {
-        auto new_struct = self.get_at<UStructProperty>(idx);
+        auto new_struct = self.get_at<ZStructProperty>(idx);
         // At this point the struct still has all it's old contents. We don't need to properly
         // destroy them since we've just moved it to the next slot, we're not leaking anything.
         // Definitely need to zero it though.

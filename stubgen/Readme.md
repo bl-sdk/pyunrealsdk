@@ -86,8 +86,8 @@ The following custom filters are available in templates:
   ```jinja
   {% set classes = [
       "unrealsdk.unreal.UConst",
-      "unrealsdk.unreal.UProperty",
       "unrealsdk.unreal.UStruct",
+      "unrealsdk.unreal.ZProperty",
   ] %}
   {{ classes | declare_all }}
   ```
@@ -96,6 +96,6 @@ The following custom filters are available in templates:
 Additionally, all flavour defines from `unrealsdk/flavour.h` are available as global variables.
 ```jinja
 {% if UNREALSDK_PROPERTIES_ARE_FFIELD %}
-from ._uobject_children import UProperty
+from ._uobject_children import ZProperty
 {% endif %}
 ```

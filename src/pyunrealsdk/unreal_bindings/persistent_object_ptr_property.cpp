@@ -1,9 +1,9 @@
 #include "pyunrealsdk/pch.h"
-#include "unrealsdk/unreal/classes/properties/persistent_object_ptr_property.h"
+#include "unrealsdk/unreal/properties/persistent_object_ptr_property.h"
 #include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/persistent_object_ptr_property.h"
-#include "unrealsdk/unreal/classes/properties/uobjectproperty.h"
+#include "unrealsdk/unreal/properties/zobjectproperty.h"
 #include "unrealsdk/unreal/structs/tpersistentobjectptr.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
@@ -103,13 +103,13 @@ std::wstring soft_obj_path_to_py(const FSoftObjectPath* path) {
 void register_persistent_object_properties(py::module_& mod) {
     PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk.unreal")
 
-    PyUEClass<ULazyObjectProperty, UObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("ULazyObjectProperty", "UObjectProperty"))
+    PyUEClass<ZLazyObjectProperty, ZObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZLazyObjectProperty", "ZObjectProperty"))
         .def_static(
             PYUNREALSDK_STUBGEN_STATICMETHOD("_get_identifier_from", "bytes"),
             [](const std::variant<const UObject*, const WrappedStruct*>& source,
-               const std::variant<FName, const ULazyObjectProperty*>& prop, size_t idx) {
-                auto path = resolve_get_from_overload<FLazyObjectPath, ULazyObjectProperty>(
+               const std::variant<FName, const ZLazyObjectProperty*>& prop, size_t idx) {
+                auto path = resolve_get_from_overload<FLazyObjectPath, ZLazyObjectProperty>(
                     source, prop, idx);
                 return lazy_obj_path_to_py(path);
             },
@@ -126,7 +126,7 @@ void register_persistent_object_properties(py::module_& mod) {
                 "Returns:\n"
                 "    The raw 16 bytes composing the property's Guid.\n"),
             PYUNREALSDK_STUBGEN_ARG("source"_a, "UObject | WrappedStruct", ),
-            PYUNREALSDK_STUBGEN_ARG("prop"_a, "ULazyObjectProperty | str", ),
+            PYUNREALSDK_STUBGEN_ARG("prop"_a, "ZLazyObjectProperty | str", ),
             PYUNREALSDK_STUBGEN_ARG("idx"_a, "int", "0") = 0)
         .def_static(
             PYUNREALSDK_STUBGEN_STATICMETHOD("_get_identifier_from_array", "bytes"),
@@ -148,13 +148,13 @@ void register_persistent_object_properties(py::module_& mod) {
             PYUNREALSDK_STUBGEN_ARG("source"_a, "WrappedArray", ),
             PYUNREALSDK_STUBGEN_ARG("idx"_a, "int", ));
 
-    PyUEClass<USoftObjectProperty, UObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("USoftObjectProperty", "UObjectProperty"))
+    PyUEClass<ZSoftObjectProperty, ZObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZSoftObjectProperty", "ZObjectProperty"))
         .def_static(
             PYUNREALSDK_STUBGEN_STATICMETHOD("_get_identifier_from", "str"),
             [](const std::variant<const UObject*, const WrappedStruct*>& source,
-               const std::variant<FName, const USoftObjectProperty*>& prop, size_t idx) {
-                auto path = resolve_get_from_overload<FSoftObjectPath, USoftObjectProperty>(
+               const std::variant<FName, const ZSoftObjectProperty*>& prop, size_t idx) {
+                auto path = resolve_get_from_overload<FSoftObjectPath, ZSoftObjectProperty>(
                     source, prop, idx);
                 return soft_obj_path_to_py(path);
             },
@@ -171,7 +171,7 @@ void register_persistent_object_properties(py::module_& mod) {
                 "Returns:\n"
                 "    The path name of the object the given property is looking for.\n"),
             PYUNREALSDK_STUBGEN_ARG("source"_a, "UObject | WrappedStruct", ),
-            PYUNREALSDK_STUBGEN_ARG("prop"_a, "USoftObjectProperty | str", ),
+            PYUNREALSDK_STUBGEN_ARG("prop"_a, "ZSoftObjectProperty | str", ),
             PYUNREALSDK_STUBGEN_ARG("idx"_a, "int", "0") = 0)
         .def_static(
             PYUNREALSDK_STUBGEN_STATICMETHOD("_get_identifier_from_array", "str"),
@@ -193,10 +193,10 @@ void register_persistent_object_properties(py::module_& mod) {
             PYUNREALSDK_STUBGEN_ARG("source"_a, "WrappedArray", ),
             PYUNREALSDK_STUBGEN_ARG("idx"_a, "int", ));
 
-    PyUEClass<USoftClassProperty, USoftObjectProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("USoftClassProperty", "USoftObjectProperty"))
+    PyUEClass<ZSoftClassProperty, ZSoftObjectProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZSoftClassProperty", "ZSoftObjectProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("MetaClass", "UClass"),
-                         &USoftClassProperty::MetaClass);
+                         &ZSoftClassProperty::MetaClass);
 }
 
 }  // namespace pyunrealsdk::unreal

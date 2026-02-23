@@ -1,0 +1,77 @@
+import warnings
+
+{% if UNREALSDK_PROPERTIES_ARE_FFIELD %}
+from ._uobject_children import FField
+{% else %}
+from ._uobject_children import UField
+{% endif %}
+from ._uobject_children import (
+    ZArrayProperty,
+    ZBoolProperty,
+    ZByteAttributeProperty,
+    ZByteProperty,
+    ZClassProperty,
+    ZComponentProperty,
+    ZDelegateProperty,
+    ZDoubleProperty,
+    ZEnumProperty,
+    ZFloatAttributeProperty,
+    ZFloatProperty,
+    ZInt8Property,
+    ZInt16Property,
+    ZInt64Property,
+    ZIntAttributeProperty,
+    ZInterfaceProperty,
+    ZIntProperty,
+    ZLazyObjectProperty,
+    ZMulticastDelegateProperty,
+    ZNameProperty,
+    ZObjectProperty,
+    ZProperty,
+    ZSoftClassProperty,
+    ZSoftObjectProperty,
+    ZStrProperty,
+    ZStructProperty,
+    ZTextProperty,
+    ZUInt16Property,
+    ZUInt32Property,
+    ZUInt64Property,
+    ZWeakObjectProperty,
+)
+
+# ======== Deprecated UProperty Aliases ========
+
+{% set classes = [
+    "unrealsdk.unreal.UArrayProperty",
+    "unrealsdk.unreal.UBoolProperty",
+    "unrealsdk.unreal.UByteAttributeProperty",
+    "unrealsdk.unreal.UByteProperty",
+    "unrealsdk.unreal.UClassProperty",
+    "unrealsdk.unreal.UComponentProperty",
+    "unrealsdk.unreal.UDelegateProperty",
+    "unrealsdk.unreal.UDoubleProperty",
+    "unrealsdk.unreal.UEnumProperty",
+    "unrealsdk.unreal.UFloatAttributeProperty",
+    "unrealsdk.unreal.UFloatProperty",
+    "unrealsdk.unreal.UInt16Property",
+    "unrealsdk.unreal.UInt64Property",
+    "unrealsdk.unreal.UInt8Property",
+    "unrealsdk.unreal.UIntAttributeProperty",
+    "unrealsdk.unreal.UIntProperty",
+    "unrealsdk.unreal.UInterfaceProperty",
+    "unrealsdk.unreal.ULazyObjectProperty",
+    "unrealsdk.unreal.UMulticastDelegateProperty",
+    "unrealsdk.unreal.UNameProperty",
+    "unrealsdk.unreal.UObjectProperty",
+    "unrealsdk.unreal.UProperty",
+    "unrealsdk.unreal.USoftClassProperty",
+    "unrealsdk.unreal.USoftObjectProperty",
+    "unrealsdk.unreal.UStrProperty",
+    "unrealsdk.unreal.UStructProperty",
+    "unrealsdk.unreal.UTextProperty",
+    "unrealsdk.unreal.UUInt16Property",
+    "unrealsdk.unreal.UUInt32Property",
+    "unrealsdk.unreal.UUInt64Property",
+    "unrealsdk.unreal.UWeakObjectProperty",
+] %}
+{{ classes | declare_all }}
