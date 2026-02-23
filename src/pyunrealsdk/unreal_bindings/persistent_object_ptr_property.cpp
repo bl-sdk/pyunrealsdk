@@ -197,6 +197,21 @@ void register_persistent_object_properties(py::module_& mod) {
         mod, PYUNREALSDK_STUBGEN_CLASS("ZSoftClassProperty", "ZSoftObjectProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("MetaClass", "UClass"),
                          &ZSoftClassProperty::MetaClass);
+
+    // Deprecated UProperty Aliases - Same as in uobject_children.cpp
+
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define DECLARE_DEPRECATED_PROPERTY_ALIAS(name_without_prefix, parent_class)      \
+    PYUNREALSDK_STUBGEN_CLASS_N("U" name_without_prefix,                          \
+                                "Z" name_without_prefix ", " parent_class)        \
+    PYUNREALSDK_STUBGEN_DEPRECATED_N("U" name_without_prefix                      \
+                                     " has been renamed to Z" name_without_prefix \
+                                     ", this is a deprecated alias")              \
+    mod.attr("U" name_without_prefix) = mod.attr("Z" name_without_prefix);
+
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("LazyObjectProperty", "UObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftClassProperty", "USoftObjectProperty")
+    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftObjectProperty", "UObjectProperty")
 }
 
 }  // namespace pyunrealsdk::unreal

@@ -479,12 +479,12 @@ void register_uobject_children(py::module_& mod) {
     DECLARE_DEPRECATED_PROPERTY_ALIAS("IntAttributeProperty", "UByteProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("IntProperty", "UProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("InterfaceProperty", "UProperty")
-    DECLARE_DEPRECATED_PROPERTY_ALIAS("LazyObjectProperty", "UObjectProperty")
+    // LazyObjectProperty - registered elsewhere
     DECLARE_DEPRECATED_PROPERTY_ALIAS("MulticastDelegateProperty", "UProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("NameProperty", "UProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("ObjectProperty", "UProperty")
-    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftClassProperty", "USoftObjectProperty")
-    DECLARE_DEPRECATED_PROPERTY_ALIAS("SoftObjectProperty", "UObjectProperty")
+    // SoftClassProperty - registered elsewhere
+    // SoftObjectProperty - registered elsewhere
     DECLARE_DEPRECATED_PROPERTY_ALIAS("StrProperty", "UProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("StructProperty", "UProperty")
     DECLARE_DEPRECATED_PROPERTY_ALIAS("TextProperty", "UProperty")
