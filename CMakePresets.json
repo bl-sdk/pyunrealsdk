@@ -7,7 +7,7 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
-        "EXPLICIT_PYTHON_VERSION": "3.13.1"
+        "EXPLICIT_PYTHON_VERSION": "3.14.3"
       }
     },
     {
@@ -120,6 +120,9 @@
       },
       "cacheVariables": {
         "EXPLICIT_PYTHON_ARCH": "win32",
+        "EXPLICIT_PYTHON_HASH_BASE": "SHA256=c8f858b042be750a2086b5e83e840a773a4b28b820854b03f42572d72e794e7f",
+        "EXPLICIT_PYTHON_HASH_TEST": "SHA256=72b7fd7adac0249e89b5706d7460d92ae6c471525052704ca60463aa21785795",
+        "EXPLICIT_PYTHON_HASH_EMBEDDABLE": "SHA256=2884a2fa6526b5f5db3dd53ceb9ce28bc0c73842abeba62a3e46ffd4aaecae50",
         "UNREALSDK_FLAVOUR": "WILLOW"
       }
     },
@@ -132,6 +135,9 @@
       },
       "cacheVariables": {
         "EXPLICIT_PYTHON_ARCH": "amd64",
+        "EXPLICIT_PYTHON_HASH_BASE": "SHA256=ec781bb03f9638d136b24da7c83b4db1652ce767848aa856a30bb87cfdb1abe4",
+        "EXPLICIT_PYTHON_HASH_TEST": "SHA256=8a2aad571579eff81cfdc7452efd5b867653cb2b6b2c83cbd7184501a29eb832",
+        "EXPLICIT_PYTHON_HASH_EMBEDDABLE": "SHA256=e69d3609130b1c06948620651d0f0ab2183ff978c2b174ddf3d3cae7ff226b89",
         "UNREALSDK_FLAVOUR": "OAK"
       }
     },
@@ -144,6 +150,9 @@
       },
       "cacheVariables": {
         "EXPLICIT_PYTHON_ARCH": "amd64",
+        "EXPLICIT_PYTHON_HASH_BASE": "SHA256=ec781bb03f9638d136b24da7c83b4db1652ce767848aa856a30bb87cfdb1abe4",
+        "EXPLICIT_PYTHON_HASH_TEST": "SHA256=8a2aad571579eff81cfdc7452efd5b867653cb2b6b2c83cbd7184501a29eb832",
+        "EXPLICIT_PYTHON_HASH_EMBEDDABLE": "SHA256=e69d3609130b1c06948620651d0f0ab2183ff978c2b174ddf3d3cae7ff226b89",
         "UNREALSDK_FLAVOUR": "OAK2"
       }
     },

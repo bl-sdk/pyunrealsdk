@@ -129,26 +129,12 @@ Once you've got this all set up, to build the sdk:
 
 2. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
    ```
-   cmake . --preset msvc-ue4-x64-debug
-   cmake --build out/build/msvc-ue4-x64-debug
+   cmake . --preset msvc-oak-debug
+   cmake --build out/build/msvc-oak-debug
    ```
 
-3. (OPTIONAL) Copy the python runtime files to your game's plugins folder. At a minimum, you
-   probably want these:
-   ```
-   python3.dll
-   python3<version>.dll
-   python3<version>.zip
-   ```
-
-   A CMake install will copy these files, as well as the base (py)unrealsdk dlls, and several other
-   useful python libraries, to the install dir for you.
-   ```
-   cmake --build out/build/msvc-ue4-x64-debug --target install
-   ```
-
-   Consider pointing the instal dir directly at your game's plugins folder, so new versions will get
-   loaded automatically.
+3. (OPTIONAL) Consider pointing your CMake install dir directly at your plugins folder. The install
+   target is set up to copy all required dlls, including Python's, for you.
 
 4. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
    executable, containing the game's Steam App Id.
