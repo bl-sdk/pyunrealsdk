@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+from enum import Enum
+from typing import Any, ClassVar
+
+{{ "unrealsdk.logging" | __all__ }}
+
+{{ "unrealsdk.logging.Level" | declare }}
+{{ "unrealsdk.logging.Logger" | declare }}
+
+{% set funcs = [
+    "unrealsdk.logging.is_console_ready",
+    "unrealsdk.logging.set_console_level",
+] %}
+{{ funcs | declare_all }}
+
+
+# These functions do actually just forward *args/**kwargs directly, but give them the same signature
+# as print for type hinting
+
+{% set printers = [
+    "unrealsdk.logging.dev_warning",
+    "unrealsdk.logging.error",
+    "unrealsdk.logging.info",
+    "unrealsdk.logging.warning",
+    "unrealsdk.logging.misc",
+] %}
+{{ printers | declare_all }}

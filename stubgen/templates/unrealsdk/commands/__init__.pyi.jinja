@@ -1,0 +1,19 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Final
+
+{{ "unrealsdk.commands" | __all__ }}
+
+{{ "unrealsdk.commands.NEXT_LINE" | declare }}
+
+type _CommandCallback = Callable[[str, int], None]
+
+{% set funcs = [
+    "unrealsdk.commands.add_command",
+    "unrealsdk.commands.has_command",
+    "unrealsdk.commands.remove_command",
+] %}
+{{ funcs | declare_all }}
+
+

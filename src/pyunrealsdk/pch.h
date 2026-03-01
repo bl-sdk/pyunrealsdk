@@ -14,7 +14,18 @@
 #pragma clang diagnostic ignored "-Wlanguage-extension-token"
 #endif
 
+// Expect to be linking against the release Python, even if we're building debug pyunrealsdk
+#if defined(_DEBUG) && !defined(PYUNREALSDK_LINK_AGAINST_DEBUG_PYTHON)
+#define _PYUNREALSDK_DEBUG
+#undef _DEBUG
+#endif
+
 #include "Python.h"
+
+#ifdef _PYUNREALSDK_DEBUG
+#undef _PYUNREALSDK_DEBUG
+#define _DEBUG
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -23,9 +34,11 @@
 #ifdef __cplusplus
 
 #include <pybind11/embed.h>
+#include <pybind11/native_enum.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl/filesystem.h>
+#include <pybind11/warnings.h>
 
 // NOLINTNEXTLINE(misc-unused-alias-decls)
 namespace py = pybind11;
@@ -39,8 +52,6 @@ using namespace pybind11::literals;
 #else
 #define PY_OBJECT_VISIBILITY
 #endif
-
-#include <variant>
 
 // Type casters need to be defined the same way in every file, so best to put here
 #include "pyunrealsdk/type_casters.h"

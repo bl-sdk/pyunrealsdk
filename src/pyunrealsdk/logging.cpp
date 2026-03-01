@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/stubgen.h"
 #include "unrealsdk/logging.h"
 #include "unrealsdk/unrealsdk.h"
 
@@ -101,6 +102,39 @@ class Logger {
 };
 
 /**
+ * @brief Macro expanding to the docstring used for each of the per-log-level printers.
+ *
+ * @param level_str A string holding the log level to insert in the docstring.
+ * @return Expands to the full docstring.
+ */
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define PER_LOG_LEVEL_PRINTER_DOCSTRING(level_str)                       \
+    "wrapper around print(), which uses a custom file at the " level_str \
+    " log level.\n"                                                      \
+    "\n"                                                                 \
+    "args:\n"                                                            \
+    "    *args: forwarded to print().\n"                                 \
+    "    **kwargs: except for 'file', forwarded to print().\n"
+
+/**
+ * @brief Macro registering a per-log-level printer for the stubgen scripts.
+ *
+ * @param logging The logging module to register within.
+ * @param func_name The name of the printing function.
+ */
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define STUBGEN_PER_LOG_LEVEL_PRINTER_N(func_name, docstring_name)                              \
+    /* In reality we accept args/kwargs, and pass them directly to print. Type hint them the */ \
+    /* same as standard print instead for usability. */                                         \
+    PYUNREALSDK_STUBGEN_FUNC_N(func_name, "None")                                               \
+    PYUNREALSDK_STUBGEN_DOCSTRING_N(PER_LOG_LEVEL_PRINTER_DOCSTRING(docstring_name))            \
+    /* HACK: include the noqa in the arg name  */                                               \
+    PYUNREALSDK_STUBGEN_ARG_N("  # noqa: D417\n    *objects"_a, "Any", )                        \
+    PYUNREALSDK_STUBGEN_ARG_N("sep"_a, "str | None", "\" \"")                                   \
+    PYUNREALSDK_STUBGEN_ARG_N("end"_a, "str | None", "\"\\n\"")                                 \
+    PYUNREALSDK_STUBGEN_ARG_N("flush"_a, "bool", "False")
+
+/**
  * @brief Registers a function which prints at a specific log level.
  *
  * @tparam level The log level this printer is for.
@@ -112,13 +146,7 @@ template <Level level>
 void register_per_log_level_printer(py::module_& logging,
                                     const char* func_name,
                                     std::string_view docstring_name) {
-    const auto docstring = std::format(
-        "Wrapper around print(), which uses a custom file at the {} log level.\n"
-        "\n"
-        "Args:\n"
-        "    *args: Forwarded to print().\n"
-        "    **kwargs: Except for 'file', forwarded to print().",
-        docstring_name);
+    const auto docstring = std::format(PER_LOG_LEVEL_PRINTER_DOCSTRING("{}"), docstring_name);
 
     // NOLINTNEXTLINE(misc-const-correctness)
     static Logger logger{level};
@@ -139,62 +167,84 @@ void register_per_log_level_printer(py::module_& logging,
 #ifdef PYUNREALSDK_INTERNAL
 
 void register_module(py::module_& mod) {
-    auto logging = mod.def_submodule("logging");
+    auto logging = mod.def_submodule(PYUNREALSDK_STUBGEN_SUBMODULE("unrealsdk", "logging"));
 
-    py::enum_<Level>(logging, "Level", "Enum of valid logging levels.")
-        .value("ERROR", Level::ERROR, "Used to display error messages.")
-        .value("WARNING", Level::WARNING, "Used to display warnings.")
-        .value("INFO", Level::INFO,
-               "Default logging level, used for anything that should be shown in console.")
-        .value("DEV_WARNING", Level::DEV_WARNING,
-               "Used for warnings which don't concern users, so shouldn't be shown in console.")
-        .value("MISC", Level::MISC, "Used for miscellaneous debug messages.");
+    py::native_enum<Level>(logging, PYUNREALSDK_STUBGEN_ENUM("Level"), "enum.Enum",
+                           PYUNREALSDK_STUBGEN_DOCSTRING("Enum of valid logging levels."))
+        .value(PYUNREALSDK_STUBGEN_ATTR("ERROR", ), Level::ERROR,
+               PYUNREALSDK_STUBGEN_DOCSTRING("Used to display error messages."))
+        .value(PYUNREALSDK_STUBGEN_ATTR("WARNING", ), Level::WARNING,
+               PYUNREALSDK_STUBGEN_DOCSTRING("Used to display warnings."))
+        .value(PYUNREALSDK_STUBGEN_ATTR("INFO", ), Level::INFO,
+               PYUNREALSDK_STUBGEN_DOCSTRING(
+                   "Default logging level, used for anything that should be shown in console."))
+        .value(
+            PYUNREALSDK_STUBGEN_ATTR("DEV_WARNING", ), Level::DEV_WARNING,
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Used for warnings which don't concern users, so shouldn't be shown in console."))
+        .value(PYUNREALSDK_STUBGEN_ATTR("MISC", ), Level::MISC,
+               PYUNREALSDK_STUBGEN_DOCSTRING("Used for miscellaneous debug messages."))
+        .finalize();
 
-    py::class_<Logger>(logging, "Logger",
-                       "A write only file object which redirects to the unrealsdk log system.")
-        .def(py::init<Level>(),
-             "Creates a new logger.\n"
-             "\n"
-             "Args:\n"
-             "    level: The default log level to initialize to.",
-             "level"_a = Level::INFO)
-        .def_readwrite("level", &Logger::level,
+    py::classh<Logger>(logging, PYUNREALSDK_STUBGEN_CLASS("Logger", ),
+                       PYUNREALSDK_STUBGEN_DOCSTRING(
+                           "A write only file object which redirects to the unrealsdk log system."))
+        .def(py::init<Level>() PYUNREALSDK_STUBGEN_METHOD_N("__init__", "None"),
+             PYUNREALSDK_STUBGEN_DOCSTRING("Creates a new logger.\n"
+                                           "\n"
+                                           "Args:\n"
+                                           "    level: The default log level to initialize to.\n"),
+             PYUNREALSDK_STUBGEN_ARG("level"_a, "Level", "Level.INFO") = Level::INFO)
+        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("level", "Level"), &Logger::level,
                        "The current log level which messages are written at.")
-        .def("write", &Logger::write,
-             "Writes a string to the stream.\n"
-             "\n"
-             "Args:\n"
-             "    text: The text to write.\n"
-             "Returns:\n"
-             "    The number of chars which were written (which is always equal to the length\n"
-             "    of the string).",
-             "text"_a)
-        .def("flush", [](Logger& self) { self.flush(); }, "Flushes the stream.");
+        .def(PYUNREALSDK_STUBGEN_METHOD("write", "int"), &Logger::write,
+             PYUNREALSDK_STUBGEN_DOCSTRING(
+                 "Writes a string to the stream.\n"
+                 "\n"
+                 "Args:\n"
+                 "    text: The text to write.\n"
+                 "Returns:\n"
+                 "    The number of chars which were written (which is always equal to the length\n"
+                 "    of the string).\n"),
+             PYUNREALSDK_STUBGEN_ARG("text"_a, "str", ))
+        .def(
+            PYUNREALSDK_STUBGEN_METHOD("flush", "None"), [](Logger& self) { self.flush(); },
+            PYUNREALSDK_STUBGEN_DOCSTRING("Flushes the stream."));
 
-    logging.def("set_console_level", &unrealsdk::logging::set_console_level,
-                "Sets the log level of the unreal console.\n"
-                "\n"
-                "Does not affect the log file or external console, if enabled.\n"
-                "\n"
-                "Args:\n"
-                "    level: The new log level.\n"
-                "Returns:\n"
-                "    True if console level changed, false if an invalid value was passed in.",
-                "level"_a);
+    logging.def(
+        PYUNREALSDK_STUBGEN_FUNC("set_console_level", "bool"),
+        &unrealsdk::logging::set_console_level,
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Sets the log level of the unreal console.\n"
+            "\n"
+            "Does not affect the log file or external console, if enabled.\n"
+            "\n"
+            "Args:\n"
+            "    level: The new log level.\n"
+            "Returns:\n"
+            "    True if console level changed, false if an invalid value was passed in.\n"),
+        PYUNREALSDK_STUBGEN_ARG("level"_a, "Level", ));
 
-    logging.def("is_console_ready", &unrealsdk::is_console_ready,
-                "Checks if the sdk's console hook is ready to output text.\n"
-                "\n"
-                "Anything written before this point will only be visible in the log file.\n"
-                "\n"
-                "Returns:\n"
-                "    True if the console hook is ready, false otherwise.");
+    logging.def(PYUNREALSDK_STUBGEN_FUNC("is_console_ready", "bool"), &unrealsdk::is_console_ready,
+                PYUNREALSDK_STUBGEN_DOCSTRING(
+                    "Checks if the sdk's console hook is ready to output text.\n"
+                    "\n"
+                    "Anything written before this point will only be visible in the log file.\n"
+                    "\n"
+                    "Returns:\n"
+                    "    True if the console hook is ready, false otherwise.\n"));
 
     register_per_log_level_printer<Level::MISC>(logging, "misc", "misc");
     register_per_log_level_printer<Level::DEV_WARNING>(logging, "dev_warning", "dev warning");
     register_per_log_level_printer<Level::INFO>(logging, "info", "info");
     register_per_log_level_printer<Level::WARNING>(logging, "warning", "warning");
     register_per_log_level_printer<Level::ERROR>(logging, "error", "error");
+
+    STUBGEN_PER_LOG_LEVEL_PRINTER_N("misc", "misc");
+    STUBGEN_PER_LOG_LEVEL_PRINTER_N("dev_warning", "dev warning");
+    STUBGEN_PER_LOG_LEVEL_PRINTER_N("info", "info");
+    STUBGEN_PER_LOG_LEVEL_PRINTER_N("warning", "warning");
+    STUBGEN_PER_LOG_LEVEL_PRINTER_N("error", "error");
 }
 
 void py_init(void) {

@@ -3,6 +3,7 @@
 #include "pyunrealsdk/debugging.h"
 #include "pyunrealsdk/logging.h"
 #include "pyunrealsdk/static_py_object.h"
+#include "pyunrealsdk/stubgen.h"
 #include "unrealsdk/commands.h"
 #include "unrealsdk/config.h"
 #include "unrealsdk/utils.h"
@@ -104,14 +105,14 @@ void py_cmd_handler(const wchar_t* line, size_t size, size_t cmd_len) {
 }  // namespace
 
 void register_module(py::module_& mod) {
-    auto commands = mod.def_submodule("commands");
+    auto commands = mod.def_submodule(PYUNREALSDK_STUBGEN_SUBMODULE("unrealsdk", "commands"));
 
     commands.def(
-        "add_command",
+        PYUNREALSDK_STUBGEN_FUNC("add_command", "bool"),
         [](const std::wstring& cmd, const py::object& callback) {
             // Convert to a static py object, so the lambda can safely get destroyed whenever
             const StaticPyObject static_callback{callback};
-            unrealsdk::commands::add_command(
+            return unrealsdk::commands::add_command(
                 cmd, [static_callback](const wchar_t* line, size_t size, size_t cmd_len) {
                     try {
                         const py::gil_scoped_acquire gil{};
@@ -126,52 +127,58 @@ void register_module(py::module_& mod) {
                     }
                 });
         },
-        "Adds a custom console command.\n"
-        "\n"
-        "Console commands are matched by comparing the first block of non-whitespace\n"
-        "characters in a line submitted to console against all registered commands.\n"
-        "\n"
-        "As a special case, if you register the special NEXT_LINE command, it will always\n"
-        "match the very next line, in place of anything else which might have been\n"
-        "matched otherwise. It will then immediately be removed (though before the\n"
-        "callback is run, so you can re-register it if needed), to allow normal command\n"
-        "processing to continue afterwards.\n"
-        "\n"
-        "Console command callbacks take two args:\n"
-        "    line: The full line which triggered the callback - including any\n"
-        "          whitespace.\n"
-        "    cmd_len: The length of the matched command, including leading whitespace -\n"
-        "             i.e. line[cmd_len] points to the first whitespace char after the\n"
-        "             command (or off the end of the string if there was none). 0 in the\n"
-        "             case of a `NEXT_LINE` match.\n"
-        "The return value is ignored.\n"
-        "\n"
-        "Args:\n"
-        "    cmd: The command to match.\n"
-        "    callback: The callback for when the command is run.\n"
-        "Returns:\n"
-        "    True if successfully added, false if an identical command already exists.",
-        "cmd"_a, "callback"_a);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Adds a custom console command.\n"
+            "\n"
+            "Console commands are matched by comparing the first block of non-whitespace\n"
+            "characters in a line submitted to console against all registered commands.\n"
+            "\n"
+            "As a special case, if you register the special NEXT_LINE command, it will always\n"
+            "match the very next line, in place of anything else which might have been\n"
+            "matched otherwise. It will then immediately be removed (though before the\n"
+            "callback is run, so you can re-register it if needed), to allow normal command\n"
+            "processing to continue afterwards.\n"
+            "\n"
+            "Console command callbacks take two args:\n"
+            "    line: The full line which triggered the callback - including any\n"
+            "          whitespace.\n"
+            "    cmd_len: The length of the matched command, including leading whitespace -\n"
+            "             i.e. line[cmd_len] points to the first whitespace char after the\n"
+            "             command (or off the end of the string if there was none). 0 in the\n"
+            "             case of a `NEXT_LINE` match.\n"
+            "The return value is ignored.\n"
+            "\n"
+            "Args:\n"
+            "    cmd: The command to match.\n"
+            "    callback: The callback for when the command is run.\n"
+            "Returns:\n"
+            "    True if successfully added, false if an identical command already exists.\n"),
+        PYUNREALSDK_STUBGEN_ARG("cmd"_a, "str", ),
+        PYUNREALSDK_STUBGEN_ARG("callback"_a, "_CommandCallback", ));
 
-    commands.def("has_command", &unrealsdk::commands::has_command,
-                 "Check if a custom console command has been registered.\n"
-                 "\n"
-                 "Args:\n"
-                 "    cmd: The command to match.\n"
-                 "Returns:\n"
-                 "    True if the command has been registered.",
-                 "cmd"_a);
+    commands.def(
+        PYUNREALSDK_STUBGEN_FUNC("has_command", "bool"), &unrealsdk::commands::has_command,
+        PYUNREALSDK_STUBGEN_DOCSTRING("Check if a custom console command has been registered.\n"
+                                      "\n"
+                                      "Args:\n"
+                                      "    cmd: The command to match.\n"
+                                      "Returns:\n"
+                                      "    True if the command has been registered.\n"),
+        PYUNREALSDK_STUBGEN_ARG("cmd"_a, "str", ));
 
-    commands.def("remove_command", &unrealsdk::commands::remove_command,
-                 "Removes a custom console command.\n"
-                 "\n"
-                 "Args:\n"
-                 "    cmd: The command to remove.\n"
-                 "Returns:\n"
-                 "    True if successfully removed, false if no such command exists.",
-                 "cmd"_a);
+    commands.def(PYUNREALSDK_STUBGEN_FUNC("remove_command", "bool"),
+                 &unrealsdk::commands::remove_command,
+                 PYUNREALSDK_STUBGEN_DOCSTRING(
+                     "Removes a custom console command.\n"
+                     "\n"
+                     "Args:\n"
+                     "    cmd: The command to remove.\n"
+                     "Returns:\n"
+                     "    True if successfully removed, false if no such command exists.\n"),
+                 PYUNREALSDK_STUBGEN_ARG("cmd"_a, "str", ));
 
-    commands.attr("NEXT_LINE") = unrealsdk::commands::NEXT_LINE;
+    commands.attr(PYUNREALSDK_STUBGEN_ATTR("NEXT_LINE", "Final[str]")) =
+        unrealsdk::commands::NEXT_LINE;
 }
 
 void register_commands(void) {

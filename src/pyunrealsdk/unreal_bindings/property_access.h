@@ -2,17 +2,21 @@
 #define PYUNREALSDK_UNREAL_BINDINGS_PROPERTY_ACCESS_H
 
 #include "pyunrealsdk/pch.h"
-#include "unrealsdk/unreal/wrappers/unreal_pointer.h"
+#include "unrealsdk/unreal/structs/tfieldvariant.h"
 
 #ifdef PYUNREALSDK_INTERNAL
 
 namespace unrealsdk::unreal {
 
 struct FName;
+struct FField;
 class UObject;
 class UField;
 class UStruct;
-class UProperty;
+class ZProperty;
+
+template <typename T>
+class UnrealPointer;
 
 }  // namespace unrealsdk::unreal
 
@@ -25,6 +29,58 @@ namespace pyunrealsdk::unreal {
  */
 void register_property_helpers(py::module_& mod);
 
+namespace {
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+using base_variant =
+    unrealsdk::unreal::TFieldVariant<unrealsdk::unreal::ZProperty, unrealsdk::unreal::UField>;
+#else
+using base_variant = unrealsdk::unreal::TFieldVariantStub<unrealsdk::unreal::UField>;
+#endif
+}  // namespace
+
+struct PyFieldVariant : public base_variant {
+    PyFieldVariant(void) = default;
+    PyFieldVariant(std::nullptr_t) {};
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+    PyFieldVariant(const unrealsdk::unreal::ZProperty* field) : base_variant(field) {}
+#endif
+    PyFieldVariant(const unrealsdk::unreal::UField* obj) : base_variant(obj) {};
+    PyFieldVariant(const base_variant& other) : base_variant(other) {}
+    PyFieldVariant(base_variant&& other) noexcept : base_variant(std::move(other)) {}
+    PyFieldVariant(const PyFieldVariant& other) = default;
+    PyFieldVariant(PyFieldVariant&& other) noexcept = default;
+
+    PyFieldVariant& operator=(const PyFieldVariant& other) = default;
+    PyFieldVariant& operator=(PyFieldVariant&& other) noexcept = default;
+
+    ~PyFieldVariant(void) = default;
+
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+    // A type guaranteed to be convertible to this from python.
+    using from_py_type =
+        std::variant<std::nullptr_t, unrealsdk::unreal::ZProperty*, unrealsdk::unreal::UField*>;
+
+    PyFieldVariant(const from_py_type& var);
+#else
+    // A type guaranteed to be convertible to this from python.
+    using from_py_type = unrealsdk::unreal::UField*;
+#endif
+
+    /**
+     * @brief Gets the contained field, if it holds a property.
+     *
+     * @return The contained property, or nullptr if the wrong type.
+     */
+    [[nodiscard]] unrealsdk::unreal::ZProperty* as_prop(void) const;
+
+    /**
+     * @brief Gets the contained field, if it holds a UField which *is not* a ZProperty.
+     *
+     * @return The contained property, or nullptr if the wrong type.
+     */
+    [[nodiscard]] unrealsdk::unreal::UField* as_non_prop_field(void) const;
+};
+
 /**
  * @brief Searches for a field on a struct, throwing an attribute error if it doesn't exist.
  *
@@ -32,8 +88,8 @@ void register_property_helpers(py::module_& mod);
  * @param type The type of the unreal object this access is reading off of.
  * @return The field. Invalid keys throw, so will never be null.
  */
-unrealsdk::unreal::UField* py_find_field(const unrealsdk::unreal::FName& name,
-                                         const unrealsdk::unreal::UStruct* type);
+PyFieldVariant py_find_field(const unrealsdk::unreal::FName& name,
+                             const unrealsdk::unreal::UStruct* type);
 
 /**
  * @brief Implements `__dir__`.
@@ -53,7 +109,7 @@ std::vector<std::string> py_dir(const py::object& self, const unrealsdk::unreal:
  * @param func_obj The object to bind functions to. If nullptr, does not allow getting functions.
  * @return The retrieved value.
  */
-py::object py_getattr(unrealsdk::unreal::UField* field,
+py::object py_getattr(PyFieldVariant field,
                       uintptr_t base_addr,
                       const unrealsdk::unreal::UnrealPointer<void>& parent,
                       unrealsdk::unreal::UObject* func_obj = nullptr);
@@ -69,9 +125,7 @@ py::object py_getattr(unrealsdk::unreal::UField* field,
  * @param base_addr The base address of the object.
  * @param value The value to set.
  */
-void py_setattr_direct(unrealsdk::unreal::UField* field,
-                       uintptr_t base_addr,
-                       const py::object& value);
+void py_setattr_direct(PyFieldVariant field, uintptr_t base_addr, const py::object& value);
 
 }  // namespace pyunrealsdk::unreal
 

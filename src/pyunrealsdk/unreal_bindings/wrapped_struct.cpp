@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "pyunrealsdk/static_py_object.h"
+#include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "unrealsdk/unreal/classes/ufunction.h"
@@ -94,20 +95,28 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
 }
 
 void register_wrapped_struct(py::module_& mod) {
-    py::class_<WrappedStruct>(mod, "WrappedStruct")
-        .def(py::init([](std::variant<const unrealsdk::unreal::UFunction*,
-                                      const unrealsdk::unreal::UScriptStruct*> type,
-                         const py::args& args,
-                         const py::kwargs& kwargs) { return make_struct(type, args, kwargs); }),
-             "Creates a new wrapped struct.\n"
-             "\n"
-             "Args:\n"
-             "    type: The type of struct to create.\n"
-             "    *args: Fields on the struct to initialize.\n"
-             "    **kwargs: Fields on the struct to initialize.",
-             "type"_a, py::pos_only{})
+    PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk.unreal")
+
+    mod.attr(PYUNREALSDK_STUBGEN_ATTR("IGNORE_STRUCT", "object")) = get_ignore_struct_sentinel();
+
+    py::classh<WrappedStruct>(mod, PYUNREALSDK_STUBGEN_CLASS("WrappedStruct", ))
+        .def(PYUNREALSDK_STUBGEN_METHOD_N("__init__", "None")
+                 py::init([](std::variant<const unrealsdk::unreal::UFunction*,
+                                          const unrealsdk::unreal::UScriptStruct*> type,
+                             const py::args& args,
+                             const py::kwargs& kwargs) { return make_struct(type, args, kwargs); }),
+             PYUNREALSDK_STUBGEN_DOCSTRING("Creates a new wrapped struct.\n"
+                                           "\n"
+                                           "Args:\n"
+                                           "    type: The type of struct to create.\n"
+                                           "    *args: Fields on the struct to initialize.\n"
+                                           "    **kwargs: Fields on the struct to initialize.\n"),
+             PYUNREALSDK_STUBGEN_ARG("type"_a, "UFunction | UScriptStruct", ),
+             PYUNREALSDK_STUBGEN_POS_ONLY()                /* alignment */
+             PYUNREALSDK_STUBGEN_ARG_N("*args"_a, "Any", ) /* alignment */
+             PYUNREALSDK_STUBGEN_ARG_N("**kwargs"_a, "Any", ))
         .def(
-            "__repr__",
+            PYUNREALSDK_STUBGEN_METHOD("__repr__", "str"),
             [](const WrappedStruct& self) {
                 std::ostringstream output;
                 output << "{";
@@ -132,59 +141,67 @@ void register_wrapped_struct(py::module_& mod) {
                 output << "}";
                 return output.str();
             },
-            "Gets a string representation of this struct.\n"
-            "\n"
-            "Returns:\n"
-            "    The string representation.")
+            PYUNREALSDK_STUBGEN_DOCSTRING("Gets a string representation of this struct.\n"
+                                          "\n"
+                                          "Returns:\n"
+                                          "    The string representation.\n"))
         .def(
-            "__dir__",
+            PYUNREALSDK_STUBGEN_METHOD("__dir__", "list[str]"),
             [](const py::object& self) {
                 return py_dir(self, py::cast<WrappedStruct*>(self)->type);
             },
-            "Gets the attributes which exist on this struct.\n"
-            "\n"
-            "Includes both python attributes and unreal fields. This can be changed to only\n"
-            "python attributes by calling dir_includes_unreal.\n"
-            "\n"
-            "Returns:\n"
-            "    A list of attributes which exist on this struct.")
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Gets the attributes which exist on this struct.\n"
+                "\n"
+                "Includes both python attributes and unreal fields. This can be changed to only\n"
+                "python attributes by calling dir_includes_unreal.\n"
+                "\n"
+                "Returns:\n"
+                "    A list of attributes which exist on this struct.\n"))
         .def(
-            "__getattr__",
+            PYUNREALSDK_STUBGEN_METHOD("__getattr__", "Any"),
             [](const WrappedStruct& self, const FName& name) {
                 return py_getattr(py_find_field(name, self.type),
                                   reinterpret_cast<uintptr_t>(self.base.get()), self.base);
             },
-            "Reads an unreal field off of the struct.\n"
-            "\n"
-            "Automatically looks up the relevant UField.\n"
-            "\n"
-            "Args:\n"
-            "    name: The name of the field to get.\n"
-            "Returns:\n"
-            "    The field's value.",
-            "name"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING("Reads an unreal field off of the struct.\n"
+                                          "\n"
+                                          "Automatically looks up the relevant UField.\n"
+                                          "\n"
+                                          "Args:\n"
+                                          "    name: The name of the field to get.\n"
+                                          "Returns:\n"
+                                          "    The field's value.\n"),
+            PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ))
         .def(
-            "_get_field",
-            [](const WrappedStruct& self, UField* field) {
-                if (field == nullptr) {
+            PYUNREALSDK_STUBGEN_METHOD("_get_field", "Any"),
+            [](const WrappedStruct& self, PyFieldVariant::from_py_type field) {
+                const PyFieldVariant var{field};
+                if (var == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
                 }
-                return py_getattr(field, reinterpret_cast<uintptr_t>(self.base.get()), self.base);
+                return py_getattr(var, reinterpret_cast<uintptr_t>(self.base.get()), self.base);
             },
-            "Reads an unreal field off of the struct.\n"
-            "\n"
-            "In performance critical situations, rather than use __getattr__, you can look up\n"
-            "the UField beforehand (via struct._type._find()), then pass it directly to this\n"
-            "function. This does not get validated, passing a field which doesn't exist on\n"
-            "the struct is undefined behaviour.\n"
-            "\n"
-            "Args:\n"
-            "    field: The field to get.\n"
-            "Returns:\n"
-            "    The field's value.",
-            "field"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Reads an unreal field off of the struct.\n"
+                "\n"
+                "In performance critical situations, rather than use __getattr__, you can look up\n"
+                "the UField beforehand (via struct._type._find()), then pass it directly to this\n"
+                "function. This does not get validated, passing a field which doesn't exist on\n"
+                "the struct is undefined behaviour.\n"
+                "\n"
+                "Args:\n"
+                "    field: The field to get.\n"
+                "Returns:\n"
+                "    The field's value.\n"),
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", )
+#else
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", )
+#endif
+                )
         .def(
-            "__setattr__",
+            PYUNREALSDK_STUBGEN_METHOD("__setattr__", "None"),
             [](WrappedStruct& self, const py::str& name, const py::object& value) {
                 // See if the standard setattr would work first, in case we're being called on an
                 // existing field. Getattr is only called on failure, but setattr is always called.
@@ -209,59 +226,67 @@ void register_wrapped_struct(py::module_& mod) {
                 py_setattr_direct(py_find_field(py::cast<FName>(name), self.type),
                                   reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
-            "Writes a value to an unreal field on the struct.\n"
-            "\n"
-            "Automatically looks up the relevant UField.\n"
-            "\n"
-            "Args:\n"
-            "    name: The name of the field to set.\n"
-            "    value: The value to write.",
-            "name"_a, "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING("Writes a value to an unreal field on the struct.\n"
+                                          "\n"
+                                          "Automatically looks up the relevant UField.\n"
+                                          "\n"
+                                          "Args:\n"
+                                          "    name: The name of the field to set.\n"
+                                          "    value: The value to write.\n"),
+            PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ), PYUNREALSDK_STUBGEN_ARG("value"_a, "Any", ))
         .def(
-            "_set_field",
-            [](WrappedStruct& self, UField* field, const py::object& value) {
-                if (field == nullptr) {
+            PYUNREALSDK_STUBGEN_METHOD("_set_field", "None"),
+            [](WrappedStruct& self, PyFieldVariant::from_py_type field, const py::object& value) {
+                const PyFieldVariant var{field};
+                if (var == nullptr) {
                     throw py::attribute_error("cannot access null attribute");
                 }
-                py_setattr_direct(field, reinterpret_cast<uintptr_t>(self.base.get()), value);
+                py_setattr_direct(var, reinterpret_cast<uintptr_t>(self.base.get()), value);
             },
-            "Writes a value to an unreal field on the struct.\n"
-            "\n"
-            "In performance critical situations, rather than use __setattr__, you can look up\n"
-            "the UField beforehand (via struct._type._find()), then pass it directly to this\n"
-            "function. This does not get validated, passing a field which doesn't exist on\n"
-            "the struct is undefined behaviour.\n"
-            "\n"
-            "Args:\n"
-            "    field: The field to set.\n"
-            "    value: The value to write.",
-            "field"_a, "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Writes a value to an unreal field on the struct.\n"
+                "\n"
+                "In performance critical situations, rather than use __setattr__, you can look up\n"
+                "the UField beforehand (via struct._type._find()), then pass it directly to this\n"
+                "function. This does not get validated, passing a field which doesn't exist on\n"
+                "the struct is undefined behaviour.\n"
+                "\n"
+                "Args:\n"
+                "    field: The field to set.\n"
+                "    value: The value to write.\n"),
+#if UNREALSDK_PROPERTIES_ARE_FFIELD
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField | ZProperty", ),
+#else
+            PYUNREALSDK_STUBGEN_ARG("field"_a, "UField", ),
+#endif
+            PYUNREALSDK_STUBGEN_ARG("value"_a, "Any", ))
         .def(
-            "__copy__", [](const WrappedStruct& self) { return WrappedStruct(self); },
-            "Creates a copy of this struct. Don't call this directly, use copy.copy().\n"
-            "\n"
-            "Returns:\n"
-            "    A new, python-owned copy of this struct.")
+            PYUNREALSDK_STUBGEN_METHOD("__copy__", "WrappedStruct"),
+            [](const WrappedStruct& self) { return WrappedStruct(self); },
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Creates a copy of this struct. Don't call this directly, use copy.copy().\n"
+                "\n"
+                "Returns:\n"
+                "    A new, python-owned copy of this struct.\n"))
         .def(
-            "__deepcopy__",
+            PYUNREALSDK_STUBGEN_METHOD("__deepcopy__", "WrappedStruct"),
             [](const WrappedStruct& self, const py::dict& /*memo*/) { return WrappedStruct(self); },
-            "Creates a copy of this struct. Don't call this directly, use copy.deepcopy().\n"
-            "\n"
-            "Args:\n"
-            "    memo: Opaque dict used by deepcopy internals."
-            "Returns:\n"
-            "    A new, python-owned copy of this struct.",
-            "memo"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Creates a copy of this struct. Don't call this directly, use copy.deepcopy().\n"
+                "\n"
+                "Args:\n"
+                "    memo: Opaque dict used by deepcopy internals."
+                "Returns:\n"
+                "    A new, python-owned copy of this struct.\n"),
+            PYUNREALSDK_STUBGEN_ARG("memo"_a, "dict[Any, Any]", ))
         .def(
-            "_get_address",
+            PYUNREALSDK_STUBGEN_METHOD("_get_address", "int"),
             [](const WrappedStruct& self) { return reinterpret_cast<uintptr_t>(self.base.get()); },
-            "Gets the address of this struct, for debugging.\n"
-            "\n"
-            "Returns:\n"
-            "    This struct's address.")
-        .def_readwrite("_type", &WrappedStruct::type);
-
-    mod.attr("IGNORE_STRUCT") = get_ignore_struct_sentinel();
+            PYUNREALSDK_STUBGEN_DOCSTRING("Gets the address of this struct, for debugging.\n"
+                                          "\n"
+                                          "Returns:\n"
+                                          "    This struct's address.\n"))
+        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("_type", "UStruct"), &WrappedStruct::type);
 }
 
 bool is_ignore_struct_sentinel(const py::object& obj) {

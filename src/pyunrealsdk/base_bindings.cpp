@@ -1,6 +1,7 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/base_bindings.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
 #include "unrealsdk/config.h"
@@ -116,6 +117,8 @@ void recursive_merge_table(py::dict& base, const py::dict& overrides) {
  * @param mod The module to add the config dict to.
  */
 void create_and_add_config_dict(py::module_& mod) {
+    PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk")
+
     // We want to copy the full, merged, unrealsdk config into Python.
     // Only a few basic accessors into the config dict are exposed, since we can't safely expose
     // the toml objects across dlls.
@@ -169,34 +172,38 @@ void create_and_add_config_dict(py::module_& mod) {
     auto base_dict = base_config.cast<py::dict>();
     auto user_dict = user_config.cast<py::dict>();
     recursive_merge_table(base_dict, user_dict);
-    mod.attr("config") = base_dict;
+    mod.attr(PYUNREALSDK_STUBGEN_ATTR("config", "Mapping[str, Any]")) = base_dict;
 }
 
 }  // namespace
 
 void register_base_bindings(py::module_& mod) {
+    PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk")
+
     mod.def(
-        "find_class",
+        PYUNREALSDK_STUBGEN_FUNC("find_class", "UClass"),
         [](const std::wstring& name, std::optional<bool> fully_qualified) {
             return find_cached_potentially_qualified<UClass*>(
                 name, fully_qualified, "class",
                 [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
                 [](const FName& name) { return unrealsdk::unreal::find_class(name); });
         },
-        "Finds a class by name.\n"
-        "\n"
-        "Throws a ValueError if not found.\n"
-        "\n"
-        "Args:\n"
-        "    name: The class name.\n"
-        "    fully_qualified: If the class name is fully qualified, or None (the default)\n"
-        "                     to autodetect.\n"
-        "Returns:\n"
-        "    The unreal class.",
-        "name"_a, "fully_qualified"_a = std::nullopt);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Finds a class by name.\n"
+            "\n"
+            "Throws a ValueError if not found.\n"
+            "\n"
+            "Args:\n"
+            "    name: The class name.\n"
+            "    fully_qualified: If the class name is fully qualified, or None (the default)\n"
+            "                     to autodetect.\n"
+            "Returns:\n"
+            "    The unreal class.\n"),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ),
+        PYUNREALSDK_STUBGEN_ARG("fully_qualified"_a, "bool | None", "None") = std::nullopt);
 
     mod.def(
-        "find_enum",
+        PYUNREALSDK_STUBGEN_FUNC("find_enum", "type[_GenericUnrealEnum]"),
         [](const std::wstring& name, std::optional<bool> fully_qualified) {
             auto enum_obj = find_cached_potentially_qualified<UEnum*>(
                 name, fully_qualified, "enum",
@@ -205,20 +212,22 @@ void register_base_bindings(py::module_& mod) {
 
             return unreal::enum_as_py_enum(enum_obj);
         },
-        "Finds an enum by name.\n"
-        "\n"
-        "Throws a ValueError if not found.\n"
-        "\n"
-        "Args:\n"
-        "    name: The enum name.\n"
-        "    fully_qualified: If the enum name is fully qualified, or None (the default)\n"
-        "                     to autodetect.\n"
-        "Returns:\n"
-        "    The unreal enum.",
-        "name"_a, "fully_qualified"_a = std::nullopt);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Finds an enum by name.\n"
+            "\n"
+            "Throws a ValueError if not found.\n"
+            "\n"
+            "Args:\n"
+            "    name: The enum name.\n"
+            "    fully_qualified: If the enum name is fully qualified, or None (the default)\n"
+            "                     to autodetect.\n"
+            "Returns:\n"
+            "    The unreal enum.\n"),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ),
+        PYUNREALSDK_STUBGEN_ARG("fully_qualified"_a, "bool | None", "None") = std::nullopt);
 
     mod.def(
-        "make_struct",
+        PYUNREALSDK_STUBGEN_FUNC("make_struct", "WrappedStruct"),
         [](const std::wstring& name, std::optional<bool> fully_qualified,
            const py::kwargs& kwargs) {
             auto type = find_cached_potentially_qualified<UScriptStruct*>(
@@ -229,19 +238,23 @@ void register_base_bindings(py::module_& mod) {
             const py::args empty_args{};
             return unreal::make_struct(type, empty_args, kwargs);
         },
-        "Finds and constructs a WrappedStruct by name.\n"
-        "\n"
-        "Args:\n"
-        "    name: The struct name.\n"
-        "    fully_qualified: If the struct name is fully qualified, or None (the\n"
-        "                     default) to autodetect.\n"
-        "    **kwargs: Fields on the struct to initialize.\n"
-        "Returns:\n"
-        "    The newly constructed struct.",
-        "name"_a, "fully_qualified"_a = std::nullopt, py::pos_only{});
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Finds and constructs a WrappedStruct by name.\n"
+            "\n"
+            "Args:\n"
+            "    name: The struct name.\n"
+            "    fully_qualified: If the struct name is fully qualified, or None (the\n"
+            "                     default) to autodetect.\n"
+            "    **kwargs: Fields on the struct to initialize.\n"
+            "Returns:\n"
+            "    The newly constructed struct.\n"),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ),
+        PYUNREALSDK_STUBGEN_ARG("fully_qualified"_a, "bool | None", "None") = std::nullopt,
+        PYUNREALSDK_STUBGEN_POS_ONLY());
+    PYUNREALSDK_STUBGEN_ARG_N("**kwargs"_a, "Any", )
 
     mod.def(
-        "find_object",
+        PYUNREALSDK_STUBGEN_FUNC("find_object", "UObject"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
             auto val = unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
             if (val == nullptr) {
@@ -250,21 +263,23 @@ void register_base_bindings(py::module_& mod) {
             }
             return val;
         },
-        "Finds an object by name.\n"
-        "\n"
-        "Throws a ValueError if not found.\n"
-        "\n"
-        "Args:\n"
-        "    cls: The object's class, or class name. If given as the name, always\n"
-        "         autodetects if fully qualified - call find_class() directly if you need\n"
-        "         to specify.\n"
-        "    name: The object's name.\n"
-        "Returns:\n"
-        "    The unreal object.",
-        "cls"_a, "name"_a);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Finds an object by name.\n"
+            "\n"
+            "Throws a ValueError if not found.\n"
+            "\n"
+            "Args:\n"
+            "    cls: The object's class, or class name. If given as the name, always\n"
+            "         autodetects if fully qualified - call find_class() directly if you need\n"
+            "         to specify.\n"
+            "    name: The object's name.\n"
+            "Returns:\n"
+            "    The unreal object.\n"),
+        PYUNREALSDK_STUBGEN_ARG("cls"_a, "UClass | str", ),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ));
 
     mod.def(
-        "find_all",
+        PYUNREALSDK_STUBGEN_FUNC("find_all", "Iterable[UObject]"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, bool exact) {
             auto cls_ptr = evaluate_class_arg(cls_arg);
             auto gobjects = unrealsdk::gobjects();
@@ -290,20 +305,22 @@ void register_base_bindings(py::module_& mod) {
 
             return results;
         },
-        "Finds all instances of a class.\n"
-        "\n"
-        "Args:\n"
-        "    cls: The object's class, or class name. If given as the name, always\n"
-        "         autodetects if fully qualified - call find_class() directly if you need\n"
-        "         to specify.\n"
-        "    exact: If true (the default), only finds exact class matches. If false, also\n"
-        "           matches subclasses.\n"
-        "Returns:\n"
-        "    An iterator over all instances of the class.",
-        "cls"_a, "exact"_a = true);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Finds all instances of a class.\n"
+            "\n"
+            "Args:\n"
+            "    cls: The object's class, or class name. If given as the name, always\n"
+            "         autodetects if fully qualified - call find_class() directly if you need\n"
+            "         to specify.\n"
+            "    exact: If true (the default), only finds exact class matches. If false, also\n"
+            "           matches subclasses.\n"
+            "Returns:\n"
+            "    An iterator over all instances of the class.\n"),
+        PYUNREALSDK_STUBGEN_ARG("cls"_a, "UClass | str", ),
+        PYUNREALSDK_STUBGEN_ARG("exact"_a, "bool", "True") = true);
 
     mod.def(
-        "construct_object",
+        PYUNREALSDK_STUBGEN_FUNC("construct_object", "UObject"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
            uint64_t flags, UObject* template_obj) {
             auto cls = evaluate_class_arg(cls_arg);
@@ -316,35 +333,42 @@ void register_base_bindings(py::module_& mod) {
             }
             return val;
         },
-        "Constructs a new object.\n"
-        "\n"
-        "Args:\n"
-        "    cls: The class to construct, or it's name. Required. If given as the name,\n"
-        "         always autodetects if fully qualified - call find_class() directly if\n"
-        "         you need to specify.\n"
-        "    outer: The outer object to construct the new object under. Required.\n"
-        "    name: The new object's name.\n"
-        "    flags: Object flags to set.\n"
-        "    template_obj: The template object to use.\n"
-        "Returns:\n"
-        "    The constructed object.",
-        "cls"_a, "outer"_a, "name"_a = FName{0, 0}, "flags"_a = 0, "template_obj"_a = nullptr);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Constructs a new object.\n"
+            "\n"
+            "Args:\n"
+            "    cls: The class to construct, or it's name. Required. If given as the name,\n"
+            "         always autodetects if fully qualified - call find_class() directly if\n"
+            "         you need to specify.\n"
+            "    outer: The outer object to construct the new object under. Required.\n"
+            "    name: The new object's name.\n"
+            "    flags: Object flags to set.\n"
+            "    template_obj: The template object to use.\n"
+            "Returns:\n"
+            "    The constructed object.\n"),
+        PYUNREALSDK_STUBGEN_ARG("cls"_a, "UClass | str", ),
+        PYUNREALSDK_STUBGEN_ARG("outer"_a, "UObject | None", ),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", "\"None\"") = FName{0, 0},
+        PYUNREALSDK_STUBGEN_ARG("flags"_a, "int", "0") = 0,
+        PYUNREALSDK_STUBGEN_ARG("template_obj"_a, "UObject | None", "None") = nullptr);
 
     mod.def(
-        "load_package",
+        PYUNREALSDK_STUBGEN_FUNC("load_package", "UObject"),
         [](const std::wstring& name, uint32_t flags) {
             return unrealsdk::load_package(name, flags);
         },
-        "Loads a package, and all it's contained objects.\n"
-        "\n"
-        "This function may block for several seconds while the package is loaded.\n"
-        "\n"
-        "Args:\n"
-        "    name: The package's name.\n"
-        "    flags: The loading flags to use.\n"
-        "Returns:\n"
-        "    The loaded `Package` object.",
-        "name"_a, "flags"_a = 0);
+        PYUNREALSDK_STUBGEN_DOCSTRING(
+            "Loads a package, and all it's contained objects.\n"
+            "\n"
+            "This function may block for several seconds while the package is loaded.\n"
+            "\n"
+            "Args:\n"
+            "    name: The package's name.\n"
+            "    flags: The loading flags to use.\n"
+            "Returns:\n"
+            "    The loaded `Package` object.\n"),
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", ),
+        PYUNREALSDK_STUBGEN_ARG("flags"_a, "int", "0") = 0);
 
     create_and_add_config_dict(mod);
 }

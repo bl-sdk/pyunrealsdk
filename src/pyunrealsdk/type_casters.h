@@ -11,6 +11,7 @@ namespace unrealsdk::unreal {
 
 class UObject;
 class WrappedStruct;
+struct FField;
 
 }  // namespace unrealsdk::unreal
 
@@ -26,6 +27,7 @@ namespace pyunrealsdk::type_casters {
  * @return The source object.
  */
 const void* downcast_unreal(const unrealsdk::unreal::UObject* src, const std::type_info*& type);
+const void* downcast_unreal(const unrealsdk::unreal::FField* src, const std::type_info*& type);
 
 #endif
 
@@ -39,6 +41,7 @@ const void* downcast_unreal(const unrealsdk::unreal::UObject* src, const std::ty
  * @return The python object.
  */
 py::object cast(unrealsdk::unreal::UObject* src);
+py::object cast(unrealsdk::unreal::FField* src);
 py::object cast(unrealsdk::unreal::WrappedStruct* src);
 
 /**
@@ -53,6 +56,8 @@ T cast(const py::object& src);
 
 template <>
 unrealsdk::unreal::UObject* cast<unrealsdk::unreal::UObject*>(const py::object& src);
+template <>
+unrealsdk::unreal::FField* cast<unrealsdk::unreal::FField*>(const py::object& src);
 
 #endif
 
@@ -61,15 +66,26 @@ unrealsdk::unreal::UObject* cast<unrealsdk::unreal::UObject*>(const py::object& 
 namespace pybind11 {
 
 #ifdef PYUNREALSDK_INTERNAL
-// Make the UObject hierarchy automatically downcast
+// Make the UObject/FField hierarchies automatically downcast
+
 template <typename itype>
 struct polymorphic_type_hook<
     itype,
-    detail::enable_if_t<std::is_base_of<unrealsdk::unreal::UObject, itype>::value>> {
+    detail::enable_if_t<std::is_base_of_v<unrealsdk::unreal::UObject, itype>>> {
     static const void* get(const unrealsdk::unreal::UObject* src, const std::type_info*& type) {
         return pyunrealsdk::type_casters::downcast_unreal(src, type);
     }
 };
+
+template <typename itype>
+struct polymorphic_type_hook<
+    itype,
+    detail::enable_if_t<std::is_base_of_v<unrealsdk::unreal::FField, itype>>> {
+    static const void* get(const unrealsdk::unreal::FField* src, const std::type_info*& type) {
+        return pyunrealsdk::type_casters::downcast_unreal(src, type);
+    }
+};
+
 #endif
 
 namespace detail {

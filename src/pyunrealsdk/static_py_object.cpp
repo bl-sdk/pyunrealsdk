@@ -23,7 +23,7 @@ StaticPyObject::~StaticPyObject() {
     // Release just moves some pointers around, it's completely safe
     auto handle = this->inner_obj.release();
 
-    // If finialized, we have to assume it's an invalid pointer which Python already freed
+    // If finalized, we have to assume it's an invalid pointer which Python already freed
     // Trying to grab the GIL can cause the thread to terminate if finalizing, so also check that
     if (PY_IS_FINALIZING() != 0 || Py_IsInitialized() == 0) {
         return;
@@ -57,6 +57,6 @@ const py::object& StaticPyObject::obj(void) const {
 }
 
 StaticPyObject::operator bool() const {
-    return (bool)this->inner_obj;
+    return static_cast<bool>(this->inner_obj);
 }
 }  // namespace pyunrealsdk

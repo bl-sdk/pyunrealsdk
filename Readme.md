@@ -53,6 +53,7 @@ execution.
 def on_main_menu(
     obj: unrealsdk.unreal.UObject,
     args: unrealsdk.unreal.WrappedStruct,
+    ret: Any,
     func: unrealsdk.unreal.BoundFunction
 ) -> None:
     print("Reached main menu!")
@@ -119,18 +120,6 @@ download a copy from Python's site. When integrating the sdk into your own proje
 version can be specified using the `EXPLICIT_PYTHON_ARCH` and `EXPLICIT_PYTHON_VERSION` variables.
 The CMake presets already have these set if building locally.
 
-To download the relevant python version, you need a copy of Python with requests on your path. When
-cross compiling you also need `msiextract`, which is typically part of an `msitools` package. The
-dev containers already have these set up.
-```sh
-pip install requests
-python -c 'import requests'
-
-# Linux only
-apt install msitools # Or equivalent
-msiextract --version 
-```
-
 Once you've got this all set up, to build the sdk:
 
 1. Clone the repo (including submodules).
@@ -138,32 +127,16 @@ Once you've got this all set up, to build the sdk:
    git clone --recursive https://github.com/bl-sdk/pyunrealsdk.git
    ```
 
-2. (OPTIONAL) Copy `postbuild.template`, and edit it to copy files to your game install directories.
-
-3. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
+2. Choose a preset, and run CMake. Most IDEs will be able to do this for you,
    ```
-   cmake . --preset msvc-ue4-x64-debug
-   cmake --build out/build/msvc-ue4-x64-debug
+   cmake . --preset msvc-oak-debug
+   cmake --build out/build/msvc-oak-debug
    ```
 
-4. (OPTIONAL) Copy the python runtime files to the game's directory. At a minimum, you probably
-   want these:
-   ```
-   python3.dll
-   python3<version>.dll
-   python3<version>.zip
-   ```
+3. (OPTIONAL) Consider pointing your CMake install dir directly at your plugins folder. The install
+   target is set up to copy all required dlls, including Python's, for you.
 
-   A CMake install will copy these files, as well as several other useful libraries, to the install
-   dir for you.
-   ```
-   cmake --build out/build/msvc-ue4-x64-debug --target install
-   ```
-
-   As an alternative to this and step 2, you could point the CMake install dir directly at your
-   game, so everything's automatically copied. This however will only work with one game at a time.
-
-5. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
+4. (OPTIONAL) If you're debugging a game on Steam, add a `steam_appid.txt` in the same folder as the
    executable, containing the game's Steam App Id.
 
    Normally, games compiled with Steamworks will call
@@ -171,6 +144,9 @@ Once you've got this all set up, to build the sdk:
    which will drop your debugger session when launching the exe directly - adding this file prevents
    that. Not only does this let you debug from entry, it also unlocks some really useful debugger
    features which you can't access from just an attach (i.e. Visual Studio's Edit and Continue).
+
+## Type Stubs
+See the [stubgen readme](stubgen/Readme.md) for info on how the python type stubs are generated.
 
 # Python Extension Modules
 The sdk provides some helpers to let you build extensions as python modules.

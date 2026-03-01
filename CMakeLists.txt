@@ -1,9 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.25)
 
-project(pyunrealsdk VERSION 1.8.0)
+project(pyunrealsdk VERSION 1.9.0)
 
 function(_pyunrealsdk_add_base_target_args target_name)
-    target_compile_features(${target_name} PUBLIC cxx_std_23)
+    target_compile_features(${target_name} PUBLIC cxx_std_20)
     set_target_properties(${target_name} PROPERTIES
         COMPILE_WARNING_AS_ERROR True
         INTERPROCEDURAL_OPTIMIZATION True
@@ -54,7 +54,6 @@ add_subdirectory(libs/pybind11 EXCLUDE_FROM_ALL)
 set(UNREALSDK_SHARED True)
 add_subdirectory(libs/unrealsdk EXCLUDE_FROM_ALL)
 
-# Make sure to include after unrealsdk, to make sure the arch define is set
 add_subdirectory(common_cmake/explicit_python)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/pyunrealsdk/*.cpp" "src/pyunrealsdk/*.h")
@@ -85,39 +84,25 @@ target_compile_definitions(pyunrealsdk PRIVATE PYUNREALSDK_INTERNAL)
 
 target_precompile_headers(pyunrealsdk PUBLIC "src/pyunrealsdk/pch.h")
 
-# Postbuild
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(POSTBUILD_SCRIPT "postbuild")
-    if(CMAKE_HOST_WIN32)
-        set(POSTBUILD_SCRIPT "${POSTBUILD_SCRIPT}.bat")
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${POSTBUILD_SCRIPT}")
-        add_custom_command(
-            TARGET pyunrealsdk
-            POST_BUILD
-            COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/${POSTBUILD_SCRIPT}"
-            ARGS
-                "$<SHELL_PATH:$<TARGET_FILE:pyunrealsdk>>"
-                "$<SHELL_PATH:$<TARGET_FILE:unrealsdk>>"
-                "${UNREALSDK_UE_VERSION}"
-                "${UNREALSDK_ARCH}"
-                "$<IF:$<CONFIG:DEBUG>,DEBUG,RELEASE>"
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-    endif()
-endif()
-
 install(
     TARGETS pyunrealsdk unrealsdk
     RUNTIME DESTINATION .
 )
+# The mingw linker doesn't support pdbs, so despite being optional, CMake fails it for even
+# trying to accessing this.
+if(NOT MINGW)
+    install(
+        FILES $<TARGET_PDB_FILE:pyunrealsdk> $<TARGET_PDB_FILE:unrealsdk>
+        DESTINATION .
+        OPTIONAL
+    )
+endif()
 
 function(pyunrealsdk_add_module target_name)
     add_library(${target_name} MODULE ${ARGN})
     _pyunrealsdk_add_base_target_args(${target_name})
 
     set_target_properties(${target_name} PROPERTIES
-        DEBUG_POSTFIX "_d"
         SUFFIX ".pyd"
     )
 

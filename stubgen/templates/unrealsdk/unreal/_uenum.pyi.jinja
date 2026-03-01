@@ -38,11 +38,4 @@ class UnrealEnum(IntFlag, metaclass=_UnrealEnumMeta):
     ```
     """
 
-class UEnum(UField):
-    def _as_py(self) -> type[_GenericUnrealEnum]:
-        """
-        Generates a compatible IntFlag enum.
-
-        Returns:
-            An IntFlag enum compatible with this enum.
-        """
+{{ "unrealsdk.unreal.UEnum" | declare }}

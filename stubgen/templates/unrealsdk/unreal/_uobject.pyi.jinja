@@ -1,0 +1,9 @@
+from __future__ import annotations
+
+from contextlib import AbstractContextManager
+from typing import Any, Never
+
+from ._uobject_children import UClass, UField, ZProperty
+
+{{ "unrealsdk.unreal.UObject" | declare }}
+{{ "unrealsdk.unreal.notify_changes" | declare }}

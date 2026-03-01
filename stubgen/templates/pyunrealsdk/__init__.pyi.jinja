@@ -1,0 +1,8 @@
+{{ "pyunrealsdk" | declare }}  # noqa: D404
+
+{{ "pyunrealsdk" | __all__ }}
+{% set attrs = [
+    "pyunrealsdk.__version__",
+    "pyunrealsdk.__version_info__",
+] -%}
+{{- attrs | declare_all }}

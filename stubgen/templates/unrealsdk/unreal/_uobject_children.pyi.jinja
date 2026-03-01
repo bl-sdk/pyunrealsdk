@@ -1,0 +1,86 @@
+from __future__ import annotations
+
+from collections.abc import Iterator
+from typing import Any, Never
+
+from ._uenum import UEnum
+from ._uobject import UObject
+from ._wrapped_array import WrappedArray
+from ._wrapped_struct import WrappedStruct
+
+# ======== Not technically subclasses but still closely related ========
+
+{% set classes = [
+    "unrealsdk.unreal.FField",
+    "unrealsdk.unreal.FFieldClass",
+] %}
+{{ classes | declare_all }}
+
+# ======== First Layer Subclasses ========
+
+{% set classes = [
+    "unrealsdk.unreal.UField",
+] %}
+{{ classes | declare_all }}
+
+# ======== Second Layer Subclasses ========
+
+{% set classes = [
+    "unrealsdk.unreal.UConst",
+    "unrealsdk.unreal.UStruct",
+    "unrealsdk.unreal.ZProperty",
+] %}
+{{ classes | declare_all }}
+
+# ======== Third Layer Subclasses ========
+
+{% set classes = [
+    "unrealsdk.unreal.UClass",
+    "unrealsdk.unreal.UFunction",
+    "unrealsdk.unreal.UScriptStruct",
+    "unrealsdk.unreal.ZArrayProperty",
+    "unrealsdk.unreal.ZBoolProperty",
+    "unrealsdk.unreal.ZByteProperty",
+    "unrealsdk.unreal.ZDelegateProperty",
+    "unrealsdk.unreal.ZDoubleProperty",
+    "unrealsdk.unreal.ZEnumProperty",
+    "unrealsdk.unreal.ZFloatProperty",
+    "unrealsdk.unreal.ZGbxDefPtrProperty",
+    "unrealsdk.unreal.ZInt16Property",
+    "unrealsdk.unreal.ZInt64Property",
+    "unrealsdk.unreal.ZInt8Property",
+    "unrealsdk.unreal.ZIntProperty",
+    "unrealsdk.unreal.ZInterfaceProperty",
+    "unrealsdk.unreal.ZMulticastDelegateProperty",
+    "unrealsdk.unreal.ZNameProperty",
+    "unrealsdk.unreal.ZObjectProperty",
+    "unrealsdk.unreal.ZStrProperty",
+    "unrealsdk.unreal.ZStructProperty",
+    "unrealsdk.unreal.ZTextProperty",
+    "unrealsdk.unreal.ZUInt16Property",
+    "unrealsdk.unreal.ZUInt32Property",
+    "unrealsdk.unreal.ZUInt64Property",
+] %}
+{{ classes | declare_all }}
+
+# ======== Fourth Layer Subclasses ========
+
+{% set classes = [
+    "unrealsdk.unreal.UBlueprintGeneratedClass",
+    "unrealsdk.unreal.ZByteAttributeProperty",
+    "unrealsdk.unreal.ZClassProperty",
+    "unrealsdk.unreal.ZComponentProperty",
+    "unrealsdk.unreal.ZFloatAttributeProperty",
+    "unrealsdk.unreal.ZIntAttributeProperty",
+    "unrealsdk.unreal.ZLazyObjectProperty",
+    "unrealsdk.unreal.ZSoftObjectProperty",
+    "unrealsdk.unreal.ZWeakObjectProperty",
+] %}
+{{ classes | declare_all }}
+
+# ======== Fifth Layer Subclasses ========
+
+{% set classes = [
+    "unrealsdk.unreal.ZSoftClassProperty",
+] %}
+{{ classes | declare_all }}

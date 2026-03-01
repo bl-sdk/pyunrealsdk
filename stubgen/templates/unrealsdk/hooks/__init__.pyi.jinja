@@ -1,0 +1,38 @@
+from __future__ import annotations
+
+import warnings
+from collections.abc import Callable
+from contextlib import AbstractContextManager
+from enum import Enum
+from typing import Any, ClassVar, Literal, overload
+
+from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
+
+{{ "unrealsdk.hooks" | __all__ }}
+
+{% set classes = [
+    "unrealsdk.hooks.Block",
+    "unrealsdk.hooks.Type",
+    "unrealsdk.hooks.Unset",
+] %}
+{{ classes | declare_all }}
+
+type _HookBlockSignal = None | Block | type[Block]
+type _PreHookCallback = Callable[
+    [UObject, WrappedStruct, Any, BoundFunction],
+    _HookBlockSignal | tuple[_HookBlockSignal, Any],
+]
+type _PostHookCallback = Callable[[UObject, WrappedStruct, Any, BoundFunction], None]
+
+type _PreHookType = Literal[Type.PRE]
+type _PostHookType = Literal[Type.POST, Type.POST_UNCONDITIONAL]
+
+{% set funcs = [
+    "unrealsdk.hooks.add_hook",
+    "unrealsdk.hooks.has_hook",
+    "unrealsdk.hooks.inject_next_call",
+    "unrealsdk.hooks.log_all_calls",
+    "unrealsdk.hooks.prevent_hooking_direct_calls",
+    "unrealsdk.hooks.remove_hook",
+] %}
+{{ funcs | declare_all }}

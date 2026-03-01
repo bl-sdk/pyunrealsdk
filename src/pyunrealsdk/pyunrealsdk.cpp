@@ -4,6 +4,7 @@
 #include "pyunrealsdk/commands.h"
 #include "pyunrealsdk/hooks.h"
 #include "pyunrealsdk/logging.h"
+#include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/version.h"
 #include "unrealsdk/config.h"
@@ -15,11 +16,12 @@
 
 // NOLINTNEXTLINE(readability-identifier-length)
 PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
-    m.attr("__version__") = unrealsdk::get_version_string();
+    PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk")
+    m.attr(PYUNREALSDK_STUBGEN_ATTR("__version__", "str")) = unrealsdk::get_version_string();
 
     // NOLINTBEGIN(readability-magic-numbers)
     auto unrealsdk_version = unrealsdk::get_version();
-    m.attr("__version_info__") =
+    m.attr(PYUNREALSDK_STUBGEN_ATTR("__version_info__", "tuple[int, int, int]")) =
         py::make_tuple((unrealsdk_version >> 16) & 0xFF, (unrealsdk_version >> 8) & 0xFF,
                        (unrealsdk_version >> 0) & 0xFF);
     // NOLINTEND(readability-magic-numbers)
@@ -33,10 +35,11 @@ PYBIND11_EMBEDDED_MODULE(unrealsdk, m) {
 
 // NOLINTNEXTLINE(readability-identifier-length)
 PYBIND11_EMBEDDED_MODULE(pyunrealsdk, m) {
-    m.attr("__doc__") =
-        "This module exists purely for version information, and has no other contents.";
-    m.attr("__version__") = pyunrealsdk::get_version_string();
-    m.attr("__version_info__") = py::make_tuple(
+    PYUNREALSDK_STUBGEN_MODULE_N("pyunrealsdk")
+    m.attr("__doc__") = PYUNREALSDK_STUBGEN_DOCSTRING(
+        "This module exists purely for version information, and has no other contents.");
+    m.attr(PYUNREALSDK_STUBGEN_ATTR("__version__", "str")) = pyunrealsdk::get_version_string();
+    m.attr(PYUNREALSDK_STUBGEN_ATTR("__version_info__", "tuple[int, int, int]")) = py::make_tuple(
         pyunrealsdk::VERSION_MAJOR, pyunrealsdk::VERSION_MINOR, pyunrealsdk::VERSION_PATCH);
 };
 

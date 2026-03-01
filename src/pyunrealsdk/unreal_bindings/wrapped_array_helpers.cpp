@@ -2,7 +2,7 @@
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "unrealsdk/unreal/cast.h"
-#include "unrealsdk/unreal/classes/uproperty.h"
+#include "unrealsdk/unreal/properties/zproperty.h"
 #include "unrealsdk/unreal/wrappers/wrapped_array.h"
 
 #ifdef PYUNREALSDK_INTERNAL
@@ -34,7 +34,7 @@ py::object array_get(const WrappedArray& arr, size_t idx) {
 
     // Const cast is slightly naughty, but we know the internals aren't going to modify properties
     return py_getattr(
-        const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        const_cast<ZProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
         reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize() * idx),
         arr.base);
 }
@@ -50,7 +50,7 @@ void array_set(WrappedArray& arr, size_t idx, const py::object& value) {
     }
 
     py_setattr_direct(
-        const_cast<UProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        const_cast<ZProperty*>(arr.type),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
         reinterpret_cast<uintptr_t>(arr.base.get()->data) + (arr.type->ElementSize() * idx), value);
 }
 

@@ -1,9 +1,70 @@
 # Changelog
 
-## Upcoming
+Note this project *does not* use semantic versioning. Instead, we use effort-based versioning. We
+also apply different levels of effort to the C++/Python interfaces - the Python interface is
+considered more stable. Given a version number X.Y.Z:
+
+If you're writing C++:
+- Updating to a greater X generally requires a decent amount of effort.
+- Updating to a greater Y generally requires a little effort. Ideally, it will work after just a
+  recompile, though may sometimes require minor code changes.
+- Updating to a greater Z generally requires no effort. They should be binary compatible.
+
+If you're writing Python:
+- Updating to a greater X generally requires a little effort.
+- Updating to a greater Y or Z generally requires no effort, but may start throwing new deprecation
+  warnings.
+
+These are not hard rules, we just strive to follow them on a best-effort basis.
+
+When writing C++, for best compatibility it's recommended to always compile against the exact same
+commit as you expect to be linking against.
+
+When writing Python, it's recommended to run a linter against the stubs from the exact commit you're
+using the sdk at, and to address any new deprecation warnings as soon as possible after updating.
+
+## v1.9.0
+- Pulled in unrealsdk v3.0.0, to support Borderlands 4.
+
 - The `pyunrealsdk.init_script` and `pyunrealsdk.pyexec_root` config options are now relative to the
   folder containing the `pyunrealsdk.dll`. Previously, they were relative to the cwd, which could
   cause issues if it changed.
+
+- Type stubs are now automatically generated based off of the source code, rather than being kept in
+  sync by hand. This caught several places they weren't fully accurate.
+
+- The `unrealsdk.hooks.Type` and `unrealsdk.logging.Level` enums should now use native Python enums,
+  rather than pybind's older version. These should be fully backwards compatible.
+
+- `UProperty`, and all it's subclasses, have been renamed to `ZProperty`, like they were in
+  unrealsdk. The existing names are all still available as deprecated aliases.
+
+- Reworked the `explicit_python` cmake target, using the new PEP-0773 release zips. It no longer
+  requires msitools/the external python downloader script. It is recommended, but not required, to
+  add the new `EXPLICIT_PYTHON_HASH_*` variables, to be used by FetchContent.
+
+- Upgraded to Pybind 3.0, which may matter for native modules.
+
+### unrealsdk v3.0.0
+> - Now supports Borderlands 4 (Oak2). Thanks to Faultz for finding a lot of the signatures, and
+>   truman for creating binfold/general unreal RE advice.
+>
+> - As part of adding Oak2 support, renamed all `UProperty` types to `ZProperty`, and moved their
+>   headers from `unrealsdk/unreal/classes/properties` to `unrealsdk/unreal/properties`.
+>
+>   Oak2 uses the newer `FProperty` system - based on build flavour the `ZProperty` types will swap
+>   between `FProperty`s or `UProperty`s. One notable consequence of this is that `ZProperty` types
+>   do not always inherit from `UObject`. Base sdk functions have all been updated, either with an
+>   extra overload, or by using `TFieldVariant`s, you may have to update your own to do the same.
+>
+>   You should be able to upgrade these using a couple of regexes:
+>   - `U([A-Z0-9]Property)` (case insensitive) -> `Z\1`
+>   - `#include "unrealsdk/unreal/classes/properties` -> `#include "unrealsdk/unreal/properties`
+>   - `#include "unrealsdk/unreal/properties/u` -> `#include "unrealsdk/unreal/properties/z`
+>   (may need more)
+>
+> - Introduced `unrealsdk/flavour.h`, which splits flavour defines down into more specific feature
+>   flags. Using these may be more appropriate in places.
 
 ## v1.8.0
 - Added `WeakPointer.replace`, to modify a pointer in-place.

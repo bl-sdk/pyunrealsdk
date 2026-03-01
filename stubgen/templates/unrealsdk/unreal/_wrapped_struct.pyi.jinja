@@ -1,0 +1,17 @@
+from __future__ import annotations
+
+from typing import Any
+
+from ._uobject_children import UField, UFunction, UScriptStruct, UStruct
+{% if UNREALSDK_PROPERTIES_ARE_FFIELD %}
+from ._uobject_children import ZProperty
+{% endif %}
+
+{{ "unrealsdk.unreal.IGNORE_STRUCT" | declare }}
+"""
+A sentinel value which can be assigned to any struct property, but which does
+nothing. This is most useful when a function has a required struct arg, but you
+want to use the default, zero-init, value.
+"""
+
+{{ "unrealsdk.unreal.WrappedStruct" | declare }}

@@ -1,0 +1,31 @@
+from __future__ import annotations
+
+from collections.abc import Iterable, Mapping
+from typing import Any
+
+from . import commands, hooks, logging, unreal
+from .unreal import UClass, UObject, WrappedStruct
+from .unreal._uenum import _GenericUnrealEnum  # pyright: ignore[reportPrivateUsage]
+
+{{ "unrealsdk" | __all__ }}
+
+{% set attrs = [
+    "unrealsdk.__version__",
+    "unrealsdk.__version_info__",
+] %}
+{{ attrs | declare_all }}
+
+{{ "unrealsdk.config" | declare }}
+"""The contents of the unrealsdk.toml config file, parsed and merged for you."""
+
+{% set funcs = [
+    "unrealsdk.construct_object",
+    "unrealsdk.find_all",
+    "unrealsdk.find_class",
+    "unrealsdk.find_enum",
+    "unrealsdk.find_object",
+    "unrealsdk.load_package",
+    "unrealsdk.make_struct",
+] %}
+{{ funcs | declare_all }}
+

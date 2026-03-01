@@ -1,5 +1,6 @@
 #include "pyunrealsdk/pch.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_multicast_delegate.h"
+#include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
 #include "unrealsdk/unreal/structs/fscriptdelegate.h"
 #include "unrealsdk/unreal/wrappers/bound_function.h"
@@ -130,11 +131,15 @@ WrappedMulticastDelegate* delegate_init_new(const py::args& /* args */,
 }  // namespace
 
 void register_wrapped_multicast_delegate(py::module_& mod) {
-    py::class_<WrappedMulticastDelegate>(mod, "WrappedMulticastDelegate")
-        .def(py::init(&delegate_init_new))
-        .def("__new__", &delegate_init_new)
+    PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk.unreal")
+
+    py::classh<WrappedMulticastDelegate>(mod,
+                                         PYUNREALSDK_STUBGEN_CLASS("WrappedMulticastDelegate", ))
+        .def(PYUNREALSDK_STUBGEN_NEVER_METHOD_N("__init__") py::init(&delegate_init_new))
+        .def(PYUNREALSDK_STUBGEN_NEVER_METHOD("__new__"), &delegate_init_new)
         .def(
-            "__call__",
+            // HACK: include the noqa in the return value. This gives us an extra colon but meh.
+            PYUNREALSDK_STUBGEN_METHOD("__call__", "None:  # noqa: D417 "),
             [](WrappedMulticastDelegate& self, const py::args& args, const py::kwargs& kwargs) {
                 impl::PyCallInfo info{self.signature, args, kwargs};
 
@@ -142,43 +147,50 @@ void register_wrapped_multicast_delegate(py::module_& mod) {
                 const py::gil_scoped_release gil{};
                 self.call(info.params);
             },
-            "Calls all functions bound to this delegate.\n"
-            "\n"
-            "Args:\n"
-            "    The unreal function's args. This has all the same semantics as calling a\n"
-            "    BoundFunction.")
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Calls all functions bound to this delegate.\n"
+                "\n"
+                "Args:\n"
+                "    The unreal function's args. This has all the same semantics as calling a\n"
+                "    BoundFunction.\n")                   /* alignment */
+            PYUNREALSDK_STUBGEN_ARG_N("*args"_a, "Any", ) /* alignment */
+            PYUNREALSDK_STUBGEN_ARG_N("**kwargs"_a, "Any", ))
         .def(
-            "__contains__",
+            PYUNREALSDK_STUBGEN_METHOD("__contains__", "bool"),
             [](WrappedMulticastDelegate& self, const BoundFunction& value) {
                 return find_matching_delegate(self, value) != nullptr;
             },
-            "Checks if a function is already bound to this delegate.\n"
-            "\n"
-            "Args:\n"
-            "    value: The function to search for.\n"
-            "Returns:\n"
-            "    True if the function is already bound.",
-            "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Checks if a function is already bound to this delegate.\n"
+                "\n"
+                "Args:\n"
+                "    value: The function to search for.\n"
+                "Returns:\n"
+                "    True if the function is already bound.\n"),
+            PYUNREALSDK_STUBGEN_ARG("value"_a, "BoundFunction", ))
         .def(
-            "__iter__",
+            PYUNREALSDK_STUBGEN_METHOD("__iter__", "Iterator[BoundFunction]"),
             [](WrappedMulticastDelegate& self) {
                 return py::make_iterator(DelegateIterator::begin(self),
                                          DelegateIterator::end(self));
             },
             // Keep the delegate alive as long as the iterator is
             py::keep_alive<0, 1>(),
-            "Creates an iterator over all functions bound to this delegate.\n"
-            "\n"
-            "Returns:\n"
-            "    An iterator over all functions bound to this delegate.")
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Creates an iterator over all functions bound to this delegate.\n"
+                "\n"
+                "Returns:\n"
+                "    An iterator over all functions bound to this delegate.\n"))
         .def(
-            "__len__", [](WrappedMulticastDelegate& self) { return self.base->size(); },
-            "Gets the number of functions which are bound to this delegate.\n"
-            "\n"
-            "Returns:\n"
-            "    The number of bound functions.")
+            PYUNREALSDK_STUBGEN_METHOD("__len__", "int"),
+            [](WrappedMulticastDelegate& self) { return self.base->size(); },
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Gets the number of functions which are bound to this delegate.\n"
+                "\n"
+                "Returns:\n"
+                "    The number of bound functions.\n"))
         .def(
-            "__repr__",
+            PYUNREALSDK_STUBGEN_METHOD("__repr__", "str"),
             [](WrappedMulticastDelegate& self) {
                 if (self.base->size() == 0) {
                     return std::string{"WrappedMulticastDelegate()"};
@@ -197,39 +209,41 @@ void register_wrapped_multicast_delegate(py::module_& mod) {
                 output << "}";
                 return output.str();
             },
-            "Gets a string representation of this delegate.\n"
-            "\n"
-            "Returns:\n"
-            "    The string representation.")
+            PYUNREALSDK_STUBGEN_DOCSTRING("Gets a string representation of this delegate.\n"
+                                          "\n"
+                                          "Returns:\n"
+                                          "    The string representation.\n"))
         .def(
-            "add",
+            PYUNREALSDK_STUBGEN_METHOD("add", "None"),
             [](WrappedMulticastDelegate& self, const BoundFunction& value) {
                 if (find_matching_delegate(self, value) == nullptr) {
                     self.push_back(value);
                 }
             },
-            "Binds a new function to this delegate.\n"
-            "\n"
-            "This has no effect if the function is already present.\n"
-            "\n"
-            "Args:\n"
-            "    value: The function to bind.",
-            "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING("Binds a new function to this delegate.\n"
+                                          "\n"
+                                          "This has no effect if the function is already present.\n"
+                                          "\n"
+                                          "Args:\n"
+                                          "    value: The function to bind.\n"),
+            PYUNREALSDK_STUBGEN_ARG("value"_a, "BoundFunction", ))
         .def(
-            "clear", [](WrappedMulticastDelegate& self) { self.clear(); },
-            "Removes all functions bound to this delegate.")
+            PYUNREALSDK_STUBGEN_METHOD("clear", "None"),
+            [](WrappedMulticastDelegate& self) { self.clear(); },
+            PYUNREALSDK_STUBGEN_DOCSTRING("Removes all functions bound to this delegate."))
         .def(
-            "discard",
+            PYUNREALSDK_STUBGEN_METHOD("discard", "None"),
             [](WrappedMulticastDelegate& self, const BoundFunction& value) {
                 remove_from_multicast_delegate(self, value);
             },
-            "Removes a function from this delegate if it is present.\n"
-            "\n"
-            "Args:\n"
-            "    value: The function to remove.",
-            "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Removes a function from this delegate if it is present.\n"
+                "\n"
+                "Args:\n"
+                "    value: The function to remove.\n"),
+            PYUNREALSDK_STUBGEN_ARG("value"_a, "BoundFunction", ))
         .def(
-            "pop",
+            PYUNREALSDK_STUBGEN_METHOD("pop", "BoundFunction"),
             [](WrappedMulticastDelegate& self) {
                 if (self.base->size() == 0) {
                     throw py::key_error("pop from an empty delegate");
@@ -242,36 +256,38 @@ void register_wrapped_multicast_delegate(py::module_& mod) {
 
                 return value;
             },
-            "Removes an arbitrary function from this delegate.\n"
-            "\n"
-            "Throws a KeyError if the delegate has no bound functions.\n"
-            "\n"
-            "Returns:\n"
-            "    The function which was removed.")
+            PYUNREALSDK_STUBGEN_DOCSTRING(
+                "Removes an arbitrary function from this delegate.\n"
+                "\n"
+                "Throws a KeyError if the delegate has no bound functions.\n"
+                "\n"
+                "Returns:\n"
+                "    The function which was removed.\n"))
         .def(
-            "remove",
+            PYUNREALSDK_STUBGEN_METHOD("remove", "None"),
             [](WrappedMulticastDelegate& self, const BoundFunction& value) {
                 if (!remove_from_multicast_delegate(self, value)) {
                     throw py::key_error(py::repr(py::cast(value)));
                 }
             },
-            "Removes a function from this delegate.\n"
-            "\n"
-            "Throws a KeyError if the function is not present.\n"
-            "\n"
-            "Args:\n"
-            "    value: The function to remove.",
-            "value"_a)
+            PYUNREALSDK_STUBGEN_DOCSTRING("Removes a function from this delegate.\n"
+                                          "\n"
+                                          "Throws a KeyError if the function is not present.\n"
+                                          "\n"
+                                          "Args:\n"
+                                          "    value: The function to remove.\n"),
+            PYUNREALSDK_STUBGEN_ARG("value"_a, "BoundFunction", ))
         .def(
-            "_get_address",
+            PYUNREALSDK_STUBGEN_METHOD("_get_address", "int"),
             [](const WrappedMulticastDelegate& self) {
                 return reinterpret_cast<uintptr_t>(self.base.get());
             },
-            "Gets the address of this delegate, for debugging.\n"
-            "\n"
-            "Returns:\n"
-            "    This delegate's address.")
-        .def_readwrite("_signature", &WrappedMulticastDelegate::signature);
+            PYUNREALSDK_STUBGEN_DOCSTRING("Gets the address of this delegate, for debugging.\n"
+                                          "\n"
+                                          "Returns:\n"
+                                          "    This delegate's address.\n"))
+        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("_signature", "UFunction"),
+                       &WrappedMulticastDelegate::signature);
 }
 
 }  // namespace pyunrealsdk::unreal
