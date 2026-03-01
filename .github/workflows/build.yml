@@ -15,9 +15,11 @@ jobs:
       matrix:
         preset: [
           "clang-willow-release",
+          "clang-willow64-release",
           "clang-oak-release",
           "clang-oak2-release",
           "msvc-willow-release",
+          "msvc-willow64-release",
           "msvc-oak-release",
           "msvc-oak2-release",
         ]
@@ -31,17 +33,10 @@ jobs:
       if: startswith(matrix.preset, 'msvc')
       uses: TheMrMilchmann/setup-msvc-dev@v3
       with:
-        arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, 'oak')] }}
+        arch: ${{ fromJSON('["x64", "x86"]')[contains(matrix.preset, '-willow-')] }}
 
     - name: Setup CMake and Ninja
       uses: lukka/get-cmake@latest
-
-    # We only actually need this python version to run the download script, we're not going to link
-    # against it, so don't need to specify arch
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ">=3.10"
 
     - name: Checkout repository and submodules
       uses: actions/checkout@v4
@@ -49,10 +44,7 @@ jobs:
         submodules: recursive
 
     - name: Configure build
-      run: |
-        pip install requests
-
-        cmake . --preset ${{ matrix.preset }} -G Ninja
+      run: cmake . --preset ${{ matrix.preset }} -G Ninja
 
     - name: Build
       run: cmake --build out/build/${{ matrix.preset }}
@@ -66,17 +58,23 @@ jobs:
         toolchain:
           - preset: clang-cross-willow-release
             container: clang-cross
+          - preset: clang-cross-willow64-release
+            container: clang-cross
           - preset: clang-cross-oak-release
             container: clang-cross
           - preset: clang-cross-oak2-release
             container: clang-cross
           - preset: llvm-mingw-willow-release
             container: llvm-mingw
+          - preset: llvm-mingw-willow64-release
+            container: llvm-mingw
           - preset: llvm-mingw-oak-release
             container: llvm-mingw
           - preset: llvm-mingw-oak2-release
             container: llvm-mingw
           - preset: mingw-willow-release
+            container: mingw
+          - preset: mingw-willow64-release
             container: mingw
           - preset: mingw-oak-release
             container: mingw
@@ -166,6 +164,7 @@ jobs:
       matrix:
         preset: [
           "clang-willow-release",
+          "clang-willow64-release",
           "clang-oak-release",
           "clang-oak2-release",
         ]
@@ -177,15 +176,12 @@ jobs:
     - name: Setup CMake and Ninja
       uses: lukka/get-cmake@latest
 
-    # Need newer python to run the python lib downloader script
     - name: Setup Python
       uses: actions/setup-python@v5
-      with:
-        python-version: ">=3.10"
 
-    # Needed pyyaml for clang tidy to enable `-export-fixes` and requests for the python lib downloader
+    # Needed pyyaml for clang tidy to enable `-export-fixes`
     - name: Install pip packages
-      run: pip install pyyaml requests
+      run: pip install pyyaml
 
     - name: Checkout repository and submodules
       uses: actions/checkout@v4
