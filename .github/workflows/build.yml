@@ -138,18 +138,18 @@ jobs:
         python -m stubgen ${{ matrix.flavour }}
 
     - name: Run pyright
-      uses: jakebailey/pyright-action@v2
+      uses: jakebailey/pyright-action@v3
       with:
-        working-directory: ./stubgen/.out
+        extra-args: ./stubgen/.out
 
     # Realistically these ought to always work cause the script runs them itself to format the stubs
     - name: Run Ruff Linting
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@v3
       with:
         src: ./stubgen/.out
 
     - name: Run Ruff Formatting
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@v3
       with:
         src: ./stubgen/.out
         args: format --check
@@ -178,6 +178,8 @@ jobs:
 
     - name: Setup Python
       uses: actions/setup-python@v5
+      with:
+        python-version: ">=3.13"
 
     # Needed pyyaml for clang tidy to enable `-export-fixes`
     - name: Install pip packages
@@ -251,9 +253,9 @@ jobs:
         submodules: recursive
 
     - name: Run pyright
-      uses: jakebailey/pyright-action@v2
+      uses: jakebailey/pyright-action@v3
       with:
-        working-directory: ./stubgen
+        extra-args: ./stubgen
 
   ruff:
     runs-on: ubuntu-latest
@@ -263,12 +265,12 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run Ruff Linting
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@v3
       with:
         src: ./stubgen
 
     - name: Run Ruff Formatting
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@v3
       with:
         src: ./stubgen
         args: format --check

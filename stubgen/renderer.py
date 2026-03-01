@@ -57,9 +57,9 @@ def render_stubs(
         )
         return "\n".join(declare(val) for val in sorted(values))
 
-    env.filters["__all__"] = _all_  # pyright: ignore[reportUnknownMemberType]
-    env.filters["declare"] = declare  # pyright: ignore[reportUnknownMemberType]
-    env.filters["declare_all"] = declare_all  # pyright: ignore[reportUnknownMemberType]
+    env.filters["__all__"] = _all_  # type: ignore
+    env.filters["declare"] = declare  # type: ignore
+    env.filters["declare_all"] = declare_all  # type: ignore
 
     env.globals |= flavour_macros or {}  # pyright: ignore[reportUnknownMemberType]
 
