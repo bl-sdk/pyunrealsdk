@@ -93,7 +93,7 @@ std::wstring soft_obj_path_to_py(const FSoftObjectPath* path) {
     if (path->subpath.size() > 0) {
         name.reserve(name.size() + path->subpath.size() + 1);
         name += L':';
-        name += (std::wstring_view)path->subpath;
+        name += std::wstring_view{path->subpath};
     }
     return name;
 }

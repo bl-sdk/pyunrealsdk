@@ -135,7 +135,7 @@ void register_uobject_children(py::module_& mod) {
         // Deliberately not using def_member_prop, since we need to do extra string conversions
         .def_property(
             PYUNREALSDK_STUBGEN_ATTR("Value", "str"),
-            [](const UConst* self) { return (std::string)self->Value(); },
+            [](const UConst* self) { return std::string{self->Value()}; },
             [](UConst* self, const std::string& new_value) { self->Value() = new_value; });
 
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
@@ -241,7 +241,7 @@ void register_uobject_children(py::module_& mod) {
                 }
 
                 // This should be impossible, because the find class should throw first
-                throw std::invalid_argument("Couldn't find field " + (std::string)name);
+                throw std::invalid_argument("Couldn't find field " + name);
             },
             PYUNREALSDK_STUBGEN_DOCSTRING("Finds a child field by name.\n"
                                           "\n"

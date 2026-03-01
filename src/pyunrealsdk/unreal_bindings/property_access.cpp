@@ -147,7 +147,7 @@ py::object py_getattr_property(ZProperty* prop,
     py::list ret{prop->ArrayDim()};
 
     cast(prop, [base_addr, &ret, &parent]<typename T>(const T* prop) {
-        for (size_t i = 0; i < (size_t)prop->ArrayDim(); i++) {
+        for (size_t i = 0; i < static_cast<size_t>(prop->ArrayDim()); i++) {
             auto val = get_property<T>(prop, i, base_addr, parent);
 
             // Multiple property types expose a get enum method
@@ -190,7 +190,7 @@ py::object py_getattr_non_property(UField* field, UObject* func_obj) {
     }
 
     if (field->is_instance(find_class<UConst>())) {
-        return py::cast((std::string) reinterpret_cast<UConst*>(field)->Value());
+        return py::cast(std::string{reinterpret_cast<UConst*>(field)->Value()});
     }
 
     if (field->is_instance(find_class<UEnum>())) {
@@ -224,7 +224,7 @@ void py_setattr_direct(ZProperty* prop, uintptr_t base_addr, const py::object& v
     }
 
     cast(prop, [base_addr, &value_seq]<typename T>(const T* prop) {
-        using value_type = typename PropTraits<T>::Value;
+        using value_type = PropTraits<T>::Value;
 
         const size_t seq_size = value_seq.size();
         const size_t prop_size = prop->ArrayDim();

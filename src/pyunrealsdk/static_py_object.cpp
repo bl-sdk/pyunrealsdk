@@ -57,6 +57,6 @@ const py::object& StaticPyObject::obj(void) const {
 }
 
 StaticPyObject::operator bool() const {
-    return (bool)this->inner_obj;
+    return static_cast<bool>(this->inner_obj);
 }
 }  // namespace pyunrealsdk
