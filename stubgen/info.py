@@ -138,13 +138,13 @@ class FuncInfo:
     func_type: FuncType
     name: str
     ret: str
-    args: list[ArgInfo] = field(default_factory=list)
+    args: list[ArgInfo] = field(default_factory=list[ArgInfo])
     docstring: str | None = None
     deprecated: str | None = None
     generic: str | None = None
 
     # None on the overloads themselves to avoid nesting.
-    overloads: list[FuncInfo] | None = field(default_factory=list)
+    overloads: list[FuncInfo] | None = field(default_factory=list["FuncInfo"])
 
     def declare(self) -> str:
         """
@@ -182,8 +182,8 @@ class ClassInfo:
     name: str
     super_class: str | None
     docstring: str | None = None
-    attrs: list[AttrInfo] = field(default_factory=list)
-    methods: list[FuncInfo] = field(default_factory=list)
+    attrs: list[AttrInfo] = field(default_factory=list[AttrInfo])
+    methods: list[FuncInfo] = field(default_factory=list[FuncInfo])
     deprecated: str | None = None
     generic: str | None = None
 
@@ -267,7 +267,7 @@ class EnumValueInfo:
 @dataclass
 class EnumInfo:
     name: str
-    values: list[EnumValueInfo] = field(default_factory=list)
+    values: list[EnumValueInfo] = field(default_factory=list[EnumValueInfo])
     docstring: str | None = None
 
     def declare(self) -> str:

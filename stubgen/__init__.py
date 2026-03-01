@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import shutil
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .info import InfoDict, ModuleInfo
 from .parser import parse_file
 from .preprocessor import PYUNREALSDK_SRC, Flavour, parse_flavour_macros
 from .renderer import render_stubs
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 __all__: tuple[str, ...] = (
     "Flavour",
