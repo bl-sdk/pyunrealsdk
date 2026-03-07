@@ -2,7 +2,7 @@
 #include "pyunrealsdk/unreal_bindings/bindings.h"
 #include "pyunrealsdk/stubgen.h"
 #include "pyunrealsdk/unreal_bindings/bound_function.h"
-#include "pyunrealsdk/unreal_bindings/gbxdefptr.h"
+#include "pyunrealsdk/unreal_bindings/experimental_gbx_types.h"
 #include "pyunrealsdk/unreal_bindings/persistent_object_ptr_property.h"
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
@@ -36,7 +36,7 @@ void register_module(py::module_& mod) {
     register_weak_pointer(unreal);
     register_persistent_object_properties(unreal);
     register_wrapped_multicast_delegate(unreal);
-    register_gbxdefptr(unreal);
+    register_experimental_gbx_types(unreal);
 }
 
 }  // namespace pyunrealsdk::unreal

@@ -21,6 +21,7 @@
 #include "unrealsdk/unreal/properties/zdelegateproperty.h"
 #include "unrealsdk/unreal/properties/zenumproperty.h"
 #include "unrealsdk/unreal/properties/zgbxdefptrproperty.h"
+#include "unrealsdk/unreal/properties/zgbxinlinestructproperty.h"
 #include "unrealsdk/unreal/properties/zinterfaceproperty.h"
 #include "unrealsdk/unreal/properties/zmulticastdelegateproperty.h"
 #include "unrealsdk/unreal/properties/zobjectproperty.h"
@@ -420,6 +421,11 @@ void register_uobject_children(py::module_& mod) {
         .def_member_prop(
             PYUNREALSDK_STUBGEN_ATTR("OtherAttributeProperty", "ZFloatAttributeProperty"),
             &ZFloatAttributeProperty::OtherAttributeProperty);
+
+    PyUEClass<ZGbxInlineStructProperty, ZStructProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZGbxInlineStructProperty", "ZStructProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("MetaStruct", "UScriptStruct"),
+                         &ZGbxInlineStructProperty::MetaStruct);
 
     PyUEClass<ZIntAttributeProperty, ZIntProperty>(
         mod, PYUNREALSDK_STUBGEN_CLASS("ZIntAttributeProperty", "ZIntProperty"))
