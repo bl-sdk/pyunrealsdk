@@ -1,0 +1,8 @@
+from ._uobject_children import UScriptStruct
+from ._wrapped_struct import WrappedStruct
+
+{% set classes = [
+    "unrealsdk.unreal.FGbxDefPtr",
+    "unrealsdk.unreal.WrappedInlineStruct",
+] %}
+{{ classes | declare_all }}
