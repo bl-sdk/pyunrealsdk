@@ -164,7 +164,7 @@ void register_uobject_children(py::module_& mod) {
 #endif
 #if UNREALSDK_PROPERTIES_ARE_FFIELD
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("ChildProperties", "FField | None"),
-                         &UStruct::MinAlignment)
+                         &UStruct::ChildProperties)
 #endif
         .def(
             PYUNREALSDK_STUBGEN_METHOD("_fields", "Iterator[UField]"),
