@@ -239,18 +239,35 @@ void py_setattr_direct(ZProperty* prop, uintptr_t base_addr, const py::object& v
         const size_t seq_size = value_seq.size();
         const size_t prop_size = prop->ArrayDim();
 
-        // As a special case, if we have an array property, allow assigning non-wrapped array
-        // sequences
+        // Some special casing for array properties
         if constexpr (std::is_same_v<T, ZArrayProperty>) {
-            // Also make sure it's not somehow a fixed array, since the sdk can't handle that, let
+            // First make sure it's not somehow a fixed array, since the sdk can't handle that, let
             // it fall through to the standard error handler
-            if (prop_size == 1 && seq_size == 1 && !py::isinstance<WrappedArray>(value_seq[0])
-                && py::isinstance<py::sequence>(value_seq[0])) {
-                // Implement using slice assignment
-                auto arr = get_property<ZArrayProperty>(prop, 0, base_addr);
-                impl::array_py_setitem_slice(
-                    arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
-                return;
+            if (prop_size == 1 && seq_size == 1) {
+                // If the value is a wrapped array
+                if (py::isinstance<WrappedArray>(value_seq[0])) {
+                    // But the internal type does not match
+                    if (py::cast<WrappedArray>(value_seq[0]).type != prop->Inner()) {
+                        // We might be running into unrealsdk issue #60. If this is an array of ints
+                        // for example, we still want to try let the assignment through, even if the
+                        // properties are different
+
+                        // Do this by falling back to slice assignment - it guards against bad types
+                        // e.g. if you tried assigning an array of objects to an array of ints
+                        auto arr = get_property<ZArrayProperty>(prop, 0, base_addr);
+                        impl::array_py_setitem_slice(
+                            arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
+                        return;
+                    }
+
+                    // If the value is a sequence (but not a wrapped array), we also want it to work
+                } else if (py::isinstance<py::sequence>(value_seq[0])) {
+                    // Once again, implement using slice assignment
+                    auto arr = get_property<ZArrayProperty>(prop, 0, base_addr);
+                    impl::array_py_setitem_slice(
+                        arr, py::slice(std::nullopt, std::nullopt, std::nullopt), value_seq[0]);
+                    return;
+                }
             }
         }
 

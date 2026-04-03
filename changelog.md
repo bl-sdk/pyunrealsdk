@@ -23,6 +23,14 @@ commit as you expect to be linking against.
 When writing Python, it's recommended to run a linter against the stubs from the exact commit you're
 using the sdk at, and to address any new deprecation warnings as soon as possible after updating.
 
+## v1.9.1
+- Assigning one wrapped array to another with a compatible, but different, property, will now
+  automatically do the "convert to list" workaround for you.
+
+### unrealsdk v3.1.0
+> - Updated to support the latest Borderlands 4 update. Thanks to Cr4nkSt4r for help finding new
+>   signatures.
+
 ## v1.9.0
 - Pulled in unrealsdk v3.0.0, to support Borderlands 4.
 
