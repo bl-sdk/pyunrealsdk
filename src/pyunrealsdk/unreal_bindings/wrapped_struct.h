@@ -47,6 +47,14 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
  */
 bool is_ignore_struct_sentinel(const py::object& obj);
 
+/**
+ * @brief Generates the string representation of a wrapped struct.
+ *
+ * @param self The struct to convert to a string.
+ * @return The string representation.
+ */
+std::string struct_repr(const unrealsdk::unreal::WrappedStruct& self);
+
 }  // namespace pyunrealsdk::unreal
 
 #endif

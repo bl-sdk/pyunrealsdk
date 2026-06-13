@@ -115,7 +115,7 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
 
     auto names = py::cast<std::vector<std::string>>(dir(self));
 
-    if (dir_includes_unreal) {
+    if (dir_includes_unreal && type != nullptr) {
         // Append our fields
         auto fields = type->fields();
         std::ranges::transform(fields, std::back_inserter(names),
