@@ -9,6 +9,7 @@
 #include "unrealsdk/unreal/properties/zgbxinlinestructproperty.h"
 #include "unrealsdk/unreal/structs/fgbxdefptr.h"
 #include "unrealsdk/unreal/structs/fgbxinlinestruct.h"
+#include "unrealsdk/unreal/wrappers/wrapped_inline_struct.h"
 #include "unrealsdk/unreal/wrappers/wrapped_struct.h"
 #include "unrealsdk/unrealsdk.h"
 
@@ -17,15 +18,6 @@
 using namespace unrealsdk::unreal;
 
 namespace pyunrealsdk::unreal {
-
-namespace {
-
-struct WrappedInlineStruct {
-    FGbxInlineStruct inline_struct;
-    UScriptStruct* type{};
-};
-
-}  // namespace
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void register_experimental_gbx_types(py::module_& mod) {
@@ -250,35 +242,33 @@ void register_experimental_gbx_types(py::module_& mod) {
                 "\n"
                 "Untested, expected to cause a use-after free and/or a double-free.\n"));
 
-    py::classh<WrappedInlineStruct>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("WrappedInlineStruct", ),
+    py::classh<WrappedInlineStruct, WrappedStruct>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("WrappedInlineStruct", "WrappedStruct"),
         PYUNREALSDK_STUBGEN_DOCSTRING(
             "EXPERIMENTAL TYPE.\n"
             "\n"
-            "It may currently leak memory and/or cause crashes, and it's semantics are all\n"
-            "liable to change, it might even get removed.\n"))
-        .def_readwrite(PYUNREALSDK_STUBGEN_ATTR("_experimental_type", "UScriptStruct"),
-                       &WrappedInlineStruct::type)
-        .def_property(
-            PYUNREALSDK_STUBGEN_ATTR("_experimental_flags", "str"),
-            [](WrappedInlineStruct& self) { return self.inline_struct.flags; },
-            [](WrappedInlineStruct& self, decltype(FGbxInlineStruct::flags) flags) {
-                self.inline_struct.flags = flags;
-            })
+            "While the interface is getting more certain, we reserve the right to change it,\n"
+            "and break backwards compatibility, at any point.\n"))
         .def_property_readonly(
-            PYUNREALSDK_STUBGEN_READONLY_PROP("_experimental_instance", "WrappedStruct | None"),
-            [](const WrappedInlineStruct& self) -> std::optional<WrappedStruct> {
-                if (self.type == nullptr || self.inline_struct.instance == nullptr) {
-                    return std::nullopt;
-                }
-                return WrappedStruct{self.type, self.inline_struct.instance};
-            });
-}
-
-py::object convert_gbx_inline_struct_prop(const ZGbxInlineStructProperty* prop,
-                                          FGbxInlineStruct* inline_struct) {
-    return py::cast(
-        WrappedInlineStruct{.inline_struct = *inline_struct, .type = prop->MetaStruct()});
+            PYUNREALSDK_STUBGEN_READONLY_PROP("_experimental_flags", "int"),
+            [](const WrappedInlineStruct& self) { return self.inline_ref.flags; })
+        .def(PYUNREALSDK_STUBGEN_NEVER_METHOD("__new__"),
+             [](const py::args&, const py::kwargs&) {
+                 throw py::type_error("Cannot create new WrappedInlineStruct instances.");
+             })
+        .def(PYUNREALSDK_STUBGEN_NEVER_METHOD("__init__"),
+             [](const py::args&, const py::kwargs&) {
+                 throw py::type_error("Cannot create new WrappedInlineStruct instances.");
+             })
+        .def(
+            PYUNREALSDK_STUBGEN_METHOD("__repr__", "str"),
+            [](const WrappedInlineStruct& self) {
+                return std::format("WrappedInlineStruct({})", struct_repr(self));
+            },
+            PYUNREALSDK_STUBGEN_DOCSTRING("Gets a string representation of this struct.\n"
+                                          "\n"
+                                          "Returns:\n"
+                                          "    The string representation.\n"));
 }
 
 }  // namespace pyunrealsdk::unreal

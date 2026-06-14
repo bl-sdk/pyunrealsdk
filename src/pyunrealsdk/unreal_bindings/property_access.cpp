@@ -2,7 +2,6 @@
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/stubgen.h"
-#include "pyunrealsdk/unreal_bindings/experimental_gbx_types.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
@@ -165,16 +164,7 @@ py::object py_getattr_property(ZProperty* prop,
                 }
             }
 
-            // Temporary experimental class conversion
-            if constexpr (std::is_same_v<T, ZGbxInlineStructProperty>) {
-                // Stupid non-constexpr second check to avoid unreachable code warning
-                if (std::is_same_v<T, ZGbxInlineStructProperty>) {
-                    ret[i] = convert_gbx_inline_struct_prop(prop, &val);
-                    continue;
-                }
-            }
             // Otherwise store as is
-
             ret[i] = std::move(val);
         }
     });
