@@ -63,32 +63,6 @@ CachedType find_cached_potentially_qualified(const std::wstring& name,
 }
 
 /**
- * @brief Given an argument which accepts either a class or it's name, attempt to find the class.
- * @note Always auto-detects if fully qualified.
- * @note Throws if unable to find a valid object.
- *
- * @param cls_arg The class argument.
- * @return The class object.
- */
-UClass* evaluate_class_arg(const std::variant<UClass*, std::wstring>& cls_arg) {
-    if (std::holds_alternative<UClass*>(cls_arg)) {
-        auto cls_ptr = std::get<UClass*>(cls_arg);
-        if (cls_ptr == nullptr) {
-            throw std::invalid_argument("Passed class was null!");
-        }
-        return cls_ptr;
-    }
-
-    auto cls_name = std::get<std::wstring>(cls_arg);
-    auto cls_ptr = find_cached_potentially_qualified<UClass*>(
-        cls_name, std::nullopt, "class",
-        [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
-        [](const FName& name) { return unrealsdk::unreal::find_class(name); });
-
-    return cls_ptr;
-}
-
-/**
  * @brief Recursively merges two toml tables.
  *
  * @param base The base table. Modified in place.
@@ -177,6 +151,47 @@ void create_and_add_config_dict(py::module_& mod) {
 
 }  // namespace
 
+UClass* evaluate_class_arg(const std::variant<UClass*, std::wstring>& cls_arg,
+                           std::optional<bool> fully_qualified) {
+    // empty line for formatting
+    if (std::holds_alternative<UClass*>(cls_arg)) {
+        auto cls_ptr = std::get<UClass*>(cls_arg);
+        if (cls_ptr == nullptr) {
+            throw std::invalid_argument("Passed class was null!");
+        }
+        return cls_ptr;
+    }
+
+    auto cls_name = std::get<std::wstring>(cls_arg);
+    auto cls_ptr = find_cached_potentially_qualified<UClass*>(
+        cls_name, fully_qualified, "class",
+        [](const std::wstring& name) { return unrealsdk::unreal::find_class(name); },
+        [](const FName& name) { return unrealsdk::unreal::find_class(name); });
+
+    return cls_ptr;
+}
+
+UScriptStruct* evaluate_scriptstruct_arg(
+    const std::variant<UScriptStruct*, std::wstring>& struct_arg,
+    std::optional<bool> fully_qualified) {
+    // empty line for formatting
+    if (std::holds_alternative<UScriptStruct*>(struct_arg)) {
+        auto struct_ptr = std::get<UScriptStruct*>(struct_arg);
+        if (struct_ptr == nullptr) {
+            throw std::invalid_argument("Passed struct was null!");
+        }
+        return struct_ptr;
+    }
+
+    auto struct_name = std::get<std::wstring>(struct_arg);
+    auto struct_ptr = find_cached_potentially_qualified<UScriptStruct*>(
+        struct_name, fully_qualified, "struct",
+        [](const std::wstring& name) { return scriptstruct_cache.find(name); },
+        [](const FName& name) { return scriptstruct_cache.find(name); });
+
+    return struct_ptr;
+}
+
 void register_base_bindings(py::module_& mod) {
     PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk")
 
@@ -256,7 +271,7 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         PYUNREALSDK_STUBGEN_FUNC("find_object", "UObject"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, const std::wstring& name) {
-            auto val = unrealsdk::find_object(evaluate_class_arg(cls_arg), name);
+            auto val = unrealsdk::find_object(evaluate_class_arg(cls_arg, std::nullopt), name);
             if (val == nullptr) {
                 throw std::invalid_argument(
                     std::format("Couldn't find object '{}'", unrealsdk::utils::narrow(name)));
@@ -281,7 +296,7 @@ void register_base_bindings(py::module_& mod) {
     mod.def(
         PYUNREALSDK_STUBGEN_FUNC("find_all", "Iterable[UObject]"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, bool exact) {
-            auto cls_ptr = evaluate_class_arg(cls_arg);
+            auto cls_ptr = evaluate_class_arg(cls_arg, std::nullopt);
             auto gobjects = unrealsdk::gobjects();
 
             /*
@@ -323,7 +338,7 @@ void register_base_bindings(py::module_& mod) {
         PYUNREALSDK_STUBGEN_FUNC("construct_object", "UObject"),
         [](const std::variant<UClass*, std::wstring>& cls_arg, UObject* outer, const FName& name,
            uint64_t flags, UObject* template_obj) {
-            auto cls = evaluate_class_arg(cls_arg);
+            auto cls = evaluate_class_arg(cls_arg, std::nullopt);
             auto val = unrealsdk::construct_object(cls, outer, name, flags, template_obj);
 
             if (val == nullptr) {
@@ -348,7 +363,7 @@ void register_base_bindings(py::module_& mod) {
             "    The constructed object.\n"),
         PYUNREALSDK_STUBGEN_ARG("cls"_a, "UClass | str", ),
         PYUNREALSDK_STUBGEN_ARG("outer"_a, "UObject | None", ),
-        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", "\"None\"") = FName{0, 0},
+        PYUNREALSDK_STUBGEN_ARG("name"_a, "str", "\"None\"") = FName{},
         PYUNREALSDK_STUBGEN_ARG("flags"_a, "int", "0") = 0,
         PYUNREALSDK_STUBGEN_ARG("template_obj"_a, "UObject | None", "None") = nullptr);
 

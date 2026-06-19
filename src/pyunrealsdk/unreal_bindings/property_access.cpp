@@ -2,7 +2,6 @@
 #include "pyunrealsdk/unreal_bindings/property_access.h"
 #include "pyunrealsdk/static_py_object.h"
 #include "pyunrealsdk/stubgen.h"
-#include "pyunrealsdk/unreal_bindings/experimental_gbx_types.h"
 #include "pyunrealsdk/unreal_bindings/uenum.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_array.h"
 #include "pyunrealsdk/unreal_bindings/wrapped_struct.h"
@@ -115,7 +114,7 @@ std::vector<std::string> py_dir(const py::object& self, const UStruct* type) {
 
     auto names = py::cast<std::vector<std::string>>(dir(self));
 
-    if (dir_includes_unreal) {
+    if (dir_includes_unreal && type != nullptr) {
         // Append our fields
         auto fields = type->fields();
         std::ranges::transform(fields, std::back_inserter(names),
@@ -165,16 +164,7 @@ py::object py_getattr_property(ZProperty* prop,
                 }
             }
 
-            // Temporary experimental class conversion
-            if constexpr (std::is_same_v<T, ZGbxInlineStructProperty>) {
-                // Stupid non-constexpr second check to avoid unreachable code warning
-                if (std::is_same_v<T, ZGbxInlineStructProperty>) {
-                    ret[i] = convert_gbx_inline_struct_prop(prop, &val);
-                    continue;
-                }
-            }
             // Otherwise store as is
-
             ret[i] = std::move(val);
         }
     });

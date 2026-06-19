@@ -94,6 +94,30 @@ void make_struct(unrealsdk::unreal::WrappedStruct& out_struct,
     }
 }
 
+std::string struct_repr(const WrappedStruct& self) {
+    std::ostringstream output;
+    output << "{";
+
+    bool first = true;
+    for (const auto& prop : self.type->properties()) {
+        if (!first) {
+            output << ", ";
+        }
+        first = false;
+        output << prop->Name() << ": ";
+
+        try {
+            auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()), self.base);
+            output << py::repr(value);
+        } catch (...) {
+            output << "<unknown " << prop->Class()->Name() << ">";
+        }
+    }
+
+    output << "}";
+    return output.str();
+}
+
 void register_wrapped_struct(py::module_& mod) {
     PYUNREALSDK_STUBGEN_MODULE_N("unrealsdk.unreal")
 
@@ -115,36 +139,11 @@ void register_wrapped_struct(py::module_& mod) {
              PYUNREALSDK_STUBGEN_POS_ONLY()                /* alignment */
              PYUNREALSDK_STUBGEN_ARG_N("*args"_a, "Any", ) /* alignment */
              PYUNREALSDK_STUBGEN_ARG_N("**kwargs"_a, "Any", ))
-        .def(
-            PYUNREALSDK_STUBGEN_METHOD("__repr__", "str"),
-            [](const WrappedStruct& self) {
-                std::ostringstream output;
-                output << "{";
-
-                bool first = true;
-                for (const auto& prop : self.type->properties()) {
-                    if (!first) {
-                        output << ", ";
-                    }
-                    first = false;
-                    output << prop->Name() << ": ";
-
-                    try {
-                        auto value = py_getattr(prop, reinterpret_cast<uintptr_t>(self.base.get()),
-                                                self.base);
-                        output << py::repr(value);
-                    } catch (...) {
-                        output << "<unknown " << prop->Class()->Name() << ">";
-                    }
-                }
-
-                output << "}";
-                return output.str();
-            },
-            PYUNREALSDK_STUBGEN_DOCSTRING("Gets a string representation of this struct.\n"
-                                          "\n"
-                                          "Returns:\n"
-                                          "    The string representation.\n"))
+        .def(PYUNREALSDK_STUBGEN_METHOD("__repr__", "str"), struct_repr,
+             PYUNREALSDK_STUBGEN_DOCSTRING("Gets a string representation of this struct.\n"
+                                           "\n"
+                                           "Returns:\n"
+                                           "    The string representation.\n"))
         .def(
             PYUNREALSDK_STUBGEN_METHOD("__dir__", "list[str]"),
             [](const py::object& self) {
