@@ -20,6 +20,7 @@
 #include "unrealsdk/unreal/properties/zcomponentproperty.h"
 #include "unrealsdk/unreal/properties/zdelegateproperty.h"
 #include "unrealsdk/unreal/properties/zenumproperty.h"
+#include "unrealsdk/unreal/properties/zgamedatahandleproperty.h"
 #include "unrealsdk/unreal/properties/zgbxdefptrproperty.h"
 #include "unrealsdk/unreal/properties/zgbxinlinestructproperty.h"
 #include "unrealsdk/unreal/properties/zinterfaceproperty.h"
@@ -269,11 +270,6 @@ void register_uobject_children(py::module_& mod) {
 
     // ======== Third Layer Subclasses ========
 
-    PyUEClass<ZGbxDefPtrProperty, ZProperty>(
-        mod, PYUNREALSDK_STUBGEN_CLASS("ZGbxDefPtrProperty", "ZProperty"))
-        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Struct", "UScriptStruct"),
-                         &ZGbxDefPtrProperty::Struct);
-
     PyUEClass<ZArrayProperty, ZProperty>(mod,
                                          PYUNREALSDK_STUBGEN_CLASS("ZArrayProperty", "ZProperty"))
         .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Inner", "ZProperty"), &ZArrayProperty::Inner);
@@ -340,6 +336,16 @@ void register_uobject_children(py::module_& mod) {
                  "\n"
                  "Returns:\n"
                  "    The return param, or None if it doesn't exist.\n"));
+
+    PyUEClass<ZGameDataHandleProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZGameDataHandleProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("TypeHandle", "int"),
+                         &ZGameDataHandleProperty::TypeHandle);
+
+    PyUEClass<ZGbxDefPtrProperty, ZProperty>(
+        mod, PYUNREALSDK_STUBGEN_CLASS("ZGbxDefPtrProperty", "ZProperty"))
+        .def_member_prop(PYUNREALSDK_STUBGEN_ATTR("Struct", "UScriptStruct"),
+                         &ZGbxDefPtrProperty::Struct);
 
     PyUEClass<ZInt8Property, ZProperty>(mod,
                                         PYUNREALSDK_STUBGEN_CLASS("ZInt8Property", "ZProperty"));
