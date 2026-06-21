@@ -23,6 +23,18 @@ commit as you expect to be linking against.
 When writing Python, it's recommended to run a linter against the stubs from the exact commit you're
 using the sdk at, and to address any new deprecation warnings as soon as possible after updating.
 
+## v1.10.0
+- Improved support for the custom BL4 types - `FGameDataHandle`, `FGbxDefPtr`, `FGbxInlineStruct`,
+  and their associated properties.
+
+### unrealsdk v3.2.0
+> - Updated to support both sets of BL4 signatures, optimized sigscanning.
+>
+> - Improved support for the custom BL4 types - `FGameDataHandle`, `FGbxDefPtr`, `FGbxInlineStruct`,
+>   and their associated properties.
+>
+> - Validated this release against the other games, hence removing the beta tag.
+
 ## v1.9.1
 - Assigning one wrapped array to another with a compatible, but different, property, will now
   automatically do the "convert to list" workaround for you.
